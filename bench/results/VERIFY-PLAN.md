@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
-**Amended twice,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result) and [Amendment 2](#amendment-2-pilot-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
+**Amended three times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result) and [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call). Where they differ, the later text applies. The original text below is unchanged.
 
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
@@ -323,4 +323,59 @@ go run ./cmd/bench run -targets nim:M1,...,nim:M5 -source payloads -seed 2001 -s
 go run ./cmd/bench run -targets nim:openai/gpt-oss-20b -seed 2000 -sample 3 -formats json-compact,json-compact-2,toonx,toonx-p2 -max-calls 12 -out bench/results/verify-2026-10/pilot.jsonl
 go run ./cmd/bench run -targets nim:openai/gpt-oss-20b -source wtq -n 100 -seed 2002 -sample 3 -formats json-compact,toonx -max-calls 6 -out bench/results/verify-2026-10/pilot.jsonl
 go run ./cmd/bench run -targets nim:openai/gpt-oss-20b -seed 2000 -sample 4 -formats json-compact,gateway -via-gateway http://127.0.0.1:8080/openai/v1 -route verify -max-calls 8 -out bench/results/verify-2026-10/pilot.jsonl
+```
+
+## Amendment 3: free-form check (before any free-form call)
+
+**Date:** 2026-10-02. This is committed before any free-form call. The pilot motivated nothing here: it changes no codec, primer, format or registered question.
+
+**Why:** every registered question has a short gold answer. Real requests also ask for summaries, comparisons and descriptions, where a reply can be fluent and still wrong. This check asks whether toonx changes those answers. It is a separate, clearly labelled check: it enters none of the verdicts above.
+
+**Tasks:** one open task per payload in the payload Q&A set (26 payloads, the same cut data), with no gold answer. Payloads are shuffled with seed 3000 and take these kinds in turn:
+- **summary:** 3 to 5 bullet points naming items and values;
+- **highlights:** the 3 items that stand out most, with their values;
+- **describe:** one item, chosen by its ID, in a short paragraph;
+- **compare:** two items, chosen by ID, listing the fields where they differ.
+
+The task list is in the dumped data (`bench dump-data -source freeform -seed 3000`).
+
+**Arms and models:**
+- Arms: `json-compact`, `json-compact-2` (the noise floor) and `toonx`.
+- Models: the three that passed the smoke rule (`openai/gpt-oss-20b`, `nvidia/nemotron-3-super-120b-a12b`, `z-ai/glm-5.3-flash`).
+- Settings: max_tokens 4096 and temperature 0, with empty replies retried as registered.
+- System prompt: a free-form one ("Be accurate and concise. Do not mention the format the data came in."). The last sentence keeps the judge blind; it is the same for every arm.
+
+**Judge:** one model from a family not under test grades every answer.
+- It sees the data as compact JSON, the request, and the three answers under labels A, B and C, shuffled per task with seed 3000.
+- For each answer it lists the statements the data contradicts or does not support, and rates completeness from 1 to 5. For each pair it says whether the two state the same facts.
+- Its settings are max_tokens 8192 and temperature 0. A reply that is not valid JSON is retried up to twice more, then excluded and counted.
+- **Choice:** the first of `moonshotai/kimi-k3`, `moonshotai/kimi-k2.6` and `nvidia/llama-3.1-nemotron-ultra-253b-v1` that returns valid grades on 2 of 2 smoke calls. Those calls grade pilot answers, not free-form ones. The last candidate shares a family with nemotron; if it is used, the write-up says so.
+
+**Metrics,** per model and over all models, with 95% bootstrap intervals over tasks:
+- share of answers with at least one judged error, per arm, and the differences toonx − json and json-2 − json;
+- mean completeness per arm;
+- agreement: the judge's "same facts" rate and the word-overlap F1, for json vs toonx against json vs json-2;
+- input tokens saved and output tokens per arm.
+
+**Claim rule:**
+- The write-up may say free-form answers showed **no large quality drop** only if, over all models, the 95% upper bound of toonx − json in the share of answers with an error is at most 15pp.
+- Otherwise it reports the gap as measured.
+- With about 78 paired answers this check cannot show non-inferiority, and the write-up never claims it. Per-model rows are descriptive.
+- Judge errors are the judge's opinion; the write-up says so and links every judged record.
+
+**Calls:**
+
+| run | calls |
+|---|---:|
+| judge smoke check: 2 per candidate tried | 2–6 |
+| answers: 26 tasks × 3 arms × 3 models | 234 |
+| judge: 26 tasks × 3 models | 78 |
+| **total** | **314–318**, plus registered retries |
+
+Records go to `freeform.jsonl` (answers), `freeform-judged.jsonl` and `judge-smoke.jsonl`, all in `verify-2026-10/`.
+
+```sh
+go run ./cmd/bench run -targets nim:openai/gpt-oss-20b,nim:nvidia/nemotron-3-super-120b-a12b,nim:z-ai/glm-5.3-flash -source freeform -seed 3000 -formats json-compact,json-compact-2,toonx -max-calls 234 -out bench/results/verify-2026-10/freeform.jsonl
+go run ./cmd/bench judge -source freeform -seed 3000 -in bench/results/verify-2026-10/freeform.jsonl -judge nim:JUDGE -max-tokens 8192 -max-calls 78 -judged bench/results/verify-2026-10/freeform-judged.jsonl
+go run ./cmd/bench freeform-report -in bench/results/verify-2026-10/freeform.jsonl -judged bench/results/verify-2026-10/freeform-judged.jsonl
 ```

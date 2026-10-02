@@ -19,7 +19,9 @@ const systemPrompt = `You are a data assistant inside an application. Answer the
 
 // Call is one model request: a question whose data arrives as a tool result.
 type Call struct {
-	Model      string
+	Model string
+	// System, when set, replaces the default system prompt.
+	System     string
 	Primer     string
 	Question   string
 	Tool       string
@@ -61,10 +63,14 @@ type Client interface {
 }
 
 func system(c Call) string {
-	if c.Primer == "" {
-		return systemPrompt
+	s := systemPrompt
+	if c.System != "" {
+		s = c.System
 	}
-	return systemPrompt + "\n\n" + c.Primer
+	if c.Primer == "" {
+		return s
+	}
+	return s + "\n\n" + c.Primer
 }
 
 // OpenAI speaks the OpenAI-compatible Chat Completions API.

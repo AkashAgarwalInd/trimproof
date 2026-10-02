@@ -6,6 +6,9 @@
 //	bench report -in results.jsonl        Phase 0 report with go/no-go verdicts
 //	bench verify-report -in results.jsonl verification tables with bootstrap intervals
 //	bench datapoints -in results.jsonl    every measured question, arms side by side
+//	bench judge -source freeform -in answers.jsonl -judge nim:MODEL -out judged.jsonl -max-calls N
+//	                                      grade free-form answers blind against the data (resumable)
+//	bench freeform-report -in answers.jsonl -judged judged.jsonl
 //	bench dump-data -dir DIR              the generated datasets and questions as sent
 //	bench fetch-wtq                       download WikiTableQuestions (CC BY-SA) to -wtq-dir
 //	bench payloads [-fetch] [-held-out] [-dir DIR]    real public-API responses through the gateway's gates
@@ -76,12 +79,15 @@ func main() {
 	viaGateway := fs.String("via-gateway", "", "gateway OpenAI base URL for the gateway format (run)")
 	allowPaid := fs.Bool("allow-paid", false, "allow endpoints that may bill (default: free endpoints only)")
 	dir := fs.String("dir", "", "output directory (dump-data) or payload directory (payloads)")
-	source := fs.String("source", "synthetic", "question source: synthetic | wtq | payloads (run, dump-data)")
+	source := fs.String("source", "synthetic", "question source: synthetic | wtq | payloads | freeform (run, dump-data, judge)")
 	wtqDir := fs.String("wtq-dir", wtq.DefaultDir(), "WikiTableQuestions release directory (fetch-wtq, -source wtq)")
 	minRows := fs.Int("min-rows", 15, "smallest WTQ table to sample (-source wtq)")
 	fetch := fs.Bool("fetch", false, "download the public API payloads first (payloads)")
 	heldOut := fs.Bool("held-out", false, "use the held-out payload set (payloads)")
 	sample := fs.Int("sample", 0, "keep this many questions, drawn with -seed and spread over kinds (run, dump-data; 0 = all)")
+	judge := fs.String("judge", "", "provider:model that grades free-form answers (judge)")
+	judged := fs.String("judged", "", "judge JSONL (judge: output; freeform-report: input)")
+	arms := fs.String("arms", "json-compact,json-compact-2,toonx", "formats graded together (judge)")
 	_ = fs.Parse(args)
 
 	ds := bench.GenerateSeeds(split(*datasets), ints(*sizes), *seed, *seeds)
@@ -94,14 +100,17 @@ func main() {
 		ds = bench.WTQDatasets(items)
 	}
 	var payloadItems []bench.PayloadItem
-	if *source == "payloads" && cmd != "payloads" {
+	if (*source == "payloads" || *source == "freeform") && cmd != "payloads" {
 		var err error
 		sets := map[string]string{"tuning": payloads.DefaultDir(), "held-out": payloads.HeldOutDir()}
 		if ds, payloadItems, err = bench.PayloadDatasets(sets, payloadCodec, *seed); err != nil {
 			log.Fatalf("payloads: %v (fetch them with `bench payloads -fetch` and `-fetch -held-out`)", err)
 		}
+		if *source == "freeform" {
+			ds, payloadItems = bench.FreeFormDatasets(ds, payloadItems, *seed)
+		}
 	}
-	if *source != "synthetic" && *source != "wtq" && *source != "payloads" {
+	if *source != "synthetic" && *source != "wtq" && *source != "payloads" && *source != "freeform" {
 		log.Fatalf("unknown -source %q", *source)
 	}
 	ds = bench.SampleQuestions(ds, *sample, *seed)
@@ -176,6 +185,35 @@ func main() {
 		} else {
 			bench.VerifyReport(os.Stdout, recs, bench.DefaultVerify())
 		}
+	case "judge":
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer stop()
+		ts, err := parseTargets(*judge, *allowPaid)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if len(ts) != 1 || *judged == "" || *maxCalls <= 0 {
+			log.Fatal("judge: needs one -judge target, -judged and -max-calls")
+		}
+		recs, err := bench.ReadRecords(*in)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := bench.Judge(ctx, bench.JudgeConfig{Client: ts[0].Client, Model: ts[0].Model, Datasets: ds, Records: recs,
+			Arms: split(*arms), Out: *judged, Seed: *seed, MaxCalls: *maxCalls, Concurrency: *conc, RPM: *rpm,
+			MaxTokens: *maxTok}); err != nil {
+			log.Fatal(err)
+		}
+	case "freeform-report":
+		recs, err := bench.ReadRecords(*in)
+		if err != nil {
+			log.Fatal(err)
+		}
+		js, err := bench.ReadJudged(*judged)
+		if err != nil {
+			log.Fatal(err)
+		}
+		bench.FreeFormReport(os.Stdout, recs, js, bench.DefaultVerify())
 	case "dump-data":
 		if *dir == "" {
 			log.Fatal("dump-data: -dir is required")

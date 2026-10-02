@@ -26,6 +26,9 @@ type Question struct {
 	Answers []string `json:"answers,omitempty"`
 	// Check, when set, replaces the default scoring (Correct).
 	Check func(reply string) bool `json:"-"`
+	// FreeForm marks an open task with no gold answer: it is sent with
+	// freeFormPrompt, never scored, and judged later (Judge).
+	FreeForm bool `json:"free_form,omitempty"`
 }
 
 // Dataset is one tool result table plus its questions.

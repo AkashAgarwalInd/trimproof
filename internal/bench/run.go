@@ -172,7 +172,7 @@ func Run(ctx context.Context, cfg RunConfig) error {
 				for attempt := 0; attempt < 3; attempt++ {
 					cctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 					res, err = client.Do(cctx, Call{
-						Model: j.t.Model, Primer: primer, Question: j.q.Text,
+						Model: j.t.Model, System: systemFor(j.q), Primer: primer, Question: j.q.Text,
 						Tool: j.d.Tool, ToolArgs: j.d.ToolArgs, ToolResult: text, MaxTokens: cfg.MaxTokens,
 					})
 					cancel()
@@ -186,7 +186,9 @@ func Run(ctx context.Context, cfg RunConfig) error {
 					rec.ReasoningTokens, rec.ReasoningEstimated = res.ReasoningTokens, res.ReasoningEstimated
 					rec.LatencyMS = res.Latency.Milliseconds()
 					rec.Representation = res.Representation
-					rec.Correct = Correct(j.q, res.Text)
+					if !j.q.FreeForm {
+						rec.Correct = Correct(j.q, res.Text)
+					}
 				}
 			}
 			if err != nil {
