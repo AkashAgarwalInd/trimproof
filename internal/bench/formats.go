@@ -10,6 +10,7 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toon"
+	"github.com/AkashAgarwalInd/trimproof/pkg/codec/toonx"
 )
 
 // Formats in report order. json-compact is the baseline; json-pretty is
@@ -19,6 +20,10 @@ var Formats = []string{"json-pretty", "json-compact", "toon", "tabular", "csv"}
 // LiveFormats are sent to models. json-compact-2 is the control arm: the
 // baseline sent a second time to measure the noise floor.
 var LiveFormats = []string{"json-compact", "json-compact-2", "toon", "tabular", "csv"}
+
+// shortPrimer is the pre-registered shorter TOON primer tested by the
+// toonx-p2 arm, in place of the TOON primer that toonx sends.
+const shortPrimer = `Some tool results are in TOON: "key[N]{a,b}:" is a table of N rows with fields a and b, one comma-separated row per line; "key[N]: x,y" is a list of values; "key: value" is a field and nested objects are indented. Read the data as given; there is no need to convert it.`
 
 const csvPrimer = `Some tool results are CSV: the first line is the column names and each following line is one record.`
 
@@ -48,13 +53,19 @@ func Render(format string, d *Dataset) (string, string, error) {
 			return "", "", err
 		}
 		return buf.String(), "", nil
-	case "toon", "tabular":
+	case "toonx-p2":
+		enc, err := toonx.Codec{}.Encode(canon, codec.Options{Mode: codec.Strict})
+		if err != nil {
+			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
+		}
+		return string(enc), toonx.Codec{}.PrimerWith(shortPrimer, [][]byte{enc}), nil
+	case "toon", "toonx", "tabular":
 		c, _ := codec.Get(format)
 		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})
 		if err != nil {
 			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
 		}
-		return string(enc), c.Primer(), nil
+		return string(enc), codec.PrimerFor(c, [][]byte{enc}), nil
 	case "csv":
 		v, _ := canonical.Parse(canon)
 		t, err := codec.AsTable(v, codec.Strict, true)

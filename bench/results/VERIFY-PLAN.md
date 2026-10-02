@@ -2,6 +2,8 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
+**Amended once,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result). Where the two differ, the amendment applies. The original text below is unchanged.
+
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
 ## Questions this run answers
@@ -183,3 +185,107 @@ go run ./cmd/bench datapoints -in bench/results/verify-2026-10/synthetic.jsonl >
 **The real-API payload analysis was not pre-registered.** It ran during harness development, before this file was committed: it makes no model calls and needs no settings beyond the defaults. Its result is reported exactly as produced. Only 3 of 40 public-API responses passed the default gates as sent; the main causes were top-level wrapper objects and rows with optional keys. The write-up must report this.
 
 **Codecs encode the canonical form of each table**, with keys sorted, as the gateway does. JSON arms send each table as the source has it: synthetic tables are already sorted, and WTQ tables keep their column order. TOON columns for a WTQ table can therefore appear in a different order from its JSON; this is what production traffic would see.
+
+## Amendment 1 (before any result)
+
+**Date:** 2026-10-02. This is committed before any verification run.
+
+### Why the plan changed
+
+The payload analysis above found that the gateway encoded only 3 of 40 real API responses, so we fixed the product before measuring it. Plain TOON could not get there, for two reasons:
+- **Size.** For nested or irregular rows, TOON's list form is 5–22% *larger* than compact JSON. Allowing wrappers and missing keys still left plain TOON at 3 of 40.
+- **toon-go bugs.** toon-go also writes some nested tables in a form its own decoder rejects.
+
+The new codec, `toonx` (`pkg/codec/toonx`), is TOON with three extensions:
+- every array of objects becomes a table, and an empty cell means "key absent";
+- nested objects may be flattened into `a.b` columns;
+- arrays and empty objects in cells are written as JSON.
+
+It has its own encoder and decoder, and every encode is verified by round trip.
+- **Plain TOON is unchanged:** on a flat array of uniform objects, toonx writes exactly what TOON writes.
+- **Primer:** toonx sends TOON's primer plus one sentence for each extension the request actually uses.
+
+### Coverage of real API responses
+
+Measured offline with no model calls. The reports are [PAYLOADS.md](verify-2026-10/PAYLOADS.md) and [PAYLOADS-HELDOUT.md](verify-2026-10/PAYLOADS-HELDOUT.md).
+
+| set | toonx eligible | toon eligible | savings over all payload tokens, toonx |
+|---|---:|---:|---:|
+| the 40 payloads toonx was designed against | 23 / 40 | 3 / 40 | 15.4% |
+| held-out: 23 new endpoints chosen before measurement, 19 fetched | 8 / 19 | 1 / 19 | 21.4% |
+
+- **Headline:** the held-out set gives the coverage claim, because it was not used for tuning.
+- **Frozen sources:** the held-out list (`payloads.HeldOut`) was fixed before it was fetched, and will not be edited.
+
+### Changes to the measurement
+
+1. **Codec under test.** `toonx` replaces `toon` in every arm.
+   - Synthetic tables: toonx sends the same bytes and the same primer as TOON on all 40 tables (seeds 1000–1004).
+   - WikiTableQuestions: the bytes are identical on 96 of the 100 tables. The other 4 have a dot in a column name, which toonx quotes.
+   - The `toon` arm itself is not run.
+2. **Primer variant arm.** `toonx-p2` runs on synthetic data for every model. It sends the same encoding as toonx, with this primer in place of TOON's:
+
+   > Some tool results are in TOON: "key[N]{a,b}:" is a table of N rows with fields a and b, one comma-separated row per line; "key[N]: x,y" is a list of values; "key: value" is a field and nested objects are indented. Read the data as given; there is no need to convert it.
+
+   **Adoption rule:** toonx-p2's primer replaces TOON's in toonx only if both hold:
+   - against toonx, the cost at k=4 is lower with the 95% interval excluding 0, on at least 3 of the 5 models;
+   - no model's accuracy verdict against JSON is worse for toonx-p2 than for toonx.
+
+   `verify-report` applies this rule in its "Primer variant" section. This replaces the separate Step 3 experiment, so no second run is needed.
+3. **New data set: payload Q&A.**
+   - **Size:** 104 questions over 26 real API responses.
+     - Sources: the tuning and held-out payloads that toonx's default gates encode, after cutting.
+     - Cutting: each payload's largest array of objects is cut to its first 20 rows, halved until the payload is at most 16,000 o200k tokens, and never below 5 rows.
+   - **Questions:** up to 4 per payload, generated with seed 1000. Gold answers are computed from the data. The kinds are:
+     - lookup of a nested field (27);
+     - lookup of a field that some rows lack or hold as null (18; the gold answer "none" in 12 of them);
+     - count of rows with a value (21);
+     - the row with the largest number (19);
+     - plain lookups (19).
+   - **Scoring:** with the WikiTableQuestions evaluator.
+   - **Formats:** `json-compact`, `json-compact-2` and `toonx`.
+   - **JSON arms** send the cut payload as canonical compact JSON (keys sorted).
+   - **Records:** [data/payload-qa/manifest.json](verify-2026-10/data/payload-qa/manifest.json) lists every source URL, response SHA-256, rows kept, question and gold answer. Response bodies are third-party content and are not committed.
+   - **Reporting:** results are reported separately, with the same claim rules as WikiTableQuestions, and never merged with other sets.
+4. **Gateway path.** The verify route uses `"codec":"toonx"`.
+5. **Models.** On 2026-10-02 the interrupted smoke check sent 20 free NIM calls (`json-compact` only), recorded in [smoke.jsonl](verify-2026-10/smoke.jsonl):
+   - `mistralai/mistral-large-2-instruct` and `google/gemma-3-12b-it` returned HTTP 404 on every call;
+   - gpt-oss-20b and nemotron-3-super answered;
+   - deepseek had not been reached.
+
+   These calls test availability only and enter no result. Each slot now has an ordered list. The first model that answers at least 3 of 5 smoke calls is used, and the substitution is reported:
+
+   | slot | candidates, in order |
+   |---|---|
+   | OpenAI open weights, reasoning | `openai/gpt-oss-20b` |
+   | NVIDIA, reasoning | `nvidia/nemotron-3-super-120b-a12b` |
+   | Mistral, non-reasoning | `mistralai/mistral-large-2-instruct`, `mistralai/mistral-large`, `nv-mistralai/mistral-nemo-12b-instruct` |
+   | Google, non-reasoning | `google/gemma-3-12b-it`, `google/gemma-4-31b-it`, `google/gemma-3-4b-it` |
+   | DeepSeek | `deepseek-ai/deepseek-v4.1-flash`, `z-ai/glm-5.3-flash` |
+
+### Calls
+
+| run | calls |
+|---|---:|
+| synthetic: 230 questions × (`json-compact`, `json-compact-2`, `toonx`, `toonx-p2`) × 5 models | 4,600 |
+| synthetic: `tabular` on nemotron | 230 |
+| WikiTableQuestions: 100 × 3 formats × 5 models | 1,500 |
+| payload Q&A: 104 × 3 formats × 5 models | 1,560 |
+| gateway path: 120 × 2 formats, gpt-oss | 240 |
+| **total** | **8,130** |
+
+Smoke checks add 5 calls per candidate tried. All calls go to NIM's free tier.
+
+### Commands that change
+
+```sh
+go run ./cmd/bench payloads -fetch -held-out      # held-out payloads -> ~/.cache/trimproof/payloads-heldout
+go run ./cmd/bench run -targets nim:MODEL -seed 1000 -seeds 5 -formats json-compact,json-compact-2,toonx,toonx-p2 \
+  -max-calls 920 -rpm 30 -out bench/results/verify-2026-10/synthetic.jsonl
+go run ./cmd/bench run -targets nim:MODEL -source wtq -n 100 -seed 1000 -formats json-compact,json-compact-2,toonx \
+  -max-calls 300 -rpm 30 -out bench/results/verify-2026-10/wtq.jsonl
+go run ./cmd/bench run -targets nim:MODEL -source payloads -seed 1000 -formats json-compact,json-compact-2,toonx \
+  -max-calls 312 -rpm 30 -out bench/results/verify-2026-10/payloads.jsonl
+```
+
+The verify route becomes `{"tenant_id":"*","route_id":"verify","version":"verify.2","codec":"toonx","state":"ENABLED","shadow_sample_rate":0,"audit_sample_rate":0}`.

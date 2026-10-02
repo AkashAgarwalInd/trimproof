@@ -356,7 +356,10 @@ func RenderWithDecision(ad provider.Adapter, req *ir.Request, d *policy.Decision
 			b.Transform = &ir.AppliedTransform{Codec: c.Name(), Version: c.Version(), Encoded: d.Blocks[i].Encoded}
 		}
 	}
-	cp.Primer = c.Primer()
+	cp.Primer = d.Primer
+	if cp.Primer == "" {
+		cp.Primer = c.Primer()
+	}
 	return ad.RenderRequest(&cp)
 }
 

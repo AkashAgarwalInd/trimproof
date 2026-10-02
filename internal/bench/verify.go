@@ -198,7 +198,7 @@ func (g *group) failRate() float64 {
 }
 
 // formatOrder lists the compared formats in report order.
-var formatOrder = []string{"json-compact-2", "toon", "tabular", "gateway", "csv"}
+var formatOrder = []string{"json-compact-2", "toonx", "toonx-p2", "toon", "tabular", "gateway", "csv"}
 
 // VerifyReport writes the verification tables for recs: per model and
 // format, accuracy with the registered verdict, input, output and net
@@ -299,7 +299,7 @@ func VerifyReport(w io.Writer, recs []Record, cfg VerifyConfig) {
 	fmt.Fprintln(w, "| model | format | data set | rows | n | input tokens |")
 	fmt.Fprintln(w, "|---|---|---|---:|---:|---|")
 	for _, g := range groups {
-		for _, fm := range []string{"toon", "tabular", "gateway"} {
+		for _, fm := range []string{"toonx", "toonx-p2", "toon", "tabular", "gateway"} {
 			by := map[string][]pair{}
 			var keys []string
 			for _, p := range g.pairs("json-compact", fm) {
@@ -319,6 +319,8 @@ func VerifyReport(w io.Writer, recs []Record, cfg VerifyConfig) {
 	}
 	fmt.Fprintln(w)
 
+	primerVariant(w, groups, cfg)
+
 	fmt.Fprintln(w, "### Calls")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "| model | format | calls | failed (excluded) | empty replies (scored incorrect) | served encoded by the gateway |")
@@ -333,6 +335,70 @@ func VerifyReport(w io.Writer, recs []Record, cfg VerifyConfig) {
 		}
 	}
 	fmt.Fprintln(w)
+}
+
+// primerVariant compares the toonx-p2 arm with toonx directly and applies
+// the registered adoption rule: cost at k=4 lower with the interval
+// excluding 0 on at least 3 of 5 models, and no model's accuracy verdict
+// against JSON worse than toonx's.
+func primerVariant(w io.Writer, groups []*group, cfg VerifyConfig) {
+	type row struct {
+		name               string
+		n                  int
+		cost, out, dAcc    interval
+		lower, accNotWorse bool
+	}
+	var rows []row
+	rank := map[string]int{"worse than JSON": 0, "inconclusive": 1, fmt.Sprintf("non-inferior within %.0fpp", 100*cfg.Margin): 2}
+	verdictOf := func(g *group, fm string) string {
+		ps := g.pairs("json-compact", fm)
+		if len(ps) == 0 {
+			return ""
+		}
+		return cfg.verdict(bootstrap(ps, cfg, []func(sums) float64{sums.dAcc})[0])
+	}
+	for _, g := range groups {
+		ps := g.pairs("toonx", "toonx-p2")
+		if len(ps) == 0 {
+			continue
+		}
+		iv := bootstrap(ps, cfg, []func(sums) float64{
+			func(s sums) float64 { return -s.net(4) },
+			sums.outChange,
+			sums.dAcc,
+		})
+		r := row{name: g.name, n: len(ps), cost: iv[0], out: iv[1], dAcc: iv[2], lower: iv[0].hi < 0}
+		r.accNotWorse = rank[verdictOf(g, "toonx-p2")] >= rank[verdictOf(g, "toonx")]
+		rows = append(rows, r)
+	}
+	if len(rows) == 0 {
+		return
+	}
+	fmt.Fprintln(w, "### Primer variant: toonx-p2 against toonx")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "| model | n | cost change at k=4 | output change | Δacc | cost lower (interval excludes 0) | accuracy verdict vs JSON not worse |")
+	fmt.Fprintln(w, "|---|---:|---|---|---|---|---|")
+	lower, worse := 0, 0
+	for _, r := range rows {
+		if r.lower {
+			lower++
+		}
+		if !r.accNotWorse {
+			worse++
+		}
+		fmt.Fprintf(w, "| %s | %d | %s | %s | %s | %s | %s |\n", r.name, r.n, r.cost.pct(), r.out.pct(), r.dAcc.pp(),
+			yesNo(r.lower), yesNo(r.accNotWorse))
+	}
+	met := lower >= 3 && worse == 0
+	fmt.Fprintf(w, "\nAdoption rule (cost lower on at least 3 models, no accuracy verdict worse): cost lower on %d of %d, verdict worse on %d. Rule met: %s.\n\n",
+		lower, len(rows), worse, yesNo(met))
+}
+
+func yesNo(b bool) string {
+	if b {
+		return "yes"
+	}
+	return "no"
 }
 
 func median(xs []float64) float64 {

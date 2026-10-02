@@ -14,12 +14,13 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toon"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toonx"
 	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
 	"github.com/AkashAgarwalInd/trimproof/pkg/tokens"
 )
 
 // Codecs are the gateway codecs each payload is judged against.
-var Codecs = []string{"toon", "tabular"}
+var Codecs = []string{"toonx", "toon", "tabular"}
 
 // Model names the o200k tokenizer; uncalibrated, so counts are raw o200k.
 const Model = "gpt-4o"
@@ -53,7 +54,7 @@ func Evaluate(raw []byte, codecName string, est tokens.Estimator) (Outcome, erro
 	o := Outcome{Eligible: b.Transform, Gate: b.FailedGate.String(), Reason: b.Reason,
 		JSONTokens: b.JSONTokens, EncTokens: b.EncTokens, Savings: math.NaN()}
 	if c, ok := codec.Get(codecName); ok {
-		o.PrimerTokens = est.Estimate(c.Primer(), Model)
+		o.PrimerTokens = est.Estimate(codec.PrimerFor(c, [][]byte{b.Encoded}), Model)
 	}
 	if b.JSONTokens > 0 && b.EncTokens > 0 {
 		o.Savings = float64(b.JSONTokens-b.EncTokens-o.PrimerTokens) / float64(b.JSONTokens)
@@ -65,80 +66,10 @@ func Evaluate(raw []byte, codecName string, est tokens.Estimator) (Outcome, erro
 	return o, nil
 }
 
-// Inner is the largest array of objects inside a top-level object, as a
-// client would send it if it unwrapped the response before returning it as
-// a tool result.
-type Inner struct {
-	Path string // dotted key path, e.g. "message.items"
-	Rows int
-	JSON []byte
-}
-
-// InnerArray finds the largest (by bytes) non-empty array of objects up to
-// three object levels below a top-level object. ok is false when raw is not
-// an object or holds no such array.
-func InnerArray(raw []byte) (in Inner, ok bool) {
-	dec := json.NewDecoder(bytes.NewReader(raw))
-	dec.UseNumber()
-	var v any
-	if dec.Decode(&v) != nil {
-		return in, false
-	}
-	if _, isObj := v.(map[string]any); !isObj {
-		return in, false
-	}
-	var walk func(v any, path string, depth int)
-	walk = func(v any, path string, depth int) {
-		switch t := v.(type) {
-		case map[string]any:
-			if depth == 3 {
-				return
-			}
-			keys := make([]string, 0, len(t))
-			for k := range t {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-			for _, k := range keys {
-				p := k
-				if strings.ContainsAny(k, ". ") {
-					p = fmt.Sprintf("[%q]", k)
-				}
-				if path != "" && p[0] != '[' {
-					p = path + "." + p
-				} else {
-					p = path + p
-				}
-				walk(t[k], p, depth+1)
-			}
-		case []any:
-			if len(t) == 0 || !allObjects(t) {
-				return
-			}
-			if b, err := json.Marshal(t); err == nil && len(b) > len(in.JSON) {
-				in = Inner{Path: path, Rows: len(t), JSON: b}
-			}
-		}
-	}
-	walk(v, "", 0)
-	return in, in.JSON != nil
-}
-
-func allObjects(xs []any) bool {
-	for _, x := range xs {
-		if _, ok := x.(map[string]any); !ok {
-			return false
-		}
-	}
-	return true
-}
-
 // Result is the analysis of one stored payload.
 type Result struct {
 	Entry
 	AsSent map[string]Outcome // by codec
-	Inner  *Inner             // set when the top level is an object wrapping an array of objects
-	InnerO map[string]Outcome // by codec, for Inner
 }
 
 // Results analyzes every payload recorded in dir's manifest, in manifest
@@ -175,16 +106,6 @@ func analyzeOne(e Entry, raw []byte, est tokens.Estimator) (Result, error) {
 		}
 		r.AsSent[c] = o
 	}
-	if in, ok := InnerArray(raw); ok {
-		r.Inner, r.InnerO = &in, map[string]Outcome{}
-		for _, c := range Codecs {
-			o, err := Evaluate(in.JSON, c, est)
-			if err != nil {
-				return r, err
-			}
-			r.InnerO[c] = o
-		}
-	}
 	return r, nil
 }
 
@@ -215,33 +136,30 @@ func WriteReport(w io.Writer, m Manifest, rs []Result) {
 	}
 	fmt.Fprintln(w, ".")
 	fmt.Fprintln(w)
-	fmt.Fprintf(w, "Each payload is judged by `policy.Decide`, as one tool result, under the default route policy with the codec ENABLED: strict schema, minimum %d tokens, minimum net savings %.0f%% with the primer counted. Token counts are o200k.\n",
+	fmt.Fprintf(w, "Each response body is judged by `policy.Decide` exactly as sent, as one tool result, under the default route policy with the codec ENABLED: strict schema, minimum %d tokens, minimum net savings %.0f%% with the primer counted. Token counts are o200k. Net savings are (JSON − encoded − primer) / JSON against compact canonical JSON.\n",
 		p.MinPayloadTokens, 100*p.MinNetSavings)
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "\"As sent\" is the response body unchanged. \"Inner array\" applies only to responses whose top level is an object: it is the largest array of objects inside, as sent by a client that unwraps the response first. The gateway itself never unwraps.")
 	fmt.Fprintln(w)
 
 	fmt.Fprintln(w, "## Overall")
 	fmt.Fprintln(w)
-	fmt.Fprintln(w, "| | toon | tabular |")
-	fmt.Fprintln(w, "|---|---:|---:|")
+	fmt.Fprintf(w, "| | %s |\n|---|%s\n", strings.Join(Codecs, " | "), strings.Repeat("---:|", len(Codecs)))
 	row := func(label string, f func(c string) string) {
-		fmt.Fprintf(w, "| %s | %s | %s |\n", label, f("toon"), f("tabular"))
+		cells := make([]string, len(Codecs))
+		for i, c := range Codecs {
+			cells[i] = f(c)
+		}
+		fmt.Fprintf(w, "| %s | %s |\n", label, strings.Join(cells, " | "))
 	}
-	row("payloads eligible as sent", func(c string) string { return share(rs, c, false) })
-	row("eligible as sent or via inner array", func(c string) string { return share(rs, c, true) })
-	row("median net savings, eligible as sent", func(c string) string { return pctOr(median(savings(rs, c, false))) })
-	row("mean net savings, eligible as sent", func(c string) string { return pctOr(mean(savings(rs, c, false))) })
-	row("token-weighted net savings, eligible as sent", func(c string) string { return pctOr(weighted(rs, c, false)) })
-	row("median net savings, eligible as sent or via inner array", func(c string) string { return pctOr(median(savings(rs, c, true))) })
-	row("token-weighted net savings, eligible as sent or via inner array", func(c string) string { return pctOr(weighted(rs, c, true)) })
-	row("median savings vs pretty-printed JSON, eligible as sent or via inner array", func(c string) string { return pctOr(median(prettySavings(rs, c))) })
+	row("payloads eligible", func(c string) string { return share(rs, c) })
+	row("median net savings, eligible payloads", func(c string) string { return pctOr(median(savings(rs, c))) })
+	row("token-weighted net savings, eligible payloads", func(c string) string { return pctOr(weighted(rs, c, false)) })
+	row("token-weighted net savings, all payloads (ineligible ones save 0)", func(c string) string { return pctOr(weighted(rs, c, true)) })
+	row("median savings vs pretty-printed JSON, eligible payloads", func(c string) string { return pctOr(median(prettySavings(rs, c))) })
 	fmt.Fprintln(w)
 
 	fmt.Fprintln(w, "## By API")
 	fmt.Fprintln(w)
-	fmt.Fprintln(w, "| API | payloads | toon eligible | tabular eligible | toon eligible incl. inner array | median toon savings when eligible |")
-	fmt.Fprintln(w, "|---|---:|---:|---:|---:|---:|")
+	fmt.Fprintf(w, "| API | payloads | %s |\n|---|---:|%s\n", strings.Join(Codecs, " eligible | ")+" eligible", strings.Repeat("---:|", len(Codecs)))
 	var apis []string
 	byAPI := map[string][]Result{}
 	for _, r := range rs {
@@ -252,84 +170,85 @@ func WriteReport(w io.Writer, m Manifest, rs []Result) {
 	}
 	for _, a := range apis {
 		g := byAPI[a]
-		fmt.Fprintf(w, "| %s | %d | %d | %d | %d | %s |\n", a, len(g), count(g, "toon", false), count(g, "tabular", false),
-			count(g, "toon", true), pctOr(median(savings(g, "toon", true))))
-	}
-	fmt.Fprintln(w)
-
-	fmt.Fprintln(w, "## Per payload, as sent")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "| API | payload | KB | toon | toon gate: reason | JSON tok | TOON tok | toon net | tabular | tabular gate: reason | tabular net |")
-	fmt.Fprintln(w, "|---|---|---:|---|---|---:|---:|---:|---|---|---:|")
-	for _, r := range rs {
-		t, tb := r.AsSent["toon"], r.AsSent["tabular"]
-		fmt.Fprintf(w, "| %s | %s | %.1f | %s | %s | %s | %s | %s | %s | %s | %s |\n", r.API, r.Name, float64(r.Bytes)/1024,
-			yes(t.Eligible), gateCell(t), tok(t.JSONTokens), tok(t.EncTokens), pctOr(t.Savings),
-			yes(tb.Eligible), gateCell(tb), pctOr(tb.Savings))
-	}
-	fmt.Fprintln(w)
-
-	fmt.Fprintln(w, "## Inner arrays (top-level objects only)")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "| API | payload | path | rows | toon | toon gate: reason | JSON tok | TOON tok | toon net | tabular | tabular gate: reason | tabular net |")
-	fmt.Fprintln(w, "|---|---|---|---:|---|---|---:|---:|---:|---|---|---:|")
-	for _, r := range rs {
-		if r.Inner == nil {
-			continue
+		cells := make([]string, len(Codecs))
+		for i, c := range Codecs {
+			cells[i] = fmt.Sprint(count(g, c))
 		}
-		t, tb := r.InnerO["toon"], r.InnerO["tabular"]
-		fmt.Fprintf(w, "| %s | %s | `%s` | %d | %s | %s | %s | %s | %s | %s | %s | %s |\n", r.API, r.Name, r.Inner.Path, r.Inner.Rows,
-			yes(t.Eligible), gateCell(t), tok(t.JSONTokens), tok(t.EncTokens), pctOr(t.Savings),
-			yes(tb.Eligible), gateCell(tb), pctOr(tb.Savings))
+		fmt.Fprintf(w, "| %s | %d | %s |\n", a, len(g), strings.Join(cells, " | "))
 	}
 	fmt.Fprintln(w)
-	fmt.Fprintln(w, "Net savings are (JSON − encoded − primer) / JSON against compact canonical JSON. A figure is shown wherever encoding was attempted, including payloads that then failed the net-savings gate.")
-}
 
-// outcome returns the result for codec c: as sent, or, when inner is set
-// and the payload was not eligible as sent, via its inner array.
-func outcome(r Result, c string, inner bool) (Outcome, bool) {
-	if o := r.AsSent[c]; o.Eligible || !inner || r.Inner == nil {
-		return o, o.Eligible
+	fmt.Fprintln(w, "## Per payload")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Each codec cell is the net saving when the payload is eligible (**bold**), else the net saving where encoding was attempted, then the rejecting gate.")
+	fmt.Fprintln(w)
+	fmt.Fprintf(w, "| API | payload | KB | JSON tok | %s |\n|---|---|---:|---:|%s\n", strings.Join(Codecs, " | "), strings.Repeat("---|", len(Codecs)))
+	for _, r := range rs {
+		cells := make([]string, len(Codecs))
+		jt := 0
+		for i, c := range Codecs {
+			o := r.AsSent[c]
+			jt = max(jt, o.JSONTokens)
+			cells[i] = outcomeCell(o)
+		}
+		fmt.Fprintf(w, "| %s | %s | %.1f | %s | %s |\n", r.API, r.Name, float64(r.Bytes)/1024, tok(jt), strings.Join(cells, " | "))
 	}
-	o := r.InnerO[c]
-	return o, o.Eligible
 }
 
-func count(rs []Result, c string, inner bool) int {
+func outcomeCell(o Outcome) string {
+	if o.Eligible {
+		return "**" + pctOr(o.Savings) + "**"
+	}
+	s := gateCell(o)
+	if !math.IsNaN(o.Savings) {
+		s = pctOr(o.Savings) + " · " + s
+	}
+	return s
+}
+
+func count(rs []Result, c string) int {
 	n := 0
 	for _, r := range rs {
-		if _, ok := outcome(r, c, inner); ok {
+		if r.AsSent[c].Eligible {
 			n++
 		}
 	}
 	return n
 }
 
-func share(rs []Result, c string, inner bool) string {
+func share(rs []Result, c string) string {
 	if len(rs) == 0 {
 		return "—"
 	}
-	n := count(rs, c, inner)
+	n := count(rs, c)
 	return fmt.Sprintf("%d / %d (%.0f%%)", n, len(rs), 100*float64(n)/float64(len(rs)))
 }
 
-func savings(rs []Result, c string, inner bool) []float64 {
+func savings(rs []Result, c string) []float64 {
 	var xs []float64
 	for _, r := range rs {
-		if o, ok := outcome(r, c, inner); ok {
+		if o := r.AsSent[c]; o.Eligible {
 			xs = append(xs, o.Savings)
 		}
 	}
 	return xs
 }
 
-func weighted(rs []Result, c string, inner bool) float64 {
+// weighted is the token-weighted net saving over eligible payloads, or with
+// all set over every payload that reached the size gate, where an
+// ineligible payload is sent as JSON and saves nothing.
+func weighted(rs []Result, c string, all bool) float64 {
 	var j, e int
 	for _, r := range rs {
-		if o, ok := outcome(r, c, inner); ok {
+		o := r.AsSent[c]
+		switch {
+		case o.Eligible:
 			j += o.JSONTokens
 			e += o.EncTokens + o.PrimerTokens
+		case all:
+			n := r.JSONTokens()
+			j += n
+			e += n
 		}
 	}
 	if j == 0 {
@@ -338,10 +257,20 @@ func weighted(rs []Result, c string, inner bool) float64 {
 	return float64(j-e) / float64(j)
 }
 
+// JSONTokens is the payload's compact canonical JSON size in tokens, from
+// whichever codec measured it; 0 when no codec got past the structural gate.
+func (r Result) JSONTokens() int {
+	n := 0
+	for _, o := range r.AsSent {
+		n = max(n, o.JSONTokens)
+	}
+	return n
+}
+
 func prettySavings(rs []Result, c string) []float64 {
 	var xs []float64
 	for _, r := range rs {
-		if o, ok := outcome(r, c, true); ok && o.PrettyTokens > 0 {
+		if o := r.AsSent[c]; o.Eligible && o.PrettyTokens > 0 {
 			xs = append(xs, float64(o.PrettyTokens-o.EncTokens-o.PrimerTokens)/float64(o.PrettyTokens))
 		}
 	}

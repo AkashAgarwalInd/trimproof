@@ -36,7 +36,7 @@ type LossyOptimizationPolicy struct {
 type RoutePolicy struct {
 	TenantID, RouteID, Version string
 
-	Codec              string // "toon" | "tabular" | "" (none)
+	Codec              string // "toonx" | "toon" | "tabular" | "" (none)
 	SchemaMode         codec.SchemaMode
 	State              PromotionState
 	MinPayloadTokens   int

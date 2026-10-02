@@ -8,7 +8,7 @@
 //	bench datapoints -in results.jsonl    every measured question, arms side by side
 //	bench dump-data -dir DIR              the generated datasets and questions as sent
 //	bench fetch-wtq                       download WikiTableQuestions (CC BY-SA) to -wtq-dir
-//	bench payloads [-fetch] [-dir DIR]    real public-API responses through the gateway's gates
+//	bench payloads [-fetch] [-held-out] [-dir DIR]    real public-API responses through the gateway's gates
 //	bench drive -gateway URL -route R     production traffic through a gateway
 //	                                      (exercises shadow evaluation/promotion)
 //
@@ -44,6 +44,9 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/internal/bench/wtq"
 )
 
+// payloadCodec is the codec whose gates choose the payload Q&A set.
+const payloadCodec = "toonx"
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintln(os.Stderr, "usage: bench tokens|run|report [flags]")
@@ -73,10 +76,11 @@ func main() {
 	viaGateway := fs.String("via-gateway", "", "gateway OpenAI base URL for the gateway format (run)")
 	allowPaid := fs.Bool("allow-paid", false, "allow endpoints that may bill (default: free endpoints only)")
 	dir := fs.String("dir", "", "output directory (dump-data) or payload directory (payloads)")
-	source := fs.String("source", "synthetic", "question source: synthetic | wtq (run, dump-data)")
+	source := fs.String("source", "synthetic", "question source: synthetic | wtq | payloads (run, dump-data)")
 	wtqDir := fs.String("wtq-dir", wtq.DefaultDir(), "WikiTableQuestions release directory (fetch-wtq, -source wtq)")
 	minRows := fs.Int("min-rows", 15, "smallest WTQ table to sample (-source wtq)")
 	fetch := fs.Bool("fetch", false, "download the public API payloads first (payloads)")
+	heldOut := fs.Bool("held-out", false, "use the held-out payload set (payloads)")
 	_ = fs.Parse(args)
 
 	ds := bench.GenerateSeeds(split(*datasets), ints(*sizes), *seed, *seeds)
@@ -87,13 +91,27 @@ func main() {
 			log.Fatalf("wtq: %v (run `bench fetch-wtq` first)", err)
 		}
 		ds = bench.WTQDatasets(items)
-	} else if *source != "synthetic" {
+	}
+	var payloadItems []bench.PayloadItem
+	if *source == "payloads" && cmd != "payloads" {
+		var err error
+		sets := map[string]string{"tuning": payloads.DefaultDir(), "held-out": payloads.HeldOutDir()}
+		if ds, payloadItems, err = bench.PayloadDatasets(sets, payloadCodec, *seed); err != nil {
+			log.Fatalf("payloads: %v (fetch them with `bench payloads -fetch` and `-fetch -held-out`)", err)
+		}
+	}
+	if *source != "synthetic" && *source != "wtq" && *source != "payloads" {
 		log.Fatalf("unknown -source %q", *source)
 	}
-	// manifest records which WTQ items a run or dump used.
+	// manifest records which WTQ items or payloads a run or dump used.
 	manifest := func(path string) {
 		if items != nil {
 			if err := bench.WriteWTQManifest(path, *wtqDir, items, *n, *minRows, *seed); err != nil {
+				log.Fatal(err)
+			}
+		}
+		if payloadItems != nil {
+			if err := bench.WritePayloadManifest(path, payloadCodec, *seed, payloadItems); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -163,13 +181,20 @@ func main() {
 		if err := bench.DumpData(*dir, ds); err != nil {
 			log.Fatal(err)
 		}
-		manifest(filepath.Join(*dir, "wtq-manifest.json"))
+		manifest(filepath.Join(*dir, *source+"-manifest.json"))
 	case "payloads":
+		sources := payloads.Sources
+		if *heldOut {
+			sources = payloads.HeldOut
+		}
 		if *dir == "" {
 			*dir = payloads.DefaultDir()
+			if *heldOut {
+				*dir = payloads.HeldOutDir()
+			}
 		}
 		if *fetch {
-			if _, err := payloads.Fetch(context.Background(), *dir); err != nil {
+			if _, err := payloads.Fetch(context.Background(), *dir, sources); err != nil {
 				log.Fatal(err)
 			}
 		}

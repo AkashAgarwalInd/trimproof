@@ -32,6 +32,7 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/calibrate"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toon"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toonx"
 	"github.com/AkashAgarwalInd/trimproof/pkg/eval"
 	"github.com/AkashAgarwalInd/trimproof/pkg/server"
 	"github.com/AkashAgarwalInd/trimproof/pkg/tokens"

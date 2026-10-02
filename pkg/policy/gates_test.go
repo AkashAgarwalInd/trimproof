@@ -44,7 +44,7 @@ func TestGates(t *testing.T) {
 	}{
 		{"no codec", pol("", Enabled), [][]byte{big}, GateOptIn, false, false},
 		{"off", pol("toon", Off), [][]byte{big}, GateOptIn, false, false},
-		{"not array", pol("toon", Enabled), [][]byte{[]byte(`{"a":1}`)}, GateStructural, false, false},
+		{"not a container", pol("toon", Enabled), [][]byte{[]byte(`"a"`)}, GateStructural, false, false},
 		{"not json", pol("toon", Enabled), [][]byte{[]byte(`hello`)}, GateStructural, false, false},
 		{"small", pol("toon", Enabled), [][]byte{small}, GateMinSize, false, false},
 		{"enabled", pol("toon", Enabled), [][]byte{big}, GateNone, true, false},

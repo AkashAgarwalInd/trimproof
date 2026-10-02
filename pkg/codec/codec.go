@@ -59,6 +59,22 @@ type ValueEncoder interface {
 	EncodeValue(v any, canonicalJSON []byte, opts Options) ([]byte, error)
 }
 
+// DynamicPrimer is an optional interface for codecs whose primer can leave
+// out syntax that a request's encoded blocks do not use. Primer stays the
+// complete text.
+type DynamicPrimer interface {
+	PrimerFor(encoded [][]byte) string
+}
+
+// PrimerFor returns the primer for a request whose transformed blocks are
+// encoded.
+func PrimerFor(c Codec, encoded [][]byte) string {
+	if dp, ok := c.(DynamicPrimer); ok {
+		return dp.PrimerFor(encoded)
+	}
+	return c.Primer()
+}
+
 // ErrIneligible wraps all Gate 1 rejections.
 var ErrIneligible = errors.New("ineligible")
 

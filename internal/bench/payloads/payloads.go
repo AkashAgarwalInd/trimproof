@@ -68,13 +68,48 @@ var Sources = []Source{
 	{"worldbank", "countries", "https://api.worldbank.org/v2/country?format=json&per_page=100"},
 }
 
+// HeldOut are public, keyless endpoints kept apart from Sources: they were
+// chosen before any codec was measured on them, and are never used to tune
+// one, so coverage on them is an estimate free of tuning bias. Most come
+// from APIs that Sources does not use.
+var HeldOut = []Source{
+	{"github", "k8s-issue-comments", "https://api.github.com/repos/kubernetes/kubernetes/issues/comments?per_page=30"},
+	{"github", "torvalds-events", "https://api.github.com/users/torvalds/events/public?per_page=30"},
+	{"gitlab", "projects", "https://gitlab.com/api/v4/projects?per_page=30&order_by=last_activity_at"},
+	{"jsonplaceholder", "users", "https://jsonplaceholder.typicode.com/users"},
+	{"jsonplaceholder", "comments", "https://jsonplaceholder.typicode.com/comments"},
+	{"restcountries", "europe", "https://restcountries.com/v3.1/region/europe"},
+	{"spacex", "rockets", "https://api.spacexdata.com/v4/rockets"},
+	{"rickandmorty", "characters", "https://rickandmortyapi.com/api/character"},
+	{"googlebooks", "search-golang", "https://www.googleapis.com/books/v1/volumes?q=golang&maxResults=40"},
+	{"wikipedia", "recent-changes", "https://en.wikipedia.org/w/api.php?action=query&list=recentchanges&rclimit=50&format=json"},
+	{"crates", "top-downloads", "https://crates.io/api/v1/crates?page=1&per_page=50&sort=downloads"},
+	{"dockerhub", "library-repos", "https://hub.docker.com/v2/repositories/library/?page_size=50"},
+	{"huggingface", "top-models", "https://huggingface.co/api/models?limit=50&sort=downloads"},
+	{"er-api", "usd-rates", "https://open.er-api.com/v6/latest/USD"},
+	{"datausa", "state-population", "https://datausa.io/api/data?drilldowns=State&measures=Population&year=latest"},
+	{"chicago-data", "crimes", "https://data.cityofchicago.org/resource/ijzp-q8t2.json?$limit=100"},
+	{"itunes", "search-jazz", "https://itunes.apple.com/search?term=jazz&limit=50"},
+	{"musicbrainz", "releases", "https://musicbrainz.org/ws/2/release?query=radiohead&fmt=json&limit=50"},
+	{"dictionaryapi", "run", "https://api.dictionaryapi.dev/api/v2/entries/en/run"},
+	{"openalex", "works-transformers", "https://api.openalex.org/works?search=transformers&per-page=25"},
+	{"mastodon", "public-timeline", "https://mastodon.social/api/v1/timelines/public?limit=40"},
+	{"citibike", "stations", "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"},
+	{"kraken", "trades", "https://api.kraken.com/0/public/Trades?pair=XBTUSD"},
+}
+
 // DefaultDir is where fetched payloads are stored, outside the repository.
-func DefaultDir() string {
+func DefaultDir() string { return cacheDir("payloads") }
+
+// HeldOutDir is where the HeldOut payloads are stored.
+func HeldOutDir() string { return cacheDir("payloads-heldout") }
+
+func cacheDir(name string) string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return filepath.Join(os.TempDir(), "trimproof", "payloads")
+		return filepath.Join(os.TempDir(), "trimproof", name)
 	}
-	return filepath.Join(home, ".cache", "trimproof", "payloads")
+	return filepath.Join(home, ".cache", "trimproof", name)
 }
 
 // Manifest records what Fetch stored.
@@ -104,13 +139,13 @@ const (
 // Fetch GETs every source without credentials, one at a time, and writes
 // <api>-<name>.json plus manifest.json to dir. Failed or non-JSON responses
 // are recorded in the manifest and skipped.
-func Fetch(ctx context.Context, dir string) (Manifest, error) {
+func Fetch(ctx context.Context, dir string, sources []Source) (Manifest, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return Manifest{}, err
 	}
 	hc := &http.Client{Timeout: 60 * time.Second}
 	m := Manifest{FetchedAt: time.Now().UTC()}
-	for i, s := range Sources {
+	for i, s := range sources {
 		if i > 0 {
 			select {
 			case <-ctx.Done():

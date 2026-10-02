@@ -33,11 +33,19 @@ func TestEvaluate(t *testing.T) {
 		{"uniform.json", "toon", true, "none", ""},
 		{"uniform.json", "tabular", true, "none", ""},
 		{"nested.json", "tabular", false, "structural", "nested container"},
-		{"nonuniform.json", "toon", false, "structural", "missing key"},
+		// toon-go writes a table nested in a list item in a form its own
+		// decoder rejects.
+		{"nonuniform.json", "toon", false, "structural", "round trip failed"},
 		{"nonuniform.json", "tabular", false, "structural", ""},
-		{"wrapper.json", "toon", false, "structural", "top-level value is not an array"},
+		{"wrapper.json", "toon", true, "none", ""},
 		{"wrapper.json", "tabular", false, "structural", "top-level value is not an array"},
-		{"scalars.json", "toon", false, "structural", "row 0 is not an object"},
+		{"scalars.json", "toon", false, "net-savings", "not smaller"},
+		{"uniform.json", "toonx", true, "none", ""},
+		{"nested.json", "toonx", true, "none", ""},
+		// Encoded, but this small fixture lands just under the 15% gate.
+		{"nonuniform.json", "toonx", false, "net-savings", "net savings 14.9%"},
+		{"wrapper.json", "toonx", true, "none", ""},
+		{"scalars.json", "toonx", false, "net-savings", "not smaller"},
 	}
 	for _, c := range cases {
 		o, err := Evaluate(fixture(t, c.file), c.codec, est)
@@ -58,33 +66,6 @@ func TestEvaluate(t *testing.T) {
 	// rejection for it.
 	if o, _ := Evaluate(fixture(t, "nested.json"), "toon", est); o.Gate == "structural" {
 		t.Errorf("nested/toon rejected structurally: %s", o.Reason)
-	}
-}
-
-func TestInnerArray(t *testing.T) {
-	in, ok := InnerArray(fixture(t, "wrapper.json"))
-	if !ok || in.Path != "items" || in.Rows != 30 {
-		t.Fatalf("got %+v %v", in, ok)
-	}
-	// The unwrapped array is judged like a direct array.
-	o, err := Evaluate(in.JSON, "toon", tokens.NewCalibrated(nil))
-	if err != nil || !o.Eligible {
-		t.Fatalf("inner array not eligible: %+v %v", o, err)
-	}
-	for _, f := range []string{"uniform.json", "scalars.json"} {
-		if _, ok := InnerArray(fixture(t, f)); ok {
-			t.Errorf("%s: top-level array reported as wrapper", f)
-		}
-	}
-	// Deeper and larger arrays win; arrays of scalars are skipped.
-	in, ok = InnerArray([]byte(`{"ids":[1,2,3,4,5,6,7,8,9],"message":{"items":[{"a":1},{"a":2}]},"x":[{"b":1}]}`))
-	if !ok || in.Path != "message.items" || in.Rows != 2 {
-		t.Fatalf("got %+v %v", in, ok)
-	}
-	// Keys containing dots are quoted so the path stays unambiguous.
-	in, ok = InnerArray([]byte(`{"releases":{"2.23.0":[{"a":1}]}}`))
-	if !ok || in.Path != `releases["2.23.0"]` {
-		t.Fatalf("got %q %v", in.Path, ok)
 	}
 }
 
@@ -109,9 +90,11 @@ func TestAnalyze(t *testing.T) {
 	s := out.String()
 	for _, want := range []string{
 		"4 public, keyless endpoints; 3 stored, 1 failed: fixture/down (HTTP 503)",
-		"| payloads eligible as sent | 1 / 3 (33%) | 1 / 3 (33%) |",
-		"| eligible as sent or via inner array | 2 / 3 (67%) | 2 / 3 (67%) |",
-		"| fixture | wrapper | `items` | 30 | **yes** |",
+		"| | toonx | toon | tabular |",
+		"| payloads eligible | 2 / 3 (67%) | 2 / 3 (67%) | 1 / 3 (33%) |",
+		"| fixture | 3 | 2 | 2 | 1 |",
+		"| fixture | wrapper | 0.0 | 1306 | **",
+		"| fixture | scalars | ",
 	} {
 		if !strings.Contains(s, want) {
 			t.Errorf("report lacks %q\n%s", want, s)

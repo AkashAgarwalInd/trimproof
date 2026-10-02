@@ -9,6 +9,7 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toon"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toonx"
 )
 
 var seeds = []string{
@@ -103,10 +104,12 @@ func TestEligibility(t *testing.T) {
 		{`[{"a":"k","nested":{"x":1}}]`, false, true},
 		// toon-go bug: object list item whose first field is nested.
 		{`[{"nested":{"x":1}}]`, false, false},
-		{`[{"a":1},{"b":2}]`, false, false},
+		// TOON writes rows with differing keys or kinds as a list.
+		{`[{"a":1},{"b":2}]`, false, true},
 		{`[{},{}]`, false, false},
-		{`[]`, false, false},
-		{`[{"a":1},{"a":"x"}]`, false, false},
+		{`[]`, false, true},
+		{`{"total":2,"items":[{"a":1},{"a":2}]}`, false, true},
+		{`[{"a":1},{"a":"x"}]`, false, true},
 		{`[{"a":null},{"a":"x"}]`, true, true},
 		{`[{"ctl":"\u0001"}]`, true, false},
 	}

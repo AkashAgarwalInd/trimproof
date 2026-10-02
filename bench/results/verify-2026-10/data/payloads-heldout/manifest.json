@@ -1,0 +1,208 @@
+{
+  "fetched_at": "2026-10-02T13:27:23.816693Z",
+  "entries": [
+    {
+      "api": "github",
+      "name": "k8s-issue-comments",
+      "url": "https://api.github.com/repos/kubernetes/kubernetes/issues/comments?per_page=30",
+      "file": "github-k8s-issue-comments.json",
+      "bytes": 52476,
+      "sha256": "4e1a80a556ad502c821daf14ce61f6a7f0365a2baf9bde5762bf5d66b932c3c8",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "torvalds-events",
+      "url": "https://api.github.com/users/torvalds/events/public?per_page=30",
+      "file": "github-torvalds-events.json",
+      "bytes": 27394,
+      "sha256": "6bcf3a1f0acdce5eb7d330dc26b433b176550394034d9b21f1defbd819c009a9",
+      "status": 200
+    },
+    {
+      "api": "gitlab",
+      "name": "projects",
+      "url": "https://gitlab.com/api/v4/projects?per_page=30\u0026order_by=last_activity_at",
+      "file": "gitlab-projects.json",
+      "bytes": 29002,
+      "sha256": "ee806df7057eaf74a6d6e452d9826c223e7f23bbfdf45a3d4a491834b3f9ed3a",
+      "status": 200
+    },
+    {
+      "api": "jsonplaceholder",
+      "name": "users",
+      "url": "https://jsonplaceholder.typicode.com/users",
+      "file": "jsonplaceholder-users.json",
+      "bytes": 5645,
+      "sha256": "bfba663e2221e5ce0544da02447e8be5e7316e33ae0d5f47e72bdcf270d50ec3",
+      "status": 200
+    },
+    {
+      "api": "jsonplaceholder",
+      "name": "comments",
+      "url": "https://jsonplaceholder.typicode.com/comments",
+      "file": "jsonplaceholder-comments.json",
+      "bytes": 157745,
+      "sha256": "400a33270b7ae5f080e5eb48afdfae1fd7426fd50e385e5197bab811c20e611d",
+      "status": 200
+    },
+    {
+      "api": "restcountries",
+      "name": "europe",
+      "url": "https://restcountries.com/v3.1/region/europe",
+      "file": "restcountries-europe.json",
+      "bytes": 261,
+      "sha256": "0cb78b7fd590b735f5d65623e964149abaf14a8167ae9221bae85f9c68c4ac18",
+      "status": 200
+    },
+    {
+      "api": "spacex",
+      "name": "rockets",
+      "url": "https://api.spacexdata.com/v4/rockets",
+      "bytes": 0,
+      "status": 525,
+      "error": "HTTP 525 "
+    },
+    {
+      "api": "rickandmorty",
+      "name": "characters",
+      "url": "https://rickandmortyapi.com/api/character",
+      "file": "rickandmorty-characters.json",
+      "bytes": 19496,
+      "sha256": "ed2d6856a6f06d59b8386b017fe88c5bec5be49f7398febe298b56bf45cddf61",
+      "status": 200
+    },
+    {
+      "api": "googlebooks",
+      "name": "search-golang",
+      "url": "https://www.googleapis.com/books/v1/volumes?q=golang\u0026maxResults=40",
+      "bytes": 0,
+      "status": 429,
+      "error": "HTTP 429 Too Many Requests"
+    },
+    {
+      "api": "wikipedia",
+      "name": "recent-changes",
+      "url": "https://en.wikipedia.org/w/api.php?action=query\u0026list=recentchanges\u0026rclimit=50\u0026format=json",
+      "file": "wikipedia-recent-changes.json",
+      "bytes": 9094,
+      "sha256": "472709baae02cd057dd2ba6cd6afcba0a4a85d263fe513bb5731eaee9928ffb7",
+      "status": 200
+    },
+    {
+      "api": "crates",
+      "name": "top-downloads",
+      "url": "https://crates.io/api/v1/crates?page=1\u0026per_page=50\u0026sort=downloads",
+      "file": "crates-top-downloads.json",
+      "bytes": 47128,
+      "sha256": "4376b60aa36ce325a0484f2a33d2d53ae7380c99ad1f90c6054180c41ffd9a53",
+      "status": 200
+    },
+    {
+      "api": "dockerhub",
+      "name": "library-repos",
+      "url": "https://hub.docker.com/v2/repositories/library/?page_size=50",
+      "file": "dockerhub-library-repos.json",
+      "bytes": 37327,
+      "sha256": "2c543b1258716855dc4b3e095cc04234cda25b85af96699fcd54593d1b78a44f",
+      "status": 200
+    },
+    {
+      "api": "huggingface",
+      "name": "top-models",
+      "url": "https://huggingface.co/api/models?limit=50\u0026sort=downloads",
+      "file": "huggingface-top-models.json",
+      "bytes": 29642,
+      "sha256": "72d39c6d1c05691c3d8ca185a40beb431a7d8e66c41605595383615985861d2f",
+      "status": 200
+    },
+    {
+      "api": "er-api",
+      "name": "usd-rates",
+      "url": "https://open.er-api.com/v6/latest/USD",
+      "file": "er-api-usd-rates.json",
+      "bytes": 2970,
+      "sha256": "88de3e9e90da98414ae1b8c116180c7565d40a2132018afc716c0fba7dc4ee60",
+      "status": 200
+    },
+    {
+      "api": "datausa",
+      "name": "state-population",
+      "url": "https://datausa.io/api/data?drilldowns=State\u0026measures=Population\u0026year=latest",
+      "bytes": 0,
+      "status": 404,
+      "error": "HTTP 404 Not Found"
+    },
+    {
+      "api": "chicago-data",
+      "name": "crimes",
+      "url": "https://data.cityofchicago.org/resource/ijzp-q8t2.json?$limit=100",
+      "file": "chicago-data-crimes.json",
+      "bytes": 63445,
+      "sha256": "e39a62a60d9eecd8654ab14be987890c302ca6c51538160049266eecfa6e83f6",
+      "status": 200
+    },
+    {
+      "api": "itunes",
+      "name": "search-jazz",
+      "url": "https://itunes.apple.com/search?term=jazz\u0026limit=50",
+      "file": "itunes-search-jazz.json",
+      "bytes": 108567,
+      "sha256": "af1989690ee11bba9dec205bd115bff76c042fd505d56cdca371b820b53eb015",
+      "status": 200
+    },
+    {
+      "api": "musicbrainz",
+      "name": "releases",
+      "url": "https://musicbrainz.org/ws/2/release?query=radiohead\u0026fmt=json\u0026limit=50",
+      "file": "musicbrainz-releases.json",
+      "bytes": 55546,
+      "sha256": "d413ff47d89321471da33676c5a525eca8765d488c56b970480bf683f71c333d",
+      "status": 200
+    },
+    {
+      "api": "dictionaryapi",
+      "name": "run",
+      "url": "https://api.dictionaryapi.dev/api/v2/entries/en/run",
+      "file": "dictionaryapi-run.json",
+      "bytes": 9012,
+      "sha256": "2f493a31a0869fdd16985d97bda395a4dfb3e06b7bb302456ece3cc31764b0fa",
+      "status": 200
+    },
+    {
+      "api": "openalex",
+      "name": "works-transformers",
+      "url": "https://api.openalex.org/works?search=transformers\u0026per-page=25",
+      "file": "openalex-works-transformers.json",
+      "bytes": 580156,
+      "sha256": "96d90f113a736a10a006b44d8c987d4bbdc0a7e966cb138f84c4d7717b64a124",
+      "status": 200
+    },
+    {
+      "api": "mastodon",
+      "name": "public-timeline",
+      "url": "https://mastodon.social/api/v1/timelines/public?limit=40",
+      "bytes": 0,
+      "status": 422,
+      "error": "HTTP 422 Unprocessable Entity"
+    },
+    {
+      "api": "citibike",
+      "name": "stations",
+      "url": "https://gbfs.citibikenyc.com/gbfs/en/station_information.json",
+      "file": "citibike-stations.json",
+      "bytes": 1364144,
+      "sha256": "b174809acb8de88583ce3078370c6343e8e9c03c6a227cc9158e7e0d6546ce2c",
+      "status": 200
+    },
+    {
+      "api": "kraken",
+      "name": "trades",
+      "url": "https://api.kraken.com/0/public/Trades?pair=XBTUSD",
+      "file": "kraken-trades.json",
+      "bytes": 68793,
+      "sha256": "e5de0dca97d6e305e241b2bfbc245750e5d515c74e02c8d1bae49f832186c2b4",
+      "status": 200
+    }
+  ]
+}

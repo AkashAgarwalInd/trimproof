@@ -34,11 +34,14 @@ func (Codec) Primer() string  { return primer }
 // differently from nulls, but Union tables are still declared lossy.
 func (Codec) Lossless(mode codec.SchemaMode) bool { return mode == codec.Strict }
 
-// Check applies Gate 1 for TOON: an array of uniform objects (nesting allowed)
-// whose leaves all round-trip through toon-go exactly.
-func (Codec) Check(v any, opts codec.Options) error {
-	if _, err := codec.AsTable(v, opts.Mode, false); err != nil {
-		return err
+// Check applies Gate 1 for TOON: any JSON object or array whose leaves all
+// round-trip through toon-go exactly. Rows need not share keys: TOON writes
+// non-uniform rows as a list, where an absent key stays absent.
+func (Codec) Check(v any, _ codec.Options) error {
+	switch v.(type) {
+	case []any, map[string]any:
+	default:
+		return fmt.Errorf("%w: top-level value is not an object or array", codec.ErrIneligible)
 	}
 	return checkLeaves(v)
 }
@@ -56,19 +59,12 @@ func checkLeaves(v any) error {
 			}
 		}
 	case []any:
-		if len(t) == 0 {
-			// toon-go can emit empty arrays, but keep the contract simple.
-			return fmt.Errorf("%w: nested empty array", codec.ErrIneligible)
-		}
 		for _, e := range t {
 			if err := checkLeaves(e); err != nil {
 				return err
 			}
 		}
 	case map[string]any:
-		if len(t) == 0 {
-			return fmt.Errorf("%w: nested empty object", codec.ErrIneligible)
-		}
 		for k, e := range t {
 			if err := checkLeaves(k); err != nil {
 				return err
@@ -111,7 +107,7 @@ func (c Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) 
 
 // EncodeValue implements codec.ValueEncoder.
 func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte, error) {
-	enc, err := toongo.Marshal(v)
+	enc, err := toongo.Marshal(ordered(v))
 	if err != nil {
 		return nil, fmt.Errorf("%w: toon-go: %v", codec.ErrIneligible, err)
 	}
@@ -123,6 +119,37 @@ func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte
 		return nil, fmt.Errorf("%w: toon-go round trip failed", codec.ErrIneligible)
 	}
 	return enc, nil
+}
+
+// ordered converts objects to toon-go Objects with primitive fields first,
+// then arrays, then objects, each group in key order. toon-go writes a list
+// item whose first field is a nested object in a form its decoder rejects;
+// leading with a primitive avoids that. Decoding sorts keys again, so the
+// order is free, and rows of primitives keep the sorted order toon-go uses
+// for maps.
+func ordered(v any) any {
+	switch t := v.(type) {
+	case []any:
+		out := make([]any, len(t))
+		for i, e := range t {
+			out[i] = ordered(e)
+		}
+		return out
+	case map[string]any:
+		var groups [3][]toongo.Field
+		for _, k := range canonical.SortedKeys(t) {
+			g := 0
+			switch t[k].(type) {
+			case []any:
+				g = 1
+			case map[string]any:
+				g = 2
+			}
+			groups[g] = append(groups[g], toongo.Field{Key: k, Value: ordered(t[k])})
+		}
+		return toongo.NewObject(append(append(groups[0], groups[1]...), groups[2]...)...)
+	}
+	return v
 }
 
 // Decode parses TOON and returns canonical JSON. Numbers come back from

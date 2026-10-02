@@ -17,6 +17,7 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/audit"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular" // policy files name codecs
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toon"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toonx"
 	"github.com/AkashAgarwalInd/trimproof/pkg/eval"
 	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
 	"github.com/AkashAgarwalInd/trimproof/pkg/server"

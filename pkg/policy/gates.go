@@ -40,6 +40,7 @@ type BlockDecision struct {
 type Decision struct {
 	Codec        string
 	Blocks       []BlockDecision
+	Primer       string // the codec's primer for the transformed blocks
 	PrimerTokens int
 	JSONTokens   int     // Σ baseline tokens over transformed blocks
 	EncTokens    int     // Σ encoded tokens over transformed blocks
@@ -150,13 +151,16 @@ func Decide(p RoutePolicy, blocks [][]byte, est tokens.Estimator, model string) 
 	}
 
 	// Gate 4: net savings over all transformed blocks, primer included once.
-	d.PrimerTokens = est.Estimate(c.Primer(), model)
+	var encoded [][]byte
 	for _, b := range d.Blocks {
 		if b.Transform {
 			d.JSONTokens += b.JSONTokens
 			d.EncTokens += b.EncTokens
+			encoded = append(encoded, b.Encoded)
 		}
 	}
+	d.Primer = codec.PrimerFor(c, encoded)
+	d.PrimerTokens = est.Estimate(d.Primer, model)
 	d.NetSavings = float64(d.JSONTokens-d.EncTokens-d.PrimerTokens) / float64(d.JSONTokens)
 	if d.NetSavings < p.MinNetSavings {
 		return reject(GateNetSavings, fmt.Sprintf("net savings %.1f%% < %.1f%%", 100*d.NetSavings, 100*p.MinNetSavings)), nil

@@ -168,3 +168,31 @@ func TestDumpData(t *testing.T) {
 		t.Fatalf("questions.json: %v, %d entries", err, len(qs))
 	}
 }
+
+func TestPrimerVariant(t *testing.T) {
+	var recs []Record
+	for _, m := range []string{"a", "b", "c"} {
+		for i := 0; i < 100; i++ {
+			add := func(fm string, in, out int) {
+				recs = append(recs, Record{Provider: "nim", Model: m, Dataset: "orders", Rows: 30, QuestionID: fmt.Sprintf("q%d", i),
+					Format: fm, Correct: true, InputTokens: in, OutputTokens: out + i%7, Reply: "7"})
+			}
+			add("json-compact", 1000, 100)
+			add("toonx", 750, 110)
+			add("toonx-p2", 740, 90)
+		}
+	}
+	var buf bytes.Buffer
+	VerifyReport(&buf, recs, DefaultVerify())
+	out := buf.String()
+	// k=4 cost: (740+4·93)/(750+4·113) − 1 = −7.5%.
+	for _, want := range []string{
+		"### Primer variant: toonx-p2 against toonx",
+		"| nim:a | 100 | -7.5% [-7.5, -7.5] | -17.7% [-17.8, -17.6] | +0.0pp [+0.0, +0.0] | yes | yes |",
+		"cost lower on 3 of 3, verdict worse on 0. Rule met: yes.",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("report lacks %q\n%s", want, out)
+		}
+	}
+}
