@@ -127,3 +127,5 @@ Pre-registered in [Amendment 6](../VERIFY-PLAN.md#amendment-6-split-wide-tables-
 **Calls:**
 - Pilot 3: 90 calls.
 - Reasoning capture before Amendment 6: 10 calls, in [reasoning/](reasoning/).
+
+**Correction:** Amendment 6 lists `payload-github-search-repos-q2` among "4 aggregations on wide tables". Under seed 2004 that ID is a sparse lookup, as its records show. So pilot 3 had 5 lookups and 5 aggregations (3 counts, 2 largest-value), not 6 lookups from pilot 2 plus 4 aggregations. The question IDs, and so the calls, are as registered.
