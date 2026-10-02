@@ -91,3 +91,39 @@ Pre-registered in [Amendment 4](../VERIFY-PLAN.md#amendment-4-toonx-2-before-any
 **Calls:**
 - Pilot 2: 36 calls.
 - Diagnostic: 45 calls plus 3 retries.
+
+# Pilot 3: split wide tables, 2026-10-02
+
+Pre-registered in [Amendment 6](../VERIFY-PLAN.md#amendment-6-split-wide-tables-before-any-result). It checks the run itself; it is not a result.
+- **Records:** [pilot3.jsonl](pilot3.jsonl) and [pilot3.manifest.json](pilot3.manifest.json).
+- **Setup:** 10 questions × 3 arms × 3 models, at 16,384 output tokens. 90 calls, 0 errors.
+- **Cost** is input + 4 × output tokens.
+
+| model | arm | correct | input saved | output tokens | cost saved |
+|---|---|---:|---:|---:|---:|
+| gpt-oss-20b | json-compact | 9/10 | | 1,559 | |
+| | toonx | 7/10 | 38.6% | 9,375 | 8.5% |
+| | **toonx-split** | **8/10** | 33.9% | 1,585 | **32.0%** |
+| nemotron-3-super | json-compact | 9/10 | | 15,465 | |
+| | toonx | 8/10 | 36.3% | 41,504 | −32.9% |
+| | **toonx-split** | **10/10** | 31.8% | 8,493 | **36.3%** |
+| glm-5.3-flash | json-compact | 10/10 | | 2,445 | |
+| | toonx | 10/10 | 38.3% | 2,296 | 35.6% |
+| | **toonx-split** | **10/10** | 33.7% | 961 | **35.9%** |
+| **pooled** | toonx | 25/30 vs 28/30 | | | **−2.2%** |
+| **pooled** | toonx-split | 28/30 vs 28/30 | | | **35.0%** |
+
+**Outcome under Amendment 6's fixed reading:**
+- **toonx-split qualifies.**
+  - Its pooled cost saving is 35.0%, against a minimum of 15%.
+  - No model answers more than 1 fewer question correctly than JSON: gpt-oss 8 vs 9, nemotron 10 vs 9, glm 10 vs 10.
+- **toonx does not qualify:** −2.2% pooled, and gpt-oss answers 7 vs 9.
+- **So toonx-split becomes toonx version 3,** and the full run's toonx arm uses it.
+
+**Notes:**
+- **One outlier flatters nemotron.** Its JSON reply to `github-linux-commits-q3` used 9,057 output tokens. Without that question, toonx-split saves 30.8% pooled (nemotron 22.2%, gpt-oss 34.5%, glm 38.4%), and toonx −15.9%.
+- **Sample size:** 10 questions per model. None of these numbers supports a claim.
+
+**Calls:**
+- Pilot 3: 90 calls.
+- Reasoning capture before Amendment 6: 10 calls, in [reasoning/](reasoning/).

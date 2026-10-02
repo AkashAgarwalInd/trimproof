@@ -548,3 +548,8 @@ Records go to `verify-2026-10/diag/`, one file per repeat and limit.
   - **If that is `toonx-split`,** it is built into the toonx codec as version 3, with a decoder and round-trip tests, and with byte-identical output to this renderer on the 36 payloads. The full run's toonx arm then uses it.
 - **If neither qualifies,** the full run's toonx arm uses toonx only when no table is wider than 8 varying columns. The write-up must then say that compression is applied to narrow tables only.
 - **Every model's cost saving is reported for both candidates,** including any that is negative.
+
+**Outcome** ([PILOT.md](verify-2026-10/PILOT.md#pilot-3-split-wide-tables-2026-10-02)):
+- **`toonx-split` qualifies:** 35.0% pooled cost saving. Correct answers: gpt-oss 8, nemotron 10, glm 10, against JSON's 9, 9 and 10.
+- **toonx does not qualify:** −2.2%.
+- **Next:** `toonx-split` is built into the toonx codec as version 3, and the full run's toonx arm uses it.

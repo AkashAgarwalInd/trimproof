@@ -1,0 +1,1587 @@
+{
+  "codec": "toonx",
+  "seed": 2004,
+  "rule": "largest array of objects cut to its first 20 rows, halved until \u003c= 16000 o200k tokens (min 5 rows); kept only if the default gates encode it; up to 4 questions per payload",
+  "items": [
+    {
+      "set": "held-out",
+      "api": "github",
+      "name": "k8s-issue-comments",
+      "url": "https://api.github.com/repos/kubernetes/kubernetes/issues/comments?per_page=30",
+      "sha256": "4e1a80a556ad502c821daf14ce61f6a7f0365a2baf9bde5762bf5d66b932c3c8",
+      "table_path": "",
+      "table_rows": 30,
+      "rows_kept": 20,
+      "json_bytes": 35789,
+      "questions": [
+        {
+          "id": "payload-github-k8s-issue-comments-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"user.html_url\" for the item whose \"id\" is 45678113? If that item has no \"user.html_url\" value, answer none.",
+          "answers": [
+            "https://github.com/brendandburns"
+          ]
+        },
+        {
+          "id": "payload-github-k8s-issue-comments-q2",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"user.login\" for the item whose \"id\" is 45678113? If that item has no \"user.login\" value, answer none.",
+          "answers": [
+            "brendandburns"
+          ]
+        },
+        {
+          "id": "payload-github-k8s-issue-comments-q3",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"reactions.heart\" for the item whose \"id\" is 45678371? If that item has no \"reactions.heart\" value, answer none.",
+          "answers": [
+            "0"
+          ]
+        },
+        {
+          "id": "payload-github-k8s-issue-comments-q4",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"reactions.hooray\" for the item whose \"id\" is 45657099? If that item has no \"reactions.hooray\" value, answer none.",
+          "answers": [
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "github",
+      "name": "torvalds-events",
+      "url": "https://api.github.com/users/torvalds/events/public?per_page=30",
+      "sha256": "6bcf3a1f0acdce5eb7d330dc26b433b176550394034d9b21f1defbd819c009a9",
+      "table_path": "",
+      "table_rows": 30,
+      "rows_kept": 20,
+      "json_bytes": 21662,
+      "questions": [
+        {
+          "id": "payload-github-torvalds-events-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"repo.name\" for the item whose \"id\" is 16137958287? If that item has no \"repo.name\" value, answer none.",
+          "answers": [
+            "torvalds/GuitarPedal"
+          ]
+        },
+        {
+          "id": "payload-github-torvalds-events-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"payload.issue.node_id\" for the item whose \"id\" is 16062272546? If that item has no \"payload.issue.node_id\" value, answer none.",
+          "answers": [
+            "PR_kwDOPxUIks8AAAABFzyX6A"
+          ]
+        },
+        {
+          "id": "payload-github-torvalds-events-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"repo.id\" equal to 1058343058?",
+          "answers": [
+            "9"
+          ]
+        },
+        {
+          "id": "payload-github-torvalds-events-q4",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"actor.login\" for the item whose \"id\" is 22486607112? If that item has no \"actor.login\" value, answer none.",
+          "answers": [
+            "torvalds"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "gitlab",
+      "name": "projects",
+      "url": "https://gitlab.com/api/v4/projects?per_page=30\u0026order_by=last_activity_at",
+      "sha256": "ee806df7057eaf74a6d6e452d9826c223e7f23bbfdf45a3d4a491834b3f9ed3a",
+      "table_path": "",
+      "table_rows": 30,
+      "rows_kept": 20,
+      "json_bytes": 19275,
+      "questions": [
+        {
+          "id": "payload-gitlab-projects-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"namespace.path\" for the item whose \"id\" is 83087493? If that item has no \"namespace.path\" value, answer none.",
+          "answers": [
+            "ui"
+          ]
+        },
+        {
+          "id": "payload-gitlab-projects-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"namespace.parent_id\" for the item whose \"id\" is 81146092? If that item has no \"namespace.parent_id\" value, answer none.",
+          "answers": [
+            "110282506"
+          ]
+        },
+        {
+          "id": "payload-gitlab-projects-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"namespace.kind\" equal to group?",
+          "answers": [
+            "16"
+          ]
+        },
+        {
+          "id": "payload-gitlab-projects-q4",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"star_count\"? Answer with its \"id\".",
+          "answers": [
+            "14920360"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "jsonplaceholder",
+      "name": "users",
+      "url": "https://jsonplaceholder.typicode.com/users",
+      "sha256": "bfba663e2221e5ce0544da02447e8be5e7316e33ae0d5f47e72bdcf270d50ec3",
+      "table_path": "",
+      "table_rows": 10,
+      "rows_kept": 10,
+      "json_bytes": 4094,
+      "questions": [
+        {
+          "id": "payload-jsonplaceholder-users-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"address.suite\" for the item whose \"id\" is 3? If that item has no \"address.suite\" value, answer none.",
+          "answers": [
+            "Suite 847"
+          ]
+        },
+        {
+          "id": "payload-jsonplaceholder-users-q2",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"company.catchPhrase\" for the item whose \"id\" is 4? If that item has no \"company.catchPhrase\" value, answer none.",
+          "answers": [
+            "Multi-tiered zero tolerance productivity"
+          ]
+        },
+        {
+          "id": "payload-jsonplaceholder-users-q3",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"address.zipcode\" for the item whose \"id\" is 9? If that item has no \"address.zipcode\" value, answer none.",
+          "answers": [
+            "76495-3109"
+          ]
+        },
+        {
+          "id": "payload-jsonplaceholder-users-q4",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"address.geo.lat\" for the item whose \"id\" is 4? If that item has no \"address.geo.lat\" value, answer none.",
+          "answers": [
+            "29.4572"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "rickandmorty",
+      "name": "characters",
+      "url": "https://rickandmortyapi.com/api/character",
+      "sha256": "ed2d6856a6f06d59b8386b017fe88c5bec5be49f7398febe298b56bf45cddf61",
+      "table_path": "results",
+      "table_rows": 20,
+      "rows_kept": 20,
+      "json_bytes": 19496,
+      "questions": [
+        {
+          "id": "payload-rickandmorty-characters-q1",
+          "kind": "lookup-nested",
+          "text": "In the \"results\" list, what is \"location.url\" for the item whose \"id\" is 20? If that item has no \"location.url\" value, answer none.",
+          "answers": [
+            "https://rickandmortyapi.com/api/location/6"
+          ]
+        },
+        {
+          "id": "payload-rickandmorty-characters-q2",
+          "kind": "count-where",
+          "text": "How many items in the \"results\" list have \"origin.name\" equal to Earth (C-137)?",
+          "answers": [
+            "4"
+          ]
+        },
+        {
+          "id": "payload-rickandmorty-characters-q3",
+          "kind": "lookup-nested",
+          "text": "In the \"results\" list, what is \"origin.name\" for the item whose \"id\" is 19? If that item has no \"origin.name\" value, answer none.",
+          "answers": [
+            "unknown"
+          ]
+        },
+        {
+          "id": "payload-rickandmorty-characters-q4",
+          "kind": "lookup-nested",
+          "text": "In the \"results\" list, what is \"location.name\" for the item whose \"id\" is 14? If that item has no \"location.name\" value, answer none.",
+          "answers": [
+            "Citadel of Ricks"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "wikipedia",
+      "name": "recent-changes",
+      "url": "https://en.wikipedia.org/w/api.php?action=query\u0026list=recentchanges\u0026rclimit=50\u0026format=json",
+      "sha256": "472709baae02cd057dd2ba6cd6afcba0a4a85d263fe513bb5731eaee9928ffb7",
+      "table_path": "query.recentchanges",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 3788,
+      "questions": [
+        {
+          "id": "payload-wikipedia-recent-changes-q1",
+          "kind": "lookup",
+          "text": "In the \"query.recentchanges\" list, what is \"title\" for the item whose \"rcid\" is 2075315143? If that item has no \"title\" value, answer none.",
+          "answers": [
+            "Wushu at the 2026 Asian Games – Men's daoshu \u0026 gunshu"
+          ]
+        },
+        {
+          "id": "payload-wikipedia-recent-changes-q2",
+          "kind": "count-where",
+          "text": "How many items in the \"query.recentchanges\" list have \"ns\" equal to 1?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-wikipedia-recent-changes-q3",
+          "kind": "argmax",
+          "text": "Which item in the \"query.recentchanges\" list has the largest \"revid\"? Answer with its \"rcid\".",
+          "answers": [
+            "2075315150"
+          ]
+        },
+        {
+          "id": "payload-wikipedia-recent-changes-q4",
+          "kind": "lookup",
+          "text": "In the \"query.recentchanges\" list, what is \"ns\" for the item whose \"rcid\" is 2075315149? If that item has no \"ns\" value, answer none.",
+          "answers": [
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "crates",
+      "name": "top-downloads",
+      "url": "https://crates.io/api/v1/crates?page=1\u0026per_page=50\u0026sort=downloads",
+      "sha256": "4376b60aa36ce325a0484f2a33d2d53ae7380c99ad1f90c6054180c41ffd9a53",
+      "table_path": "crates",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 18904,
+      "questions": [
+        {
+          "id": "payload-crates-top-downloads-q1",
+          "kind": "lookup-nested",
+          "text": "In the \"crates\" list, what is \"links.versions\" for the item whose \"id\" is hashbrown? If that item has no \"links.versions\" value, answer none.",
+          "answers": [
+            "/api/v1/crates/hashbrown/versions"
+          ]
+        },
+        {
+          "id": "payload-crates-top-downloads-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"crates\" list, what is \"documentation\" for the item whose \"id\" is cfg-if? If that item has no \"documentation\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-crates-top-downloads-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"crates\" list have \"homepage\" equal to https://github.com/bitflags/bitflags?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-crates-top-downloads-q4",
+          "kind": "argmax",
+          "text": "Which item in the \"crates\" list has the largest \"downloads\"? Answer with its \"id\".",
+          "answers": [
+            "hashbrown"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "dockerhub",
+      "name": "library-repos",
+      "url": "https://hub.docker.com/v2/repositories/library/?page_size=50",
+      "sha256": "2c543b1258716855dc4b3e095cc04234cda25b85af96699fcd54593d1b78a44f",
+      "table_path": "results",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 14530,
+      "questions": [
+        {
+          "id": "payload-dockerhub-library-repos-q1",
+          "kind": "lookup",
+          "text": "In the \"results\" list, what is \"pull_count\" for the item whose \"name\" is crux? If that item has no \"pull_count\" value, answer none.",
+          "answers": [
+            "895302"
+          ]
+        },
+        {
+          "id": "payload-dockerhub-library-repos-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"results\" list, what is \"repository_type\" for the item whose \"name\" is docker-dev? If that item has no \"repository_type\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-dockerhub-library-repos-q3",
+          "kind": "argmax",
+          "text": "Which item in the \"results\" list has the largest \"star_count\"? Answer with its \"name\".",
+          "answers": [
+            "nginx"
+          ]
+        },
+        {
+          "id": "payload-dockerhub-library-repos-q4",
+          "kind": "lookup",
+          "text": "In the \"results\" list, what is \"namespace\" for the item whose \"name\" is buildpack-deps? If that item has no \"namespace\" value, answer none.",
+          "answers": [
+            "library"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "chicago-data",
+      "name": "crimes",
+      "url": "https://data.cityofchicago.org/resource/ijzp-q8t2.json?$limit=100",
+      "sha256": "e39a62a60d9eecd8654ab14be987890c302ca6c51538160049266eecfa6e83f6",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 12127,
+      "questions": [
+        {
+          "id": "payload-chicago-data-crimes-q1",
+          "kind": "lookup",
+          "text": "In the result, what is \"primary_type\" for the item whose \"id\" is 14340812? If that item has no \"primary_type\" value, answer none.",
+          "answers": [
+            "BURGLARY"
+          ]
+        },
+        {
+          "id": "payload-chicago-data-crimes-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"location.human_address\" for the item whose \"id\" is 14337324? If that item has no \"location.human_address\" value, answer none.",
+          "answers": [
+            "{\"address\": \"\", \"city\": \"\", \"state\": \"\", \"zip\": \"\"}"
+          ]
+        },
+        {
+          "id": "payload-chicago-data-crimes-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"date\" equal to 2026-09-24T00:00:00.000?",
+          "answers": [
+            "16"
+          ]
+        },
+        {
+          "id": "payload-chicago-data-crimes-q4",
+          "kind": "lookup",
+          "text": "In the result, what is \"description\" for the item whose \"id\" is 14337351? If that item has no \"description\" value, answer none.",
+          "answers": [
+            "AUTOMOBILE"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "itunes",
+      "name": "search-jazz",
+      "url": "https://itunes.apple.com/search?term=jazz\u0026limit=50",
+      "sha256": "af1989690ee11bba9dec205bd115bff76c042fd505d56cdca371b820b53eb015",
+      "table_path": "results",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 42727,
+      "questions": [
+        {
+          "id": "payload-itunes-search-jazz-q1",
+          "kind": "lookup",
+          "text": "In the \"results\" list, what is \"collectionExplicitness\" for the item whose \"artistName\" is Dance Moms? If that item has no \"collectionExplicitness\" value, answer none.",
+          "answers": [
+            "notExplicit"
+          ]
+        },
+        {
+          "id": "payload-itunes-search-jazz-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"results\" list, what is \"shortDescription\" for the item whose \"artistName\" is Ralph Nelson? If that item has no \"shortDescription\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-itunes-search-jazz-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"results\" list have \"collectionName\" equal to Jazz \u0026 Blues Essential Docs 5-Film Collection?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-itunes-search-jazz-q4",
+          "kind": "argmax",
+          "text": "Which item in the \"results\" list has the largest \"trackTimeMillis\"? Answer with its \"artistName\".",
+          "answers": [
+            "Elisabeth Oei \u0026 Richard A. Salazar"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "citibike",
+      "name": "stations",
+      "url": "https://gbfs.citibikenyc.com/gbfs/en/station_information.json",
+      "sha256": "b174809acb8de88583ce3078370c6343e8e9c03c6a227cc9158e7e0d6546ce2c",
+      "table_path": "data.stations",
+      "table_rows": 2520,
+      "rows_kept": 20,
+      "json_bytes": 10226,
+      "questions": [
+        {
+          "id": "payload-citibike-stations-q1",
+          "kind": "lookup-nested",
+          "text": "In the \"data.stations\" list, what is \"rental_uris.android\" for the item whose \"name\" is 44 St \u0026 3 Ave? If that item has no \"rental_uris.android\" value, answer none.",
+          "answers": [
+            "https://bkn.lft.to/lastmile_qr_scan"
+          ]
+        },
+        {
+          "id": "payload-citibike-stations-q2",
+          "kind": "count-where",
+          "text": "How many items in the \"data.stations\" list have \"has_kiosk\" equal to true?",
+          "answers": [
+            "19"
+          ]
+        },
+        {
+          "id": "payload-citibike-stations-q3",
+          "kind": "argmax",
+          "text": "Which item in the \"data.stations\" list has the largest \"capacity\"? Answer with its \"name\".",
+          "answers": [
+            "Vesey St \u0026 Church St"
+          ]
+        },
+        {
+          "id": "payload-citibike-stations-q4",
+          "kind": "lookup-nested",
+          "text": "In the \"data.stations\" list, what is \"rental_uris.ios\" for the item whose \"name\" is 31 St \u0026 Thomson Ave? If that item has no \"rental_uris.ios\" value, answer none.",
+          "answers": [
+            "https://bkn.lft.to/lastmile_qr_scan"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "go-issues",
+      "url": "https://api.github.com/repos/golang/go/issues?per_page=50",
+      "sha256": "3dd704914a582e1b45d487467df34518dcc962587e7187932dcdb7795a599a0b",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 5,
+      "json_bytes": 25723,
+      "questions": [
+        {
+          "id": "payload-github-go-issues-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"user.gists_url\" for the item whose \"id\" is 5677603740? If that item has no \"user.gists_url\" value, answer none.",
+          "answers": [
+            "https://api.github.com/users/jba/gists{/gist_id}"
+          ]
+        },
+        {
+          "id": "payload-github-go-issues-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"issue_dependencies_summary.blocking\" for the item whose \"id\" is 5677603740? If that item has no \"issue_dependencies_summary.blocking\" value, answer none.",
+          "answers": [
+            "0"
+          ]
+        },
+        {
+          "id": "payload-github-go-issues-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"user.received_events_url\" equal to https://api.github.com/users/jba/received_events?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-github-go-issues-q4",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"number\"? Answer with its \"id\".",
+          "answers": [
+            "5677603740"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "rust-closed-issues",
+      "url": "https://api.github.com/repos/rust-lang/rust/issues?state=closed\u0026per_page=50",
+      "sha256": "76314e29769367caa91a3c4adba6109c56b7a07a49bbdf469058999f9864c267",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 5,
+      "json_bytes": 45163,
+      "questions": [
+        {
+          "id": "payload-github-rust-closed-issues-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"milestone.creator.repos_url\" for the item whose \"id\" is 5663849328? If that item has no \"milestone.creator.repos_url\" value, answer none.",
+          "answers": [
+            "https://api.github.com/users/rustbot/repos"
+          ]
+        },
+        {
+          "id": "payload-github-rust-closed-issues-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"assignee.node_id\" for the item whose \"id\" is 5663849328? If that item has no \"assignee.node_id\" value, answer none.",
+          "answers": [
+            "MDQ6VXNlcjI0NzE4Mw=="
+          ]
+        },
+        {
+          "id": "payload-github-rust-closed-issues-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"assignee.subscriptions_url\" equal to https://api.github.com/users/Darksonn/subscriptions?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-github-rust-closed-issues-q4",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"number\"? Answer with its \"id\".",
+          "answers": [
+            "5673147110"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "linux-commits",
+      "url": "https://api.github.com/repos/torvalds/linux/commits?per_page=30",
+      "sha256": "0be0ddd90c51400e698e82a636a4680d81aa19635560ea9725a4af55a15e9b75",
+      "table_path": "",
+      "table_rows": 30,
+      "rows_kept": 10,
+      "json_bytes": 45267,
+      "questions": [
+        {
+          "id": "payload-github-linux-commits-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"commit.committer.date\" for the item whose \"sha\" is e23a64eb244356ee47c0620f0722d51bd88db522? If that item has no \"commit.committer.date\" value, answer none.",
+          "answers": [
+            "2026-10-01T10:00:40Z"
+          ]
+        },
+        {
+          "id": "payload-github-linux-commits-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"committer.site_admin\" for the item whose \"sha\" is 6e0022b5ae3dc5b833af0fcc1578dc20a1d6bc71? If that item has no \"committer.site_admin\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-github-linux-commits-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"author.organizations_url\" equal to https://api.github.com/users/torvalds/orgs?",
+          "answers": [
+            "6"
+          ]
+        },
+        {
+          "id": "payload-github-linux-commits-q4",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"commit.verification.verified\" for the item whose \"sha\" is 6e0022b5ae3dc5b833af0fcc1578dc20a1d6bc71? If that item has no \"commit.verification.verified\" value, answer none.",
+          "answers": [
+            "false"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "vscode-releases",
+      "url": "https://api.github.com/repos/microsoft/vscode/releases?per_page=20",
+      "sha256": "0475dae8e245b55104c8a7d3d3e9265e1412335a4ee5aea900fff6696bf2d765",
+      "table_path": "",
+      "table_rows": 20,
+      "rows_kept": 20,
+      "json_bytes": 39413,
+      "questions": [
+        {
+          "id": "payload-github-vscode-releases-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"author.events_url\" for the item whose \"id\" is 394548774? If that item has no \"author.events_url\" value, answer none.",
+          "answers": [
+            "https://api.github.com/users/chrmarti/events{/privacy}"
+          ]
+        },
+        {
+          "id": "payload-github-vscode-releases-q2",
+          "kind": "count-where",
+          "text": "How many items in the result have \"target_commitish\" equal to main?",
+          "answers": [
+            "17"
+          ]
+        },
+        {
+          "id": "payload-github-vscode-releases-q3",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"reactions.heart\"? Answer with its \"id\".",
+          "answers": [
+            "389704946"
+          ]
+        },
+        {
+          "id": "payload-github-vscode-releases-q4",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"reactions.heart\" for the item whose \"id\" is 400468450? If that item has no \"reactions.heart\" value, answer none.",
+          "answers": [
+            "6"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "react-contributors",
+      "url": "https://api.github.com/repos/facebook/react/contributors?per_page=100",
+      "sha256": "89a6efcacfd9758cb77c78c9281466a945d90ea90b968584ed4507bbb4ef0f9a",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 18833,
+      "questions": [
+        {
+          "id": "payload-github-react-contributors-q1",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"contributions\"? Answer with its \"id\".",
+          "answers": [
+            "63648"
+          ]
+        },
+        {
+          "id": "payload-github-react-contributors-q2",
+          "kind": "lookup",
+          "text": "In the result, what is \"followers_url\" for the item whose \"id\" is 29597? If that item has no \"followers_url\" value, answer none.",
+          "answers": [
+            "https://api.github.com/users/bvaughn/followers"
+          ]
+        },
+        {
+          "id": "payload-github-react-contributors-q3",
+          "kind": "lookup",
+          "text": "In the result, what is \"contributions\" for the item whose \"id\" is 1519870? If that item has no \"contributions\" value, answer none.",
+          "answers": [
+            "436"
+          ]
+        },
+        {
+          "id": "payload-github-react-contributors-q4",
+          "kind": "lookup",
+          "text": "In the result, what is \"gists_url\" for the item whose \"id\" is 6820? If that item has no \"gists_url\" value, answer none.",
+          "answers": [
+            "https://api.github.com/users/sophiebits/gists{/gist_id}"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "node-tags",
+      "url": "https://api.github.com/repos/nodejs/node/tags?per_page=100",
+      "sha256": "005650a760c8156ef688b85776917c8fefdf1fd85eee7b293c364758242a2bd0",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 8004,
+      "questions": [
+        {
+          "id": "payload-github-node-tags-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"commit.sha\" for the item whose \"name\" is v26.10.0? If that item has no \"commit.sha\" value, answer none.",
+          "answers": [
+            "151845ab90d3926ceb36eedf1eade09619c3adc9"
+          ]
+        },
+        {
+          "id": "payload-github-node-tags-q2",
+          "kind": "lookup",
+          "text": "In the result, what is \"node_id\" for the item whose \"name\" is v26.2.0? If that item has no \"node_id\" value, answer none.",
+          "answers": [
+            "MDM6UmVmMjcxOTM3Nzk6cmVmcy90YWdzL3YyNi4yLjA="
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "go-labels",
+      "url": "https://api.github.com/repos/golang/go/labels?per_page=100",
+      "sha256": "1c69e7c44423ee8bddae56e01d765606fe1fdf8ef0b8024dfb0f42711d3b74a0",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 5217,
+      "questions": [
+        {
+          "id": "payload-github-go-labels-q1",
+          "kind": "lookup",
+          "text": "In the result, what is \"name\" for the item whose \"id\" is 3450541020? If that item has no \"name\" value, answer none.",
+          "answers": [
+            "arch-386"
+          ]
+        },
+        {
+          "id": "payload-github-go-labels-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"description\" for the item whose \"id\" is 4913776573? If that item has no \"description\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-github-go-labels-q3",
+          "kind": "lookup",
+          "text": "In the result, what is \"default\" for the item whose \"id\" is 2655994748? If that item has no \"default\" value, answer none.",
+          "answers": [
+            "false"
+          ]
+        },
+        {
+          "id": "payload-github-go-labels-q4",
+          "kind": "lookup",
+          "text": "In the result, what is \"color\" for the item whose \"id\" is 7969295118? If that item has no \"color\" value, answer none.",
+          "answers": [
+            "4d0070"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "google-repos",
+      "url": "https://api.github.com/orgs/google/repos?per_page=50",
+      "sha256": "ade14001c521cd23a9085d4877a07139fd81a7f214f5e2859aa5c67081fe6704",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 10,
+      "json_bytes": 54914,
+      "questions": [
+        {
+          "id": "payload-github-google-repos-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"permissions.push\" for the item whose \"id\" is 5753483? If that item has no \"permissions.push\" value, answer none.",
+          "answers": [
+            "false"
+          ]
+        },
+        {
+          "id": "payload-github-google-repos-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"license.url\" for the item whose \"id\" is 5511393? If that item has no \"license.url\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-github-google-repos-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"custom_properties.requires_action_scanning\" equal to true?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-github-google-repos-q4",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"forks\"? Answer with its \"id\".",
+          "answers": [
+            "1936771"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "search-repos",
+      "url": "https://api.github.com/search/repositories?q=llm+gateway\u0026per_page=30",
+      "sha256": "18312034bd5f7d2e06a1d2b42b014c23abb36aedc8a7f093da88788069cbb00c",
+      "table_path": "items",
+      "table_rows": 30,
+      "rows_kept": 10,
+      "json_bytes": 55354,
+      "questions": [
+        {
+          "id": "payload-github-search-repos-q1",
+          "kind": "lookup-nested",
+          "text": "In the \"items\" list, what is \"owner.gists_url\" for the item whose \"id\" is 542185751? If that item has no \"owner.gists_url\" value, answer none.",
+          "answers": [
+            "https://api.github.com/users/mnfst/gists{/gist_id}"
+          ]
+        },
+        {
+          "id": "payload-github-search-repos-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"items\" list, what is \"license.node_id\" for the item whose \"id\" is 872748942? If that item has no \"license.node_id\" value, answer none.",
+          "answers": [
+            "MDc6TGljZW5zZTEz"
+          ]
+        },
+        {
+          "id": "payload-github-search-repos-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"items\" list have \"language\" equal to TypeScript?",
+          "answers": [
+            "4"
+          ]
+        },
+        {
+          "id": "payload-github-search-repos-q4",
+          "kind": "argmax",
+          "text": "Which item in the \"items\" list has the largest \"owner.id\"? Answer with its \"id\".",
+          "answers": [
+            "1113080730"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "npm",
+      "name": "search-react",
+      "url": "https://registry.npmjs.org/-/v1/search?text=react\u0026size=50",
+      "sha256": "729e8bafbc084fba80eb05e7562f0b00e92a80bba9ae2d6b258976a8912488fb",
+      "table_path": "objects",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 21464,
+      "questions": [
+        {
+          "id": "payload-npm-search-react-q1",
+          "kind": "lookup-nested",
+          "text": "In the \"objects\" list, what is \"package.description\" for the item whose \"package.name\" is react-smooth? If that item has no \"package.description\" value, answer none.",
+          "answers": [
+            "react animation library"
+          ]
+        },
+        {
+          "id": "payload-npm-search-react-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"objects\" list, what is \"package.links.bugs\" for the item whose \"package.name\" is @types/react-dom? If that item has no \"package.links.bugs\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-npm-search-react-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"objects\" list have \"package.license\" equal to MIT?",
+          "answers": [
+            "19"
+          ]
+        },
+        {
+          "id": "payload-npm-search-react-q4",
+          "kind": "argmax",
+          "text": "Which item in the \"objects\" list has the largest \"score.final\"? Answer with its \"package.name\".",
+          "answers": [
+            "react"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "npm",
+      "name": "search-cli",
+      "url": "https://registry.npmjs.org/-/v1/search?text=keywords:cli\u0026size=50",
+      "sha256": "4ddfa69c35116608fd8c328e02a1a0568901c9796b048f3372c185a7e7a4486a",
+      "table_path": "objects",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 19537,
+      "questions": [
+        {
+          "id": "payload-npm-search-cli-q1",
+          "kind": "lookup-nested",
+          "text": "In the \"objects\" list, what is \"score.detail.popularity\" for the item whose \"package.name\" is yargs? If that item has no \"score.detail.popularity\" value, answer none.",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-npm-search-cli-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"objects\" list, what is \"package.publisher.trustedPublisher.id\" for the item whose \"package.name\" is yargs? If that item has no \"package.publisher.trustedPublisher.id\" value, answer none.",
+          "answers": [
+            "github"
+          ]
+        },
+        {
+          "id": "payload-npm-search-cli-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"objects\" list have \"package.license\" equal to PSF-2.0?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-npm-search-cli-q4",
+          "kind": "argmax",
+          "text": "Which item in the \"objects\" list has the largest \"score.final\"? Answer with its \"package.name\".",
+          "answers": [
+            "commander"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "hn-algolia",
+      "name": "latest-stories",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story\u0026hitsPerPage=50",
+      "sha256": "8c77e1e8ae734b6359594d0418d2316b0a1818c0b1ba4be20ef09dbfe665543f",
+      "table_path": "hits",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 18790,
+      "questions": [
+        {
+          "id": "payload-hn-algolia-latest-stories-q1",
+          "kind": "lookup-nested",
+          "text": "In the \"hits\" list, what is \"_highlightResult.title.value\" for the item whose \"story_id\" is 49932818? If that item has no \"_highlightResult.title.value\" value, answer none.",
+          "answers": [
+            "MultiTable: A Faster Hash Table at Any Physical Load Factor"
+          ]
+        },
+        {
+          "id": "payload-hn-algolia-latest-stories-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"hits\" list, what is \"_highlightResult.story_text.matchLevel\" for the item whose \"story_id\" is 49932815? If that item has no \"_highlightResult.story_text.matchLevel\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-hn-algolia-latest-stories-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"hits\" list have \"points\" equal to 1?",
+          "answers": [
+            "17"
+          ]
+        },
+        {
+          "id": "payload-hn-algolia-latest-stories-q4",
+          "kind": "argmax",
+          "text": "Which item in the \"hits\" list has the largest \"created_at_i\"? Answer with its \"story_id\".",
+          "answers": [
+            "49932928"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "usgs",
+      "name": "quakes-week-m2.5",
+      "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson",
+      "sha256": "2a0bb0984e6358571d417ccc2c84dc9dc7ce4636bc9d4ed6c9bb1e4a756dfdbf",
+      "table_path": "features",
+      "table_rows": 326,
+      "rows_kept": 20,
+      "json_bytes": 14426,
+      "questions": [
+        {
+          "id": "payload-usgs-quakes-week-m2.5-q1",
+          "kind": "lookup-nested",
+          "text": "In the \"features\" list, what is \"properties.time\" for the item whose \"id\" is us6000tyzy? If that item has no \"properties.time\" value, answer none.",
+          "answers": [
+            "1790923686954"
+          ]
+        },
+        {
+          "id": "payload-usgs-quakes-week-m2.5-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"features\" list, what is \"properties.mmi\" for the item whose \"id\" is us6000tz0c? If that item has no \"properties.mmi\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-usgs-quakes-week-m2.5-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"features\" list have \"properties.sources\" equal to ,us,?",
+          "answers": [
+            "14"
+          ]
+        },
+        {
+          "id": "payload-usgs-quakes-week-m2.5-q4",
+          "kind": "argmax",
+          "text": "Which item in the \"features\" list has the largest \"properties.nst\"? Answer with its \"id\".",
+          "answers": [
+            "aka2026tlsylt"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "coingecko",
+      "name": "markets",
+      "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd\u0026per_page=50\u0026page=1",
+      "sha256": "67b28b91798114280e4049d5b928471ae871908723eee7f311c37197bb10bb99",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 15652,
+      "questions": [
+        {
+          "id": "payload-coingecko-markets-q1",
+          "kind": "lookup",
+          "text": "In the result, what is \"atl_change_percentage\" for the item whose \"id\" is usds? If that item has no \"atl_change_percentage\" value, answer none.",
+          "answers": [
+            "5.42166"
+          ]
+        },
+        {
+          "id": "payload-coingecko-markets-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"roi.percentage\" for the item whose \"id\" is leo-token? If that item has no \"roi.percentage\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-coingecko-markets-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"roi.times\" equal to 40.56836074849733?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-coingecko-markets-q4",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"fully_diluted_valuation\"? Answer with its \"id\".",
+          "answers": [
+            "bitcoin"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "coingecko",
+      "name": "exchanges",
+      "url": "https://api.coingecko.com/api/v3/exchanges?per_page=50",
+      "sha256": "7eca120e58d8bb92a8085b4d9c30bf653ac57f934e5752de92fd5ca4f9cd6702",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 19291,
+      "questions": [
+        {
+          "id": "payload-coingecko-exchanges-q1",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"country\" for the item whose \"id\" is okex? If that item has no \"country\" value, answer none.",
+          "answers": [
+            "Seychelles"
+          ]
+        },
+        {
+          "id": "payload-coingecko-exchanges-q2",
+          "kind": "count-where",
+          "text": "How many items in the result have \"trust_score\" equal to 9?",
+          "answers": [
+            "13"
+          ]
+        },
+        {
+          "id": "payload-coingecko-exchanges-q3",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"year_established\"? Answer with its \"id\".",
+          "answers": [
+            "toobit"
+          ]
+        },
+        {
+          "id": "payload-coingecko-exchanges-q4",
+          "kind": "lookup",
+          "text": "In the result, what is \"trust_score_rank\" for the item whose \"id\" is gate? If that item has no \"trust_score_rank\" value, answer none.",
+          "answers": [
+            "5"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "stackexchange",
+      "name": "so-questions",
+      "url": "https://api.stackexchange.com/2.3/questions?order=desc\u0026sort=activity\u0026site=stackoverflow\u0026pagesize=50",
+      "sha256": "662c4e8747ad6574eae38e72806b6c9359d4f77056e12541ecdcf10557e7a046",
+      "table_path": "items",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 15510,
+      "questions": [
+        {
+          "id": "payload-stackexchange-so-questions-q1",
+          "kind": "lookup-sparse",
+          "text": "In the \"items\" list, what is \"migrated_from.other_site.site_type\" for the item whose \"owner.account_id\" is 11009904? If that item has no \"migrated_from.other_site.site_type\" value, answer none.",
+          "answers": [
+            "main_site"
+          ]
+        },
+        {
+          "id": "payload-stackexchange-so-questions-q2",
+          "kind": "count-where",
+          "text": "How many items in the \"items\" list have \"is_answered\" equal to false?",
+          "answers": [
+            "9"
+          ]
+        },
+        {
+          "id": "payload-stackexchange-so-questions-q3",
+          "kind": "argmax",
+          "text": "Which item in the \"items\" list has the largest \"creation_date\"? Answer with its \"owner.account_id\".",
+          "answers": [
+            "8670652"
+          ]
+        },
+        {
+          "id": "payload-stackexchange-so-questions-q4",
+          "kind": "lookup-nested",
+          "text": "In the \"items\" list, what is \"owner.reputation\" for the item whose \"owner.account_id\" is 18943599? If that item has no \"owner.reputation\" value, answer none.",
+          "answers": [
+            "43"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "openlibrary",
+      "name": "search",
+      "url": "https://openlibrary.org/search.json?q=distributed+systems\u0026limit=50",
+      "sha256": "dfbd6271824555bd3917ba3043ef0946db782dafeee523a624e8ee0b5a9f010c",
+      "table_path": "docs",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 7889,
+      "questions": [
+        {
+          "id": "payload-openlibrary-search-q1",
+          "kind": "lookup",
+          "text": "In the \"docs\" list, what is \"has_fulltext\" for the item whose \"key\" is /works/OL2694024W? If that item has no \"has_fulltext\" value, answer none.",
+          "answers": [
+            "false"
+          ]
+        },
+        {
+          "id": "payload-openlibrary-search-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"docs\" list, what is \"cover_i\" for the item whose \"key\" is /works/OL21460035W? If that item has no \"cover_i\" value, answer none.",
+          "answers": [
+            "13340952"
+          ]
+        },
+        {
+          "id": "payload-openlibrary-search-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"docs\" list have \"ebook_access\" equal to no_ebook?",
+          "answers": [
+            "12"
+          ]
+        },
+        {
+          "id": "payload-openlibrary-search-q4",
+          "kind": "argmax",
+          "text": "Which item in the \"docs\" list has the largest \"edition_count\"? Answer with its \"key\".",
+          "answers": [
+            "/works/OL8229364W"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "crossref",
+      "name": "works-llm",
+      "url": "https://api.crossref.org/works?query=large+language+models\u0026rows=30",
+      "sha256": "4e2cfcf7ddf13bbd83f68dcc60963a09342e680b6ba67ea104d35c49b417ca96",
+      "table_path": "message.items",
+      "table_rows": 30,
+      "rows_kept": 10,
+      "json_bytes": 20016,
+      "questions": [
+        {
+          "id": "payload-crossref-works-llm-q1",
+          "kind": "lookup-sparse",
+          "text": "In the \"message.items\" list, what is \"group-title\" for the item whose \"DOI\" is 10.7551/mitpress/15517.003.0003? If that item has no \"group-title\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-crossref-works-llm-q2",
+          "kind": "count-where",
+          "text": "How many items in the \"message.items\" list have \"publisher\" equal to The MIT Press?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-crossref-works-llm-q3",
+          "kind": "argmax",
+          "text": "Which item in the \"message.items\" list has the largest \"deposited.timestamp\"? Answer with its \"DOI\".",
+          "answers": [
+            "10.1007/979-8-8688-2733-4_1"
+          ]
+        },
+        {
+          "id": "payload-crossref-works-llm-q4",
+          "kind": "lookup-nested",
+          "text": "In the \"message.items\" list, what is \"deposited.date-time\" for the item whose \"DOI\" is 10.7551/mitpress/15517.003.0003? If that item has no \"deposited.date-time\" value, answer none.",
+          "answers": [
+            "2025-10-28T18:40:08Z"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "nyc-opendata",
+      "name": "311-requests",
+      "url": "https://data.cityofnewyork.us/resource/erm2-nwe9.json?$limit=100",
+      "sha256": "9b0c2adbc1cb61ef750ca4bb35cc6b451f45084e27b2544c6f62eaa363a9aa52",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 23001,
+      "questions": [
+        {
+          "id": "payload-nyc-opendata-311-requests-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"location.type\" for the item whose \"unique_key\" is 70593925? If that item has no \"location.type\" value, answer none.",
+          "answers": [
+            "Point"
+          ]
+        },
+        {
+          "id": "payload-nyc-opendata-311-requests-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"vehicle_type\" for the item whose \"unique_key\" is 70601746? If that item has no \"vehicle_type\" value, answer none.",
+          "answers": [
+            "Car"
+          ]
+        },
+        {
+          "id": "payload-nyc-opendata-311-requests-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"open_data_channel_type\" equal to ONLINE?",
+          "answers": [
+            "4"
+          ]
+        },
+        {
+          "id": "payload-nyc-opendata-311-requests-q4",
+          "kind": "lookup",
+          "text": "In the result, what is \"park_borough\" for the item whose \"unique_key\" is 70600518? If that item has no \"park_borough\" value, answer none.",
+          "answers": [
+            "BROOKLYN"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "nyc-opendata",
+      "name": "collisions",
+      "url": "https://data.cityofnewyork.us/resource/h9gi-nx95.json?$limit=100",
+      "sha256": "539d780168312608283642f8201288b8aaf8e16e1f92956b2c0d8257f2a3aa7a",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 13074,
+      "questions": [
+        {
+          "id": "payload-nyc-opendata-collisions-q1",
+          "kind": "lookup",
+          "text": "In the result, what is \"number_of_cyclist_injured\" for the item whose \"collision_id\" is 4675769? If that item has no \"number_of_cyclist_injured\" value, answer none.",
+          "answers": [
+            "0"
+          ]
+        },
+        {
+          "id": "payload-nyc-opendata-collisions-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"on_street_name\" for the item whose \"collision_id\" is 4486934? If that item has no \"on_street_name\" value, answer none.",
+          "answers": [
+            "MYRTLE AVENUE"
+          ]
+        },
+        {
+          "id": "payload-nyc-opendata-collisions-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"vehicle_type_code2\" equal to Sedan?",
+          "answers": [
+            "5"
+          ]
+        },
+        {
+          "id": "payload-nyc-opendata-collisions-q4",
+          "kind": "lookup",
+          "text": "In the result, what is \"number_of_pedestrians_injured\" for the item whose \"collision_id\" is 4486634? If that item has no \"number_of_pedestrians_injured\" value, answer none.",
+          "answers": [
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "tvmaze",
+      "name": "shows",
+      "url": "https://api.tvmaze.com/shows?page=1",
+      "sha256": "f003dc350dde7a2028e825339bcd2c004d19f2930ac4c71277e45888b0e22ca2",
+      "table_path": "",
+      "table_rows": 245,
+      "rows_kept": 20,
+      "json_bytes": 27852,
+      "questions": [
+        {
+          "id": "payload-tvmaze-shows-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"_links.self.href\" for the item whose \"id\" is 266? If that item has no \"_links.self.href\" value, answer none.",
+          "answers": [
+            "https://api.tvmaze.com/shows/266"
+          ]
+        },
+        {
+          "id": "payload-tvmaze-shows-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"officialSite\" for the item whose \"id\" is 251? If that item has no \"officialSite\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-tvmaze-shows-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"_links.nextepisode.name\" equal to Sliding Into Hell?",
+          "answers": [
+            "1"
+          ]
+        },
+        {
+          "id": "payload-tvmaze-shows-q4",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"averageRuntime\"? Answer with its \"id\".",
+          "answers": [
+            "254"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "tvmaze",
+      "name": "schedule-us",
+      "url": "https://api.tvmaze.com/schedule?country=US\u0026date=2026-09-30",
+      "sha256": "7fcf37854c8f76792bbb0a18912471cc31436e3c01b939e685ce14e9ced1244e",
+      "table_path": "",
+      "table_rows": 144,
+      "rows_kept": 20,
+      "json_bytes": 39220,
+      "questions": [
+        {
+          "id": "payload-tvmaze-schedule-us-q1",
+          "kind": "lookup-nested",
+          "text": "In the result, what is \"show.weight\" for the item whose \"id\" is 3770313? If that item has no \"show.weight\" value, answer none.",
+          "answers": [
+            "98"
+          ]
+        },
+        {
+          "id": "payload-tvmaze-schedule-us-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"show.image.medium\" for the item whose \"id\" is 3724244? If that item has no \"show.image.medium\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-tvmaze-schedule-us-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"airdate\" equal to 2026-09-30?",
+          "answers": [
+            "14"
+          ]
+        },
+        {
+          "id": "payload-tvmaze-schedule-us-q4",
+          "kind": "argmax",
+          "text": "Which item in the result has the largest \"show.averageRuntime\"? Answer with its \"id\".",
+          "answers": [
+            "3718445"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "pokeapi",
+      "name": "pokemon-list",
+      "url": "https://pokeapi.co/api/v2/pokemon?limit=100",
+      "sha256": "928696b94d0737dcaca45571d7e0e3685b8f83017b113d8e9bd7f84691065407",
+      "table_path": "results",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 1418,
+      "questions": [
+        {
+          "id": "payload-pokeapi-pokemon-list-q1",
+          "kind": "lookup",
+          "text": "In the \"results\" list, what is \"url\" for the item whose \"name\" is charmander? If that item has no \"url\" value, answer none.",
+          "answers": [
+            "https://pokeapi.co/api/v2/pokemon/4/"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "federalregister",
+      "name": "documents",
+      "url": "https://www.federalregister.gov/api/v1/documents.json?per_page=50",
+      "sha256": "81449b4c1e25492a49d4a42af06d231bd994453f92882abf4916fa0d78dc507c",
+      "table_path": "results",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 28792,
+      "questions": [
+        {
+          "id": "payload-federalregister-documents-q1",
+          "kind": "lookup",
+          "text": "In the \"results\" list, what is \"publication_date\" for the item whose \"document_number\" is 2026-20319? If that item has no \"publication_date\" value, answer none.",
+          "answers": [
+            "2026-10-02"
+          ]
+        },
+        {
+          "id": "payload-federalregister-documents-q2",
+          "kind": "lookup-sparse",
+          "text": "In the \"results\" list, what is \"abstract\" for the item whose \"document_number\" is 2026-20280? If that item has no \"abstract\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-federalregister-documents-q3",
+          "kind": "count-where",
+          "text": "How many items in the \"results\" list have \"type\" equal to Presidential Document?",
+          "answers": [
+            "5"
+          ]
+        },
+        {
+          "id": "payload-federalregister-documents-q4",
+          "kind": "lookup",
+          "text": "In the \"results\" list, what is \"type\" for the item whose \"document_number\" is 2026-20271? If that item has no \"type\" value, answer none.",
+          "answers": [
+            "Notice"
+          ]
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "openbrewerydb",
+      "name": "breweries",
+      "url": "https://api.openbrewerydb.org/v1/breweries?per_page=50",
+      "sha256": "f4ed3b55dbf02ab3e5d54317a614784899ad0b7a9bcc724db809f899eed1a09e",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 8213,
+      "questions": [
+        {
+          "id": "payload-openbrewerydb-breweries-q1",
+          "kind": "lookup",
+          "text": "In the result, what is \"name\" for the item whose \"id\" is 7531dbd8-afc9-4b5b-95bc-7ece7f2c0bf3? If that item has no \"name\" value, answer none.",
+          "answers": [
+            "10-56 Brewing Company"
+          ]
+        },
+        {
+          "id": "payload-openbrewerydb-breweries-q2",
+          "kind": "lookup-sparse",
+          "text": "In the result, what is \"longitude\" for the item whose \"id\" is 9c5a66c8-cc13-416f-a5d9-0a769c87d318? If that item has no \"longitude\" value, answer none.",
+          "answers": [
+            "none"
+          ]
+        },
+        {
+          "id": "payload-openbrewerydb-breweries-q3",
+          "kind": "count-where",
+          "text": "How many items in the result have \"brewery_type\" equal to large?",
+          "answers": [
+            "7"
+          ]
+        },
+        {
+          "id": "payload-openbrewerydb-breweries-q4",
+          "kind": "lookup",
+          "text": "In the result, what is \"street\" for the item whose \"id\" is 9c5a66c8-cc13-416f-a5d9-0a769c87d318? If that item has no \"street\" value, answer none.",
+          "answers": [
+            "407 Radam Ln Ste F200"
+          ]
+        }
+      ]
+    }
+  ]
+}
