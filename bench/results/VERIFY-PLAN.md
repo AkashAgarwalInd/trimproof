@@ -566,3 +566,58 @@ Records go to `verify-2026-10/diag/`, one file per repeat and limit.
   |---|---|---|
   | tuning ([PAYLOADS.md](verify-2026-10/PAYLOADS.md)) | 30/40 → 27/40 | 34.2% → 30.2% |
   | held-out ([PAYLOADS-HELDOUT.md](verify-2026-10/PAYLOADS-HELDOUT.md)) | 11/19 → 8/19 | 35.7% → 32.5% |
+
+## Amendment 7: row key and marked prefixes (before any result)
+
+**Date:** 2026-10-02, after pilot 3 and the outlier check in [PILOT.md](verify-2026-10/PILOT.md#outlier-check-on-toonx-3-2026-10-02), before any call with the changes below.
+
+**Why.** The outlier check found two costs in toonx 3:
+- **Lookups need a join across parts.** The field used to find a row (usually `id`) and the field asked for are often in different parts. Models then find the row number in one part and read the other part, and nemotron writes out every row while doing it.
+- **"starts with" prefixes are left off.** gpt-oss answered `shows/266` without its prefix, twice.
+
+**Change 1: row key (toonx 4).**
+- **The key column:** each part of a split table starts with the row's key field k, as column `#k`, in place of the row number. The field itself is not repeated elsewhere.
+- **Choosing the key:** a top-level field that every row has, a string or number, unique across rows. Preference order: `id`, then names ending in `id`, `key`, then `name`.
+- **No key:** the parts start with the row number `#`, as in toonx 3.
+- **The rule was written without looking at the questions.** It names the question's lookup field in 66 of the 87 lookups in the registered set. The other 21 lookups still need a join.
+
+**Change 2: marked prefixes (toonx 4).**
+- **The mark:** in a column with a "starts with" line, each value is written as `~` followed by its rest.
+- **The primer** now says that `~x` means the prefix followed by x.
+
+**Earlier versions stay available, byte for byte:**
+- **`toonx3`** reproduces pilot 3's `toonx-split` arm on all 36 payloads; `toonx-split` is now an alias for it.
+- **`toonx2`** reproduces version 2; it still selects the registered Q&A set, and `data/payload-qa/manifest.json` is unchanged.
+
+**Offline cost** ([TOONX4-TOKENS.md](verify-2026-10/TOONX4-TOKENS.md)), input tokens against compact JSON on the 36 payloads:
+
+| format | input saved |
+|---|---:|
+| toonx 2 | 33.7% |
+| toonx 3 | 28.2% |
+| toonx 4 | 23.6% |
+
+The coverage reports are regenerated for toonx 4:
+
+| set | eligible payloads | input saved over all payloads |
+|---|---|---|
+| tuning | 27/40 → 24/40 | 30.2% → 27.0% |
+| held-out | 8/19 → 8/19 | 32.5% → 28.0% |
+
+**Pilot 4.**
+- **Questions:** pilot 3's 10 questions (seed 2004).
+- **Models:** the same 3 models.
+- **Arms:** `json-compact`, `toonx3` and `toonx` (version 4), at `-max-tokens 16384`.
+- **Repeats:** each call is made twice, to `verify-2026-10/pilot4-r1.jsonl` and `pilot4-r2.jsonl`. That is 180 calls.
+- **Cost** as in Amendment 6: input + 4 × output tokens, summed over both repeats and the questions where every arm returned a record.
+
+**Reading, fixed now:**
+- **A candidate (`toonx3` or `toonx` version 4) qualifies** if both hold:
+  - its pooled cost saving against `json-compact` is at least 15%;
+  - on every model it answers at most 2 fewer correctly than `json-compact`, out of 20.
+- **Choosing:** of the qualifying candidates, the one with the larger pooled cost saving is used in the full run.
+- **If neither qualifies,** the full run's toonx arm uses toonx only on tables of at most 8 varying columns, and the claims narrow as in Amendment 6.
+- **Always reported, whatever the outcome:**
+  - every model's cost saving;
+  - output tokens on lookups;
+  - the number of answers that leave out a "starts with" prefix.
