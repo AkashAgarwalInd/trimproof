@@ -258,7 +258,7 @@ func TestPrimerFor(t *testing.T) {
 	if got := (Codec{}).PrimerFor([][]byte{[]byte(list)}); got != base+primerJSON+primerList {
 		t.Fatalf("list primer:\n%s", got)
 	}
-	if (Codec{}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList+primerConst+primerPrefix {
+	if (Codec{}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList+primerConst+primerPrefix+primerSplit {
 		t.Fatal("full primer must describe every extension")
 	}
 }

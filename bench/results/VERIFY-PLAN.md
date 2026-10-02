@@ -553,3 +553,16 @@ Records go to `verify-2026-10/diag/`, one file per repeat and limit.
 - **`toonx-split` qualifies:** 35.0% pooled cost saving. Correct answers: gpt-oss 8, nemotron 10, glm 10, against JSON's 9, 9 and 10.
 - **toonx does not qualify:** −2.2%.
 - **Next:** `toonx-split` is built into the toonx codec as version 3, and the full run's toonx arm uses it.
+
+**Built as toonx version 3,** before any further call:
+- **Output check:** on all 36 payloads, the codec's bytes and primer are identical to pilot 3's `toonx-split` arm.
+- **Format names:** `toonx` now sends version 3, and `toonx-split` is an alias for it. Version 2 is still available as `toonx2`, identical to pilot 3's toonx arm on all 36 payloads.
+- **The payload Q&A set stays as registered.** It was chosen by toonx 2's gates, and still is: the selection now names `toonx2`. Under the registered seed, the only change to `data/payload-qa/manifest.json` is its `codec` label.
+  - Under toonx 3's gates, 8 of the 36 would fall below the 15% savings gate, because splitting costs some input tokens.
+  - The full run keeps all 36 payloads. For those 8, the write-up must say that the gateway would have sent JSON.
+- **Coverage reports regenerated for toonx 3:**
+
+  | set | eligible payloads (toonx 2 → 3) | input saved over all payloads (toonx 2 → 3) |
+  |---|---|---|
+  | tuning ([PAYLOADS.md](verify-2026-10/PAYLOADS.md)) | 30/40 → 27/40 | 34.2% → 30.2% |
+  | held-out ([PAYLOADS-HELDOUT.md](verify-2026-10/PAYLOADS-HELDOUT.md)) | 11/19 → 8/19 | 35.7% → 32.5% |

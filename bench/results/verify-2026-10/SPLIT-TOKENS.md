@@ -4,7 +4,8 @@ Made before any `toonx-split` call, for [Amendment 6](../VERIFY-PLAN.md#amendmen
 - **`toonx-split`:** toonx with every table of more than 8 varying columns cut into tables of at most 8 columns. Each starts with a row-number column `#`.
 - **`toonx-narrow`:** toonx when no table is wider than 8 varying columns, otherwise compact JSON. Not sent to models.
 
-Reproduce: `go run ./cmd/bench format-tokens -source payloads -seed 2004 -formats json-compact,toonx,toonx-split,toonx-narrow`
+Reproduce: `go run ./cmd/bench format-tokens -source payloads -seed 2004 -formats json-compact,toonx2,toonx-split,toonx-narrow`
+- The `toonx` column was toonx version 2. Since toonx 3, that format is named `toonx2`.
 
 | dataset | json-compact | toonx | toonx-split | toonx-narrow |
 |---|---:|---:|---:|---:|

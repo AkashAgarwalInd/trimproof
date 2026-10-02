@@ -12,13 +12,18 @@
 //   - a field with the same value in every row is written once, on an
 //     "all rows: a=x" line under the header, instead of in each row;
 //   - in a column of URLs, a shared start is written once, on a
-//     "starts with: a=p" line, and left out of the column's strings.
+//     "starts with: a=p" line, and left out of the column's strings;
+//   - an array of objects with more than 8 varying columns is split into
+//     tables part1, part2, … of at most 8 columns, each starting with the
+//     row number "#". On wider tables models count commas to find a column,
+//     which costs them thousands of output tokens.
 //
-// The last two apply only when they make the table shorter. Neither line can
-// be read as a row: an unquoted cell never holds a colon.
+// The "all rows" and "starts with" lines apply only when they make the table
+// shorter. Neither line can be read as a row: an unquoted cell never holds a
+// colon.
 //
-// On a flat array of uniform objects with no constant field and no URL
-// column the output is the same as TOON's. The
+// On a flat array of uniform objects with at most 8 columns, no constant
+// field and no URL column the output is the same as TOON's. The
 // encoder and decoder are trimproof's own; every Encode decodes its output
 // again and fails with codec.ErrIneligible unless the round trip is exact,
 // so number literals and strings are kept byte for byte.
@@ -45,6 +50,7 @@ const (
 	primerList   = ` "key[N]:" followed by "- " lines is a list of N items.`
 	primerConst  = ` A line "all rows: a=x" under a table header means every row also has field a with value x.`
 	primerPrefix = ` A line "starts with: a=p" under a table header means every text value of field a starts with p, which is left out of the rows: put p back in front.`
+	primerSplit  = ` A wide array may be split into tables part1, part2 and so on: they hold the same rows in the same order, and column # is the row number.`
 )
 
 // Codec is the toonx codec. The zero value is ready to use.
@@ -52,16 +58,18 @@ type Codec struct {
 	// NoFactor turns off the "all rows:" and "starts with:" lines, which
 	// gives version 1's output. The benchmark uses it to compare versions.
 	NoFactor bool
+	// NoSplit keeps wide tables whole, which gives version 2's output.
+	NoSplit bool
 }
 
 func init() { codec.Register(Codec{}) }
 
 func (Codec) Name() string    { return "toonx" }
-func (Codec) Version() string { return "2" }
+func (Codec) Version() string { return "3" }
 
 // Primer is TOON's primer with every extension described.
 func (Codec) Primer() string {
-	return toon.Codec{}.Primer() + primerAbsent + primerPaths + primerJSON + primerList + primerConst + primerPrefix
+	return toon.Codec{}.Primer() + primerAbsent + primerPaths + primerJSON + primerList + primerConst + primerPrefix + primerSplit
 }
 
 // PrimerFor implements codec.DynamicPrimer: TOON's primer, plus only the
@@ -76,7 +84,7 @@ func (c Codec) PrimerWith(base string, encoded [][]byte) string {
 	var f features
 	for _, b := range encoded {
 		if _, err := decode(b, &f); err != nil {
-			f = features{true, true, true, true, true, true}
+			f = features{true, true, true, true, true, true, true}
 			break
 		}
 	}
@@ -85,7 +93,7 @@ func (c Codec) PrimerWith(base string, encoded [][]byte) string {
 		used bool
 		text string
 	}{{f.absent, primerAbsent}, {f.paths, primerPaths}, {f.json, primerJSON}, {f.list, primerList},
-		{f.consts, primerConst}, {f.prefix, primerPrefix}} {
+		{f.consts, primerConst}, {f.prefix, primerPrefix}, {f.split, primerSplit}} {
 		if x.used {
 			p += x.text
 		}
@@ -132,6 +140,9 @@ func (c Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) 
 // EncodeValue implements codec.ValueEncoder.
 func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte, error) {
 	e := &encoder{noFactor: c.NoFactor}
+	if !c.NoSplit {
+		v, _ = split(v)
+	}
 	switch t := v.(type) {
 	case map[string]any:
 		e.object(0, t)

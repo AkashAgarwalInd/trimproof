@@ -1,5 +1,5 @@
 {
-  "codec": "toonx",
+  "codec": "toonx2",
   "seed": 1000,
   "rule": "largest array of objects cut to its first 20 rows, halved until \u003c= 16000 o200k tokens (min 5 rows); kept only if the default gates encode it; up to 4 questions per payload",
   "items": [

@@ -48,8 +48,9 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/internal/bench/wtq"
 )
 
-// payloadCodec is the codec whose gates choose the payload Q&A set.
-const payloadCodec = "toonx"
+// payloadCodec is the codec whose gates choose the payload Q&A set: toonx
+// version 2, which chose the registered set.
+const payloadCodec = "toonx2"
 
 func main() {
 	if len(os.Args) < 2 {

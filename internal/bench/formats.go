@@ -60,46 +60,35 @@ func Render(format string, d *Dataset) (string, string, error) {
 		}
 		return string(enc), toonx.Codec{}.PrimerWith(shortPrimer, [][]byte{enc}), nil
 	case "toonx1":
-		// toonx without the version 2 forms: version 1's bytes and primer.
-		c := toonx.Codec{NoFactor: true}
+		// toonx without the version 2 and 3 forms: version 1's bytes and primer.
+		c := toonx.Codec{NoFactor: true, NoSplit: true}
 		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})
 		if err != nil {
 			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
 		}
 		return string(enc), c.PrimerFor([][]byte{enc}), nil
 	case "toonx-split":
-		// Amendment 6: wide tables cut into tables of at most splitWidth
-		// columns.
-		v, err := canonical.Parse(canon)
-		if err != nil {
-			return "", "", err
-		}
-		sv, split := splitWide(v)
-		b, err := canonical.Marshal(sv)
-		if err != nil {
-			return "", "", err
-		}
-		c := toonx.Codec{}
-		enc, err := c.Encode(b, codec.Options{Mode: codec.Strict})
+		// Pilot 3's name for toonx 3, whose split of wide tables it tested.
+		return Render("toonx", d)
+	case "toonx2":
+		// toonx without the version 3 split: version 2's bytes and primer.
+		c := toonx.Codec{NoSplit: true}
+		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})
 		if err != nil {
 			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
 		}
-		primer := c.PrimerFor([][]byte{enc})
-		if split {
-			primer += splitPrimer
-		}
-		return string(enc), primer, nil
+		return string(enc), c.PrimerFor([][]byte{enc}), nil
 	case "toonx-narrow":
-		// Offline comparison only: toonx when no table is wider than
-		// splitWidth varying columns, otherwise compact JSON.
-		v, err := canonical.Parse(canon)
+		// Offline comparison only: toonx when it splits nothing, otherwise
+		// compact JSON.
+		text, primer, err := Render("toonx", d)
 		if err != nil {
 			return "", "", err
 		}
-		if _, wide := splitWide(v); wide {
+		if whole, _, err := Render("toonx2", d); err != nil || whole != text {
 			return Render("json-compact", d)
 		}
-		return Render("toonx", d)
+		return text, primer, nil
 	case "toon", "toonx", "tabular":
 		c, _ := codec.Get(format)
 		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})

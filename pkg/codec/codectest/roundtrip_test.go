@@ -19,6 +19,8 @@ var seeds = []string{
 	`[{"s":"123"},{"s":"true"},{"s":"null"},{"s":""},{"s":" padded "},{"s":"-dash"}]`,
 	`[{"n":null,"b":true},{"n":3,"b":false}]`,
 	`[{"nested":{"x":[1,2,3]},"k":"v"},{"nested":{"x":[4]},"k":"w"}]`,
+	// Wide enough for toonx to split into parts.
+	`[{"a":1,"b":2,"c":3,"d":4,"e":5,"u":{"f":6,"g":"https://x.io/u/1","h":{"i":7}},"j":8,"k":"z"},{"a":2,"b":3,"c":4,"d":5,"e":6,"u":{"f":7,"g":"https://x.io/u/2","h":{"i":8}},"j":9,"k":"y"},{"a":3,"b":4,"c":5,"d":6,"e":7,"u":{"f":8,"g":"https://x.io/u/3","h":{"i":9}},"j":10}]`,
 	`[{"ctl":"\u0001"}]`,
 	`[{"é":"ünïcode","日本":"語"}]`,
 	`[{"a":1},{"b":2}]`,

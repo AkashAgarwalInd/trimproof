@@ -19,7 +19,7 @@ func (Codec) Decode(encoded []byte) ([]byte, error) {
 }
 
 // features records which extensions to TOON a document uses.
-type features struct{ absent, paths, json, list, consts, prefix bool }
+type features struct{ absent, paths, json, list, consts, prefix, split bool }
 
 func decode(encoded []byte, f *features) ([]byte, error) {
 	d := &decoder{lines: strings.Split(string(encoded), "\n"), f: f}
@@ -32,6 +32,9 @@ func decode(encoded []byte, f *features) ([]byte, error) {
 	}
 	if err == nil && d.pos != len(d.lines) {
 		err = d.errf("unexpected content")
+	}
+	if err == nil {
+		v, err = join(v, f)
 	}
 	if err != nil {
 		return nil, err
