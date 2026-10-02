@@ -45,13 +45,12 @@ func TestGolden(t *testing.T) {
 		// A field with one value in every row is written once.
 		{`[{"id":1,"admin":false,"u":{"t":"User"}},{"id":2,"admin":false,"u":{"t":"User"}},{"id":3,"admin":false,"u":{"t":"User"}}]`,
 			"[3]{id}:\n  all rows: admin=false,u.t=User\n  1\n  2\n  3"},
-		// A shared URL start is written once, cut at a '/', and each rest
-		// starts with ~; null stays null.
+		// A shared URL start is written once, cut at a '/'; null stays null.
 		{`[{"id":1,"url":"https://api.github.com/users/ann"},{"id":2,"url":"https://api.github.com/users/bo"},{"id":3,"url":null},{"id":4,"url":"https://api.github.com/users/"}]`,
-			"[4]{id,url}:\n  starts with: url=\"https://api.github.com/users/\"\n  1,~ann\n  2,~bo\n  3,null\n  4,~"},
+			"[4]{id,url}:\n  starts with: url=\"https://api.github.com/users/\"\n  1,ann\n  2,bo\n  3,null\n  4,\"\""},
 		// A rest of only digits would read as a number: cut one '/' earlier.
 		{`[{"id":1,"u":"https://api.tvmaze.com/shows/266"},{"id":2,"u":"https://api.tvmaze.com/shows/7"},{"id":3,"u":"https://api.tvmaze.com/shows/8"}]`,
-			"[3]{id,u}:\n  starts with: u=\"https://api.tvmaze.com/\"\n  1,~shows/266\n  2,~shows/7\n  3,~shows/8"},
+			"[3]{id,u}:\n  starts with: u=\"https://api.tvmaze.com/\"\n  1,shows/266\n  2,shows/7\n  3,shows/8"},
 		// Fewer than 3 rows, or no gain: nothing is factored.
 		{`[{"a":"same","id":1},{"a":"same","id":2}]`, "[2]{a,id}:\n  same,1\n  same,2"},
 		{`[{"u":"https://a.io/x","v":"http://x"},{"u":"https://b.io/x","v":"http://y"},{"u":"https://c.io/x","v":"http://z"}]`,
@@ -252,14 +251,17 @@ func TestPrimerFor(t *testing.T) {
 		t.Fatalf("primer:\n%s\nfor\n%s", got, nested)
 	}
 	factored := encode(t, `[{"a":"constant","u":"https://example.com/users/1"},{"a":"constant","u":"https://example.com/users/2"},{"a":"constant","u":"https://example.com/users/3"}]`)
-	if got := (Codec{}).PrimerFor([][]byte{[]byte(factored)}); got != base+primerConst+primerMark {
+	if got := (Codec{}).PrimerFor([][]byte{[]byte(factored)}); got != base+primerConst+primerPrefix {
 		t.Fatalf("factored primer:\n%s\nfor\n%s", got, factored)
 	}
 	list := encode(t, `{"x":[1,[2]]}`)
 	if got := (Codec{}).PrimerFor([][]byte{[]byte(list)}); got != base+primerJSON+primerList {
 		t.Fatalf("list primer:\n%s", got)
 	}
-	if (Codec{}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList+primerConst+primerMark+primerSplit+primerKeyed {
+	if (Codec{}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList+primerConst+primerPrefix+primerSplit {
+		t.Fatal("full primer must describe every extension")
+	}
+	if (Codec{RowKey: true, Mark: true}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList+primerConst+primerMark+primerSplit+primerKeyed {
 		t.Fatal("full primer must describe every extension")
 	}
 }

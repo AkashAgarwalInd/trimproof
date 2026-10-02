@@ -15,7 +15,7 @@ import (
 // Decode parses a toonx document and returns canonical JSON. It accepts
 // only the forms the encoder writes.
 func (c Codec) Decode(encoded []byte) ([]byte, error) {
-	return decode(encoded, &features{}, !c.NoMark)
+	return decode(encoded, &features{}, c.Mark)
 }
 
 // features records which extensions to TOON a document uses.

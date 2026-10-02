@@ -12,13 +12,11 @@
 //   - a field with the same value in every row is written once, on an
 //     "all rows: a=x" line under the header, instead of in each row;
 //   - in a column of URLs, a shared start is written once, on a
-//     "starts with: a=p" line, and each string is written as ~ and its rest;
+//     "starts with: a=p" line, and left out of the column's strings;
 //   - an array of objects with more than 8 varying columns is split into
-//     tables part1, part2, … of at most 8 columns. Each starts with the
-//     row's key field k as column "#k" (the row number "#" when rows have
-//     no unique key), so a row is found in any part without a join. On wider
-//     tables models count commas to find a column, which costs them
-//     thousands of output tokens.
+//     tables part1, part2, … of at most 8 columns, each starting with the
+//     row number "#". On wider tables models count commas to find a column,
+//     which costs them thousands of output tokens.
 //
 // The "all rows" and "starts with" lines apply only when they make the table
 // shorter. Neither line can be read as a row: an unquoted cell never holds a
@@ -64,27 +62,32 @@ type Codec struct {
 	NoFactor bool
 	// NoSplit keeps wide tables whole, which gives version 2's output.
 	NoSplit bool
-	// NoRowKey starts every part of a split table with the row number, not
-	// the row's key field. With NoMark it gives version 3's output.
-	NoRowKey bool
-	// NoMark writes a prefixed value's rest without the leading ~.
-	NoMark bool
+	// RowKey starts every part of a split table with the row's key field,
+	// not the row number, and Mark writes a prefixed value's rest after a ~.
+	// Together they give version 4's output, which pilot 4 tested and did
+	// not adopt (Amendment 7).
+	RowKey bool
+	Mark   bool
 }
 
 func init() { codec.Register(Codec{}) }
 
 func (Codec) Name() string    { return "toonx" }
-func (Codec) Version() string { return "4" }
+func (Codec) Version() string { return "3" }
 
 // Primer is TOON's primer with every extension described.
 func (c Codec) Primer() string {
 	p := toon.Codec{}.Primer() + primerAbsent + primerPaths + primerJSON + primerList + primerConst
-	if c.NoMark {
+	if !c.Mark {
 		p += primerPrefix
 	} else {
 		p += primerMark
 	}
-	return p + primerSplit + primerKeyed
+	p += primerSplit
+	if c.RowKey {
+		p += primerKeyed
+	}
+	return p
 }
 
 // PrimerFor implements codec.DynamicPrimer: TOON's primer, plus only the
@@ -98,7 +101,7 @@ func (c Codec) PrimerFor(encoded [][]byte) string {
 func (c Codec) PrimerWith(base string, encoded [][]byte) string {
 	var f features
 	for _, b := range encoded {
-		if _, err := decode(b, &f, !c.NoMark); err != nil {
+		if _, err := decode(b, &f, c.Mark); err != nil {
 			f = features{true, true, true, true, true, true, true, true}
 			break
 		}
@@ -108,7 +111,7 @@ func (c Codec) PrimerWith(base string, encoded [][]byte) string {
 		used bool
 		text string
 	}{{f.absent, primerAbsent}, {f.paths, primerPaths}, {f.json, primerJSON}, {f.list, primerList},
-		{f.consts, primerConst}, {f.prefix && c.NoMark, primerPrefix}, {f.prefix && !c.NoMark, primerMark},
+		{f.consts, primerConst}, {f.prefix && !c.Mark, primerPrefix}, {f.prefix && c.Mark, primerMark},
 		{f.split, primerSplit}, {f.keyed, primerKeyed}} {
 		if x.used {
 			p += x.text
@@ -155,9 +158,9 @@ func (c Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) 
 
 // EncodeValue implements codec.ValueEncoder.
 func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte, error) {
-	e := &encoder{noFactor: c.NoFactor, mark: !c.NoMark}
+	e := &encoder{noFactor: c.NoFactor, mark: c.Mark}
 	if !c.NoSplit {
-		v, _ = split(v, !c.NoRowKey)
+		v, _ = split(v, c.RowKey)
 	}
 	switch t := v.(type) {
 	case map[string]any:

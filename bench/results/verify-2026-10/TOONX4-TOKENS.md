@@ -5,7 +5,8 @@ Made before any toonx 4 call, for [Amendment 7](../VERIFY-PLAN.md#amendment-7-ro
 - `toonx3`: version 3, as tested in pilot 3.
 - `toonx`: version 4. Each part starts with the row's key field, and prefixed values start with `~`.
 
-Reproduce: `go run ./cmd/bench format-tokens -source payloads -seed 2004 -formats json-compact,toonx2,toonx3,toonx`
+Reproduce: `go run ./cmd/bench format-tokens -source payloads -seed 2004 -formats json-compact,toonx2,toonx3,toonx4`
+- The `toonx` column was version 4. Since pilot 4, that format is named `toonx4`.
 
 | dataset | json-compact | toonx2 | toonx3 | toonx |
 |---|---:|---:|---:|---:|

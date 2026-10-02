@@ -22,7 +22,12 @@ func wideRows(n int) string {
 
 func TestSplitWide(t *testing.T) {
 	in := `{"total":4,"items":` + wideRows(4) + `}`
-	enc := encode(t, in) // Encode fails unless the round trip is exact
+	v4 := Codec{RowKey: true, Mark: true}
+	b, err := v4.Encode([]byte(in), codec.Options{}) // fails unless the round trip is exact
+	if err != nil {
+		t.Fatal(err)
+	}
+	enc := string(b)
 	want := `items:
   part1[4]{"#id",a,b,c,d,e,name}:
     all rows: r.z=null,same=1
@@ -39,8 +44,9 @@ total: 4`
 	if enc != want {
 		t.Fatalf("got\n%s\nwant\n%s", enc, want)
 	}
-	// Version 3: parts start with the row number, and id is a column.
-	v3 := Codec{NoRowKey: true, NoMark: true}
+	// Version 3 (the default): parts start with the row number, and id is a
+	// column.
+	v3 := Codec{}
 	old, err := v3.Encode([]byte(in), codec.Options{})
 	if err != nil || !strings.Contains(string(old), `part1[4]{"#",a,b,c,d,e,id,name}:`) || !strings.Contains(string(old), "\n    4,3,3,3,3,3,13,n3\n") {
 		t.Fatalf("version 3:\n%s\n%v", old, err)
@@ -48,7 +54,7 @@ total: 4`
 	if got := v3.PrimerFor([][]byte{old}); !strings.HasSuffix(got, primerSplit) {
 		t.Fatalf("version 3 primer:\n%s", got)
 	}
-	if got := (Codec{}).PrimerFor([][]byte{[]byte(enc)}); !strings.HasSuffix(got, primerKeyed) {
+	if got := v4.PrimerFor([][]byte{[]byte(enc)}); !strings.HasSuffix(got, primerKeyed) {
 		t.Fatalf("primer lacks the split sentence:\n%s", got)
 	}
 	whole, err := Codec{NoSplit: true}.Encode([]byte(in), codec.Options{})
@@ -118,16 +124,18 @@ func TestSplitRoundTrip(t *testing.T) {
 			rows = append(rows, row)
 		}
 		js, _ := canonical.Marshal(map[string]any{"items": rows})
-		enc, err := Codec{}.Encode(js, codec.Options{})
-		if err != nil {
-			t.Fatalf("Encode(%s): %v", js, err)
-		}
-		if strings.Contains(string(enc), "part1[") {
-			splits++
+		for _, c := range []Codec{{}, {RowKey: true, Mark: true}} {
+			enc, err := c.Encode(js, codec.Options{})
+			if err != nil {
+				t.Fatalf("%+v Encode(%s): %v", c, js, err)
+			}
+			if strings.Contains(string(enc), "part1[") {
+				splits++
+			}
 		}
 	}
-	if splits < 100 {
-		t.Fatalf("only %d of 1000 tables were split", splits)
+	if splits < 200 {
+		t.Fatalf("only %d of 2000 encodings were split", splits)
 	}
 }
 
@@ -191,8 +199,8 @@ func TestRowKey(t *testing.T) {
 		{func(i int) string { return `"id":1,"name":"same",` }, `"#"`},                    // both repeat
 		{func(i int) string { return fmt.Sprintf(`"title":"t%d","x":%d,`, i, i) }, `"#"`}, // no key-like field
 	} {
-		enc := encode(t, wide(c.extra))
-		if !strings.Contains(enc, "part1[3]{"+c.lead+",") {
+		enc, err := Codec{RowKey: true}.Encode([]byte(wide(c.extra)), codec.Options{})
+		if err != nil || !strings.Contains(string(enc), "part1[3]{"+c.lead+",") {
 			t.Errorf("want lead %s:\n%s", c.lead, enc)
 		}
 	}
@@ -224,11 +232,11 @@ func TestKeyedDecode(t *testing.T) {
 
 func TestMark(t *testing.T) {
 	doc := "[3]{u}:\n  starts with: u=\"https://x.io/\"\n  ~a\n  b\n  ~c"
-	if got, err := (Codec{}).Decode([]byte(doc)); err == nil {
+	if got, err := (Codec{Mark: true}).Decode([]byte(doc)); err == nil {
 		t.Errorf("decoded a prefixed value without ~: %s", got)
 	}
-	got, err := Codec{NoMark: true}.Decode([]byte(doc))
+	got, err := Codec{}.Decode([]byte(doc))
 	if want := `[{"u":"https://x.io/~a"},{"u":"https://x.io/b"},{"u":"https://x.io/~c"}]`; err != nil || string(got) != want {
-		t.Errorf("NoMark: %s %v", got, err)
+		t.Errorf("without Mark: %s %v", got, err)
 	}
 }

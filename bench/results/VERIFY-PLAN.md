@@ -621,3 +621,9 @@ The coverage reports are regenerated for toonx 4:
   - every model's cost saving;
   - output tokens on lookups;
   - the number of answers that leave out a "starts with" prefix.
+
+**Outcome** ([PILOT.md](verify-2026-10/PILOT.md#pilot-4-toonx-4-against-toonx-3-2026-10-0203)):
+- **Both versions qualify.** toonx 3 saves 30.1% cost pooled and toonx 4 21.6%.
+- **toonx 3 is chosen.** toonx 4 is not adopted.
+- **The codec's default is version 3 again,** byte for byte as in pilot 3. Version 4 remains available as the `toonx4` bench format.
+- **The full run's toonx arm uses toonx 3.**

@@ -13,4 +13,4 @@ type toonx2 struct{ toonx.Codec }
 func (toonx2) Name() string    { return "toonx2" }
 func (toonx2) Version() string { return "2" }
 
-func init() { codec.Register(toonx2{toonx.Codec{NoSplit: true, NoMark: true}}) }
+func init() { codec.Register(toonx2{toonx.Codec{NoSplit: true}}) }
