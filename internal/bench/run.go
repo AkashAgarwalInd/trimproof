@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand/v2"
 	"os"
 	"slices"
 	"strings"
@@ -228,6 +229,54 @@ func ReadRecords(path string) ([]Record, error) {
 		out = append(out, r)
 	}
 	return out, sc.Err()
+}
+
+// SampleQuestions keeps n questions across datasets, drawn at random with
+// seed and spread over question kinds: it takes one question of each kind in
+// turn until n are taken. Datasets left without questions are dropped; n <= 0
+// keeps all.
+func SampleQuestions(ds []*Dataset, n int, seed uint64) []*Dataset {
+	if n <= 0 {
+		return ds
+	}
+	type pick struct{ d, q int }
+	byKind := map[string][]pick{}
+	var kinds []string
+	for i, d := range ds {
+		for j, q := range d.Questions {
+			if byKind[q.Kind] == nil {
+				kinds = append(kinds, q.Kind)
+			}
+			byKind[q.Kind] = append(byKind[q.Kind], pick{i, j})
+		}
+	}
+	r := rand.New(rand.NewPCG(seed, 0x5a3b1e))
+	for _, k := range kinds {
+		r.Shuffle(len(byKind[k]), func(a, b int) { byKind[k][a], byKind[k][b] = byKind[k][b], byKind[k][a] })
+	}
+	keep := map[pick]bool{}
+	for left := true; left && len(keep) < n; {
+		left = false
+		for _, k := range kinds {
+			if len(byKind[k]) > 0 && len(keep) < n {
+				keep[byKind[k][0]], byKind[k], left = true, byKind[k][1:], true
+			}
+		}
+	}
+	var out []*Dataset
+	for i, d := range ds {
+		c := *d
+		c.Questions = nil
+		for j, q := range d.Questions {
+			if keep[pick{i, j}] {
+				c.Questions = append(c.Questions, q)
+			}
+		}
+		if len(c.Questions) > 0 {
+			out = append(out, &c)
+		}
+	}
+	return out
 }
 
 // LimitQuestions keeps the first n questions across datasets, in order;

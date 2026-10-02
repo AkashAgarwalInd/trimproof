@@ -42,3 +42,31 @@ func TestDatasetsRenderInEveryFormat(t *testing.T) {
 		}
 	}
 }
+
+func TestSampleQuestions(t *testing.T) {
+	ds := []*Dataset{
+		{Name: "a", Questions: []Question{{ID: "a1", Kind: "x"}, {ID: "a2", Kind: "x"}, {ID: "a3", Kind: "y"}}},
+		{Name: "b", Questions: []Question{{ID: "b1", Kind: "x"}, {ID: "b2", Kind: "z"}}},
+	}
+	got := SampleQuestions(ds, 3, 7)
+	kinds := map[string]bool{}
+	n := 0
+	for _, d := range got {
+		for _, q := range d.Questions {
+			kinds[q.Kind] = true
+			n++
+		}
+	}
+	if n != 3 || len(kinds) != 3 {
+		t.Fatalf("sample of 3 = %d questions over %d kinds, want 3 over 3", n, len(kinds))
+	}
+	if len(ds[0].Questions) != 3 || len(SampleQuestions(ds, 0, 7)) != 2 {
+		t.Fatal("sampling must not change its input, and 0 keeps all")
+	}
+	again := SampleQuestions(ds, 3, 7)
+	for i := range got {
+		if got[i].Name != again[i].Name || len(got[i].Questions) != len(again[i].Questions) {
+			t.Fatal("sample is not deterministic")
+		}
+	}
+}

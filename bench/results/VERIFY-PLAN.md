@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
-**Amended once,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result). Where the two differ, the amendment applies. The original text below is unchanged.
+**Amended twice,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result) and [Amendment 2](#amendment-2-pilot-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
 
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
@@ -289,3 +289,38 @@ go run ./cmd/bench run -targets nim:MODEL -source payloads -seed 1000 -formats j
 ```
 
 The verify route becomes `{"tenant_id":"*","route_id":"verify","version":"verify.2","codec":"toonx","state":"ENABLED","shadow_sample_rate":0,"audit_sample_rate":0}`.
+
+## Amendment 2: pilot (before any result)
+
+Before the full run, a pilot of about 100 free NIM calls checks that the run works end to end. Its questions are disjoint from every registered question, and it enters no result.
+
+**What it checks:**
+- each model slot answers (the 5-call smoke check, with the fallbacks of Amendment 1);
+- replies parse and are scored, with no errors, empty replies or truncation;
+- models can answer from the toonx forms on real payloads: nested paths, absent cells and JSON cells;
+- the gateway path serves toonx and records it.
+
+**Data:** synthetic seed 2000, payload Q&A seed 2001 and WikiTableQuestions seed 2002. Questions are drawn with `-sample`, which takes one question of each kind in turn. These seeds were chosen as the first ones whose sampled questions do not appear in the registered sets.
+
+| run | calls |
+|---|---:|
+| smoke: `mistralai/mistral-large`, `google/gemma-4-31b-it`, `deepseek-ai/deepseek-v4.1-flash` (gpt-oss and nemotron passed on 2026-10-02) | 15, +5 per fallback |
+| payload Q&A: 5 questions × (`json-compact`, `toonx`) × 5 models | 50 |
+| synthetic: 3 questions × 4 formats, gpt-oss | 12 |
+| WikiTableQuestions: 3 questions × (`json-compact`, `toonx`), gpt-oss | 6 |
+| gateway path: 4 questions × (`json-compact`, `gateway`), gpt-oss | 8 |
+| **total** | **91, at most 101** |
+
+**Allowed after the pilot without a new amendment:**
+- harness bug fixes;
+- model substitutions under the smoke rule.
+
+Any change to a codec, primer, format or question set would need Amendment 3, committed before the full run, with the pilot numbers that motivated it. Pilot records go to [pilot.jsonl](verify-2026-10/pilot.jsonl), and smoke records to smoke.jsonl.
+
+```sh
+go run ./cmd/bench run -targets nim:MODEL -seed 1000 -n 5 -formats json-compact -max-calls 5 -out bench/results/verify-2026-10/smoke.jsonl
+go run ./cmd/bench run -targets nim:M1,...,nim:M5 -source payloads -seed 2001 -sample 5 -formats json-compact,toonx -max-calls 50 -out bench/results/verify-2026-10/pilot.jsonl
+go run ./cmd/bench run -targets nim:openai/gpt-oss-20b -seed 2000 -sample 3 -formats json-compact,json-compact-2,toonx,toonx-p2 -max-calls 12 -out bench/results/verify-2026-10/pilot.jsonl
+go run ./cmd/bench run -targets nim:openai/gpt-oss-20b -source wtq -n 100 -seed 2002 -sample 3 -formats json-compact,toonx -max-calls 6 -out bench/results/verify-2026-10/pilot.jsonl
+go run ./cmd/bench run -targets nim:openai/gpt-oss-20b -seed 2000 -sample 4 -formats json-compact,gateway -via-gateway http://127.0.0.1:8080/openai/v1 -route verify -max-calls 8 -out bench/results/verify-2026-10/pilot.jsonl
+```

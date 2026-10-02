@@ -81,6 +81,7 @@ func main() {
 	minRows := fs.Int("min-rows", 15, "smallest WTQ table to sample (-source wtq)")
 	fetch := fs.Bool("fetch", false, "download the public API payloads first (payloads)")
 	heldOut := fs.Bool("held-out", false, "use the held-out payload set (payloads)")
+	sample := fs.Int("sample", 0, "keep this many questions, drawn with -seed and spread over kinds (run, dump-data; 0 = all)")
 	_ = fs.Parse(args)
 
 	ds := bench.GenerateSeeds(split(*datasets), ints(*sizes), *seed, *seeds)
@@ -103,6 +104,7 @@ func main() {
 	if *source != "synthetic" && *source != "wtq" && *source != "payloads" {
 		log.Fatalf("unknown -source %q", *source)
 	}
+	ds = bench.SampleQuestions(ds, *sample, *seed)
 	// manifest records which WTQ items or payloads a run or dump used.
 	manifest := func(path string) {
 		if items != nil {
