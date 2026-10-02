@@ -340,8 +340,8 @@ func constant(cells []map[string]any, id string) (any, bool) {
 // urlPrefix returns the start shared by every string of column id, cut
 // after its last '/', when the table has minFactorRows rows, the column
 // holds only strings, null or absent cells, at least two strings, and the
-// start is an http(s) URL with a path beyond the scheme. Otherwise it
-// returns "".
+// start is an http(s) URL with a path beyond the scheme. No string's rest
+// is only digits. Otherwise it returns "".
 func urlPrefix(cells []map[string]any, id string) string {
 	if len(cells) < minFactorRows {
 		return ""
@@ -372,10 +372,20 @@ func urlPrefix(cells []map[string]any, id string) string {
 		return ""
 	}
 	cut := strings.LastIndexByte(p, '/') + 1
+	// A rest that is all digits would read as a number (an id); cut one
+	// segment earlier so it keeps its path, as in shows/266.
+	for cut > scheme+3 && slices.ContainsFunc(strs, func(s string) bool { return digits(s[cut:]) }) {
+		cut = strings.LastIndexByte(p[:cut-1], '/') + 1
+	}
 	if cut <= scheme+3 {
 		return ""
 	}
 	return p[:cut]
+}
+
+// digits reports whether s is non-empty and only ASCII digits.
+func digits(s string) bool {
+	return s != "" && strings.Trim(s, "0123456789") == ""
 }
 
 // collect adds m's leaves to out under their path IDs. With flatten, a

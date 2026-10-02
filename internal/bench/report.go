@@ -51,6 +51,46 @@ func TokenReport(w io.Writer, datasets []*Dataset) error {
 	return nil
 }
 
+// FormatTokenReport writes o200k_base counts (data block + primer) per
+// dataset for formats, each also as a change against the first format.
+func FormatTokenReport(w io.Writer, datasets []*Dataset, formats []string) error {
+	var bpe tokens.BPE
+	fmt.Fprintf(w, "| dataset | %s |\n", strings.Join(formats, " | "))
+	fmt.Fprintf(w, "|---|%s\n", strings.Repeat("---:|", len(formats)))
+	totals := make([]int, len(formats))
+	cell := func(counts []int, i int) string {
+		if i == 0 {
+			return fmt.Sprint(counts[0])
+		}
+		return fmt.Sprintf("%d (%s)", counts[i], pct(counts[0], counts[i]))
+	}
+	for _, d := range datasets {
+		counts := make([]int, len(formats))
+		for i, fm := range formats {
+			text, primer, err := Render(fm, d)
+			if err != nil {
+				return err
+			}
+			counts[i] = bpe.Count(text)
+			if primer != "" {
+				counts[i] += bpe.Count(primer)
+			}
+			totals[i] += counts[i]
+		}
+		cells := make([]string, len(formats))
+		for i := range formats {
+			cells[i] = cell(counts, i)
+		}
+		fmt.Fprintf(w, "| %s | %s |\n", d.ID, strings.Join(cells, " | "))
+	}
+	cells := make([]string, len(formats))
+	for i := range formats {
+		cells[i] = "**" + cell(totals, i) + "**"
+	}
+	fmt.Fprintf(w, "| **all** | %s |\n", strings.Join(cells, " | "))
+	return nil
+}
+
 // pct formats the reduction from base to x as a negative percentage.
 func pct(base, x int) string {
 	if base == 0 {

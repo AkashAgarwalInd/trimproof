@@ -67,6 +67,39 @@ func Render(format string, d *Dataset) (string, string, error) {
 			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
 		}
 		return string(enc), c.PrimerFor([][]byte{enc}), nil
+	case "toonx-split":
+		// Amendment 6: wide tables cut into tables of at most splitWidth
+		// columns.
+		v, err := canonical.Parse(canon)
+		if err != nil {
+			return "", "", err
+		}
+		sv, split := splitWide(v)
+		b, err := canonical.Marshal(sv)
+		if err != nil {
+			return "", "", err
+		}
+		c := toonx.Codec{}
+		enc, err := c.Encode(b, codec.Options{Mode: codec.Strict})
+		if err != nil {
+			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
+		}
+		primer := c.PrimerFor([][]byte{enc})
+		if split {
+			primer += splitPrimer
+		}
+		return string(enc), primer, nil
+	case "toonx-narrow":
+		// Offline comparison only: toonx when no table is wider than
+		// splitWidth varying columns, otherwise compact JSON.
+		v, err := canonical.Parse(canon)
+		if err != nil {
+			return "", "", err
+		}
+		if _, wide := splitWide(v); wide {
+			return Render("json-compact", d)
+		}
+		return Render("toonx", d)
 	case "toon", "toonx", "tabular":
 		c, _ := codec.Get(format)
 		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})

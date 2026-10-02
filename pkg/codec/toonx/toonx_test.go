@@ -48,6 +48,9 @@ func TestGolden(t *testing.T) {
 		// A shared URL start is written once, cut at a '/'; null stays null.
 		{`[{"id":1,"url":"https://api.github.com/users/ann"},{"id":2,"url":"https://api.github.com/users/bo"},{"id":3,"url":null},{"id":4,"url":"https://api.github.com/users/"}]`,
 			"[4]{id,url}:\n  starts with: url=\"https://api.github.com/users/\"\n  1,ann\n  2,bo\n  3,null\n  4,\"\""},
+		// A rest of only digits would read as a number: cut one '/' earlier.
+		{`[{"id":1,"u":"https://api.tvmaze.com/shows/266"},{"id":2,"u":"https://api.tvmaze.com/shows/7"},{"id":3,"u":"https://api.tvmaze.com/shows/8"}]`,
+			"[3]{id,u}:\n  starts with: u=\"https://api.tvmaze.com/\"\n  1,shows/266\n  2,shows/7\n  3,shows/8"},
 		// Fewer than 3 rows, or no gain: nothing is factored.
 		{`[{"a":"same","id":1},{"a":"same","id":2}]`, "[2]{a,id}:\n  same,1\n  same,2"},
 		{`[{"u":"https://a.io/x","v":"http://x"},{"u":"https://b.io/x","v":"http://y"},{"u":"https://c.io/x","v":"http://z"}]`,

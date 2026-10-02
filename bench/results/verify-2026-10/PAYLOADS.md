@@ -9,10 +9,10 @@ Each response body is judged by `policy.Decide` exactly as sent, as one tool res
 | | toonx | toon | tabular |
 |---|---:|---:|---:|
 | payloads eligible | 30 / 40 (75%) | 3 / 40 (8%) | 3 / 40 (8%) |
-| median net savings, eligible payloads | 40.0% | 28.9% | 27.7% |
-| token-weighted net savings, eligible payloads | 43.6% | 25.5% | 25.3% |
-| token-weighted net savings, all payloads (ineligible ones save 0) | 34.4% | 0.6% | 0.6% |
-| median savings vs pretty-printed JSON, eligible payloads | 54.2% | 47.1% | 46.2% |
+| median net savings, eligible payloads | 39.6% | 28.9% | 27.7% |
+| token-weighted net savings, eligible payloads | 43.3% | 25.5% | 25.3% |
+| token-weighted net savings, all payloads (ineligible ones save 0) | 34.2% | 0.6% | 0.6% |
+| median savings vs pretty-printed JSON, eligible payloads | 54.1% | 47.1% | 46.2% |
 
 ## By API
 
@@ -47,17 +47,17 @@ Each codec cell is the net saving when the payload is eligible (**bold**), else 
 
 | API | payload | KB | JSON tok | toonx | toon | tabular |
 |---|---|---:|---:|---|---|---|
-| github | go-issues | 242.2 | 73213 | **33.1%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "assignee" holds a nested container |
-| github | rust-closed-issues | 375.8 | 112853 | **35.9%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "assignees" holds a nested container |
-| github | kubernetes-pulls | 703.7 | 194825 | **45.5%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "_links" holds a nested container |
-| github | cpython-closed-pulls | 533.5 | 150329 | **56.9%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "_links" holds a nested container |
+| github | go-issues | 242.2 | 73213 | **32.8%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "assignee" holds a nested container |
+| github | rust-closed-issues | 375.8 | 112853 | **35.4%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "assignees" holds a nested container |
+| github | kubernetes-pulls | 703.7 | 194825 | **45.3%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "_links" holds a nested container |
+| github | cpython-closed-pulls | 533.5 | 150329 | **56.7%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "_links" holds a nested container |
 | github | linux-commits | 123.6 | 41013 | **25.2%** | structural: ineligible: toon-go round trip failed | structural: ineligible: row 0 key "author" holds a nested container |
-| github | vscode-releases | 38.5 | 11666 | **52.5%** | -13.7% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "assets" holds a nested container |
+| github | vscode-releases | 38.5 | 11666 | **52.1%** | -13.7% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "assets" holds a nested container |
 | github | react-contributors | 93.3 | 25809 | **54.3%** | **22.5%** | **22.8%** |
 | github | node-tags | 39.2 | 16306 | **39.0%** | -6.7% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "commit" holds a nested container |
 | github | go-labels | 25.9 | 8048 | **45.5%** | **28.9%** | **27.7%** |
 | github | google-repos | 268.6 | 70959 | **62.0%** | -10.2% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "custom_properties" holds a nested ... |
-| github | go-workflow-runs | 355.9 | 99976 | **59.4%** | structural: ineligible: toon-go round trip failed | structural: ineligible: top-level value is not an array |
+| github | go-workflow-runs | 355.9 | 99976 | **59.2%** | structural: ineligible: toon-go round trip failed | structural: ineligible: top-level value is not an array |
 | github | search-repos | 161.3 | 46750 | **44.5%** | structural: ineligible: number 1.0 does not survive float64 formatting | structural: ineligible: top-level value is not an array |
 | npm | search-react | 52.0 | 15339 | **30.5%** | -14.2% · net-savings: encoding is not smaller | structural: ineligible: top-level value is not an array |
 | npm | search-cli | 52.1 | 15636 | **28.5%** | -13.2% · net-savings: encoding is not smaller | structural: ineligible: top-level value is not an array |
@@ -79,10 +79,10 @@ Each codec cell is the net saving when the payload is eligible (**bold**), else 
 | nobelprize | laureates | 186.7 | 56472 | **17.6%** | structural: ineligible: toon-go round trip failed | structural: ineligible: top-level value is not an array |
 | nyc-opendata | 311-requests | 118.0 | 35285 | **46.5%** | -13.5% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "location" holds a nested container |
 | nyc-opendata | collisions | 70.5 | 21561 | **51.9%** | -14.1% · net-savings: encoding is not smaller | structural: ineligible: row 1 has 14 keys, want 17 |
-| tvmaze | shows | 350.5 | 96752 | **40.9%** | -13.5% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "_links" holds a nested container |
-| tvmaze | schedule-us | 296.3 | 85712 | **44.9%** | -13.6% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "_links" holds a nested container |
+| tvmaze | shows | 350.5 | 96752 | **40.2%** | -13.5% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "_links" holds a nested container |
+| tvmaze | schedule-us | 296.3 | 85712 | **43.5%** | -13.6% · net-savings: encoding is not smaller | structural: ineligible: row 0 key "_links" holds a nested container |
 | pokeapi | pokemon-list | 6.5 | 2202 | **62.2%** | 14.7% · net-savings: net savings 14.7% < 15.0% | structural: ineligible: top-level value is not an array |
-| artic | artworks | 454.4 | 141499 | 14.9% · net-savings: net savings 14.9% < 15.0% | structural: ineligible: number 2.666754776244474e-6 does not survive ... | structural: ineligible: top-level value is not an array |
+| artic | artworks | 454.4 | 141499 | 14.8% · net-savings: net savings 14.8% < 15.0% | structural: ineligible: number 2.666754776244474e-6 does not survive ... | structural: ineligible: top-level value is not an array |
 | federalregister | documents | 68.6 | 17115 | **22.4%** | structural: ineligible: toon-go round trip failed | structural: ineligible: top-level value is not an array |
 | carbonintensity | uk-today | 8.3 | 2142 | **21.5%** | -22.1% · net-savings: encoding is not smaller | structural: ineligible: top-level value is not an array |
 | openbrewerydb | breweries | 20.2 | 6680 | **33.3%** | **33.0%** | **32.2%** |

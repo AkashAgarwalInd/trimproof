@@ -9,6 +9,7 @@
 //	bench judge -source freeform -in answers.jsonl -judge nim:MODEL -out judged.jsonl -max-calls N
 //	                                      grade free-form answers blind against the data (resumable)
 //	bench freeform-report -in answers.jsonl -judged judged.jsonl
+//	bench format-tokens -formats A,B,...  offline token counts per dataset, against format A
 //	bench dump-data -dir DIR              the generated datasets and questions as sent
 //	bench fetch-wtq                       download WikiTableQuestions (CC BY-SA) to -wtq-dir
 //	bench payloads [-fetch] [-held-out] [-dir DIR]    real public-API responses through the gateway's gates
@@ -132,6 +133,10 @@ func main() {
 	switch cmd {
 	case "tokens":
 		if err := bench.TokenReport(os.Stdout, ds); err != nil {
+			log.Fatal(err)
+		}
+	case "format-tokens":
+		if err := bench.FormatTokenReport(os.Stdout, ds, split(*formats)); err != nil {
 			log.Fatal(err)
 		}
 	case "run":

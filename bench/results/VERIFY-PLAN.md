@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
-**Amended five times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result) and [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
+**Amended six times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result), [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result) and [Amendment 6](#amendment-6-split-wide-tables-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
 
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
@@ -489,3 +489,62 @@ The rule cannot tell "the forms hurt" from "nemotron runs out of output tokens o
 Records go to `verify-2026-10/diag/`, one file per repeat and limit.
 
 **Outcome** ([PILOT.md](verify-2026-10/PILOT.md#pilot-2-and-its-diagnostic-2026-10-02)): toonx 1 failed as often as toonx 2 at 4,096 (8 and 9 of 9 cut off), and both answered 9 of 9 at 16,384. So **toonx 2 is kept**, and **every full-run command uses `-max-tokens 16384`**. The per-call timeout in the harness is now 12 minutes.
+
+## Amendment 6: split wide tables (before any result)
+
+**Date:** 2026-10-02, after Amendment 5's outcome and before any call with the changes below.
+
+**Why.** Pilot 2 counted input and output tokens equally. With output priced at 4× input (the gateway's default `output_price_ratio`), toonx's saving against compact JSON falls a long way:
+
+| model | input saved | cost saved, output at 4× |
+|---|---:|---:|
+| gpt-oss-20b | 38.8% | 19% |
+| glm-5.3-flash | 38.4% | 29% |
+| nemotron-3-super | 35.8% | −17% |
+
+**Diagnosis.** 10 further free NIM calls captured the reasoning text: 5 questions × `json-compact` and `toonx`, at 16,384 output tokens. The full responses are in [reasoning/](verify-2026-10/reasoning/). These are not results.
+- **What the models do:** on toonx, every model lists the header, numbers the columns and counts commas row by row to find a value.
+- **Why that costs so much:** the tables are 26–42 columns wide, so this takes thousands of tokens, and nemotron used all 16,384 once.
+- **Two misreads by gpt-oss:**
+  - one column off on a 39-column table;
+  - a URL rest written as `"266"` taken for the `id` column.
+- **Width matters in Phase 0 too.** Output tokens rose most on its widest table (employees, about 13 columns).
+- **Real APIs are wide.** Only 7 of the 36 Q&A payloads have at most 10 varying columns.
+
+**Change 1: toonx's URL prefix (all toonx arms).**
+- **Rule:** a "starts with" prefix is now cut one `/` earlier when a value's rest would be only digits. So `https://api.tvmaze.com/shows/266` becomes `shows/266` under `https://api.tvmaze.com/`, not `"266"`.
+- **Effect:** coverage figures in [PAYLOADS.md](verify-2026-10/PAYLOADS.md) and [PAYLOADS-HELDOUT.md](verify-2026-10/PAYLOADS-HELDOUT.md) fall by at most 0.6pp; both files are regenerated.
+- **The payload Q&A set is unchanged:** `data/payload-qa/manifest.json` is byte for byte the same under the registered seed.
+
+**Change 2: a new arm, `toonx-split`.**
+- **The split:** toonx, with every array of objects that has more than 8 varying columns cut into tables `part1`, `part2`, … of at most 8 columns.
+- **The row column:** each table starts with a row-number column `#`, and all hold the same rows in the same order.
+- **Grouping:** columns are grouped by their first key, with top-level fields first. Fields constant in every row stay with `part1`.
+- **Primer:** one sentence is added, only when a table was split.
+- **Code:** for now it is a benchmark renderer (`internal/bench/split.go`). A test checks that merging the parts gives back the input exactly.
+
+**Offline gate, met before any call** ([SPLIT-TOKENS.md](verify-2026-10/SPLIT-TOKENS.md)). The plan was to continue only if `toonx-split` keeps at least 25% of the input tokens.
+
+| format | input tokens vs compact JSON, 36 payloads |
+|---|---:|
+| toonx | −33.7% |
+| `toonx-split` | **−28.2%** |
+| toonx only on tables of ≤8 columns, else JSON | −1.7% |
+
+**Pilot 3.**
+- **Models:** the same 3 models.
+- **Questions:** 10 payload Q&A questions, seed 2004:
+  - pilot 2's 6: `payload-dockerhub-library-repos-q4`, `payload-github-react-contributors-q2`, `payload-github-rust-closed-issues-q1`, `payload-github-vscode-releases-q3`, `payload-gitlab-projects-q3`, `payload-tvmaze-shows-q1`;
+  - 4 aggregations on wide tables: `payload-github-google-repos-q4`, `payload-github-search-repos-q2`, `payload-tvmaze-schedule-us-q3`, `payload-github-linux-commits-q3`.
+- **Arms:** `json-compact`, `toonx` and `toonx-split`, at `-max-tokens 16384`.
+- **Calls:** 90, to `verify-2026-10/pilot3.jsonl`.
+- **Cost of an arm** for a model: input + 4 × output tokens, summed over the questions where every arm returned a record.
+
+**Reading, fixed now:**
+- **A candidate qualifies** if both hold:
+  - its pooled cost saving against `json-compact`, over all 3 models, is at least 15%;
+  - on every model it answers at most 1 question fewer correctly than `json-compact`.
+- **If both candidates qualify,** the one with the larger pooled cost saving is chosen. If only one qualifies, it is chosen.
+  - **If that is `toonx-split`,** it is built into the toonx codec as version 3, with a decoder and round-trip tests, and with byte-identical output to this renderer on the 36 payloads. The full run's toonx arm then uses it.
+- **If neither qualifies,** the full run's toonx arm uses toonx only when no table is wider than 8 varying columns. The write-up must then say that compression is applied to narrow tables only.
+- **Every model's cost saving is reported for both candidates,** including any that is negative.
