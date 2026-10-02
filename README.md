@@ -18,7 +18,7 @@ client ──► ingress (TLS, JWT) ──► trimproof ──► Anthropic / Op
                                    └─► observers: shadow evaluator · promotion · audit · OTel
 ```
 
-1. **Data-only, request-side transforms.** Only `tool_result` / `role:tool` content (and blocks the client marks with `X-Trimproof-Data`) that parse as uniform JSON arrays are eligible. System prompts, tool definitions, assistant turns and tool-call arguments are never touched. Ineligible requests are forwarded **byte-identical**.
+1. **Data-only, request-side transforms.** Only `tool_result` / `role:tool` content that parses as uniform JSON arrays is eligible, plus blocks the client marks with `X-Trimproof-Data`. A route can also opt in to `auto_detect_data`: a user text part that is wholly JSON, or a fenced ```` ```json ```` block inside one, then counts as data, and an encoded fence is relabelled with the codec name. System prompts, tool definitions, assistant turns and tool-call arguments are never touched. Ineligible requests are forwarded **byte-identical**.
 2. **Four gates:** structural → opt-in → minimum size → net savings. Net savings are measured against *compact canonical* JSON, and the format primer's token cost is included.
 3. **Lossless by construction.** Every codec satisfies `Decode(Encode(x)) == canonical(x)` byte for byte, enforced by fuzz tests. Numbers keep their exact text (`9007199254740993`, `88.0`, `1e400`). toon-go silently loses such numbers, so the `toon` codec admits only payloads that survive its round trip and verifies every encoding.
 4. **Promotion state machine per route:** `OFF → SHADOW → ENABLED` (plus `MANUAL`).
@@ -80,6 +80,14 @@ Send `X-Trimproof-Route: <route>` on every request. Provider API keys pass throu
 - **Identity:** run behind trusted ingress that mints `X-TP-Identity`, an HS256 JWT with claims `tenant_id`, `scope` and `exp`, signed with `TP_IDENTITY_KEY`. Alternatively use `-identity-mode trusted-headers`.
 - **Policies:** start new routes in `SHADOW` (see [`examples/policies.json`](examples/policies.json)). The gateway promotes a route on its own once there is enough evidence.
 - **State:** promotion state, evaluation pairs and audit logs are JSONL files in the working directory (`/data` in the container). Keep them on a volume.
+- **Report:** `trimproof report` reads those files and prints, per route:
+  - its state and transitions;
+  - the evidence the promoter is deciding on: samples, codec agreement against the noise floor with bounds, net savings and latency;
+  - what the next look will do;
+  - an audit summary.
+
+  Run it in the gateway's working directory, or pass `-policies`, `-pairs-file`, `-transitions-file` and `-audit-file`. Add `-json` for machine-readable output.
+- **Claude token estimates:** the gates count tokens with o200k. For Claude models, the gateway corrects these counts with Anthropic's free `count_tokens` endpoint. At most once per model per `-calibrate-interval` (default 15 minutes), it asks that endpoint for the exact count of one payload as JSON and as the codec. This happens in the background with the client's key. Set `-calibrate-interval 0` to disable this.
 - **Metrics:** set `OTEL_EXPORTER_OTLP_ENDPOINT` to export metrics: requests, gate rejections, estimated tokens saved, Tier 1 results, fallbacks and promotion transitions.
 
 ## Benchmark (Phase 0)

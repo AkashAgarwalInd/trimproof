@@ -6,10 +6,11 @@ RUN go mod download
 COPY . .
 ARG VERSION=dev
 RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/trimproof-gateway ./cmd/gateway \
+ && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/trimproof ./cmd/trimproof \
  && mkdir -p /out/data
 
 FROM gcr.io/distroless/static-debian12:nonroot
-COPY --from=build /out/trimproof-gateway /usr/local/bin/trimproof-gateway
+COPY --from=build /out/trimproof-gateway /out/trimproof /usr/local/bin/
 COPY examples/quickstart.json /etc/trimproof/policies.json
 # Runtime JSONL (audit, eval pairs, promotion transitions) is written to /data;
 # mount a volume there to keep promotion state across restarts.

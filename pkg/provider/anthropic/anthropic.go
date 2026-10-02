@@ -151,7 +151,7 @@ func (Adapter) RenderRequest(req *ir.Request) ([]byte, error) {
 		if b.Transform == nil {
 			continue
 		}
-		patched, err := patchBlock(msgs[b.Loc.Message], b)
+		patched, err := patchBlock(msgs[b.Loc.Message], b, req.RenderedText(b.Loc))
 		if err != nil {
 			return nil, err
 		}
@@ -169,12 +169,11 @@ func (Adapter) RenderRequest(req *ir.Request) ([]byte, error) {
 	return provider.Marshal(top)
 }
 
-func patchBlock(rawMsg json.RawMessage, b *ir.Block) (json.RawMessage, error) {
+func patchBlock(rawMsg json.RawMessage, b *ir.Block, text string) (json.RawMessage, error) {
 	var msg map[string]json.RawMessage
 	if err := json.Unmarshal(rawMsg, &msg); err != nil {
 		return nil, err
 	}
-	text := string(b.Transform.Encoded)
 	if b.Loc.Part < 0 {
 		msg["content"] = provider.RawString(text)
 		return provider.Marshal(msg)

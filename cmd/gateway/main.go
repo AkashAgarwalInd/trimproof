@@ -29,6 +29,7 @@ import (
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 
 	"github.com/AkashAgarwalInd/trimproof/pkg/audit"
+	"github.com/AkashAgarwalInd/trimproof/pkg/calibrate"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
 	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toon"
 	"github.com/AkashAgarwalInd/trimproof/pkg/eval"
@@ -52,6 +53,7 @@ func main() {
 	transitionsFile := flag.String("transitions-file", "transitions.jsonl", "promotion transitions (JSONL)")
 	evalRPS := flag.Float64("eval-rps", 1, "per-provider evaluation request rate")
 	evalInFlight := flag.Int("eval-max-inflight", 6, "per-provider concurrent evaluation requests (each sample runs 3)")
+	calibrateEvery := flag.Duration("calibrate-interval", 15*time.Minute, "per Claude model, how often to correct token estimates with Anthropic's free count_tokens endpoint (client credentials); 0 disables")
 	maxBody := flag.Int64("max-body-bytes", server.MaxBodyBytes, "maximum request body size")
 	upstreamTimeout := flag.Duration("upstream-timeout", server.DefaultUpstreamTimeout, "limit for a buffered upstream call, and for the first byte of a streamed one")
 	streamIdle := flag.Duration("stream-idle-timeout", server.DefaultStreamIdleTimeout, "maximum gap between chunks of a streamed response")
@@ -112,6 +114,12 @@ func main() {
 	go func() { ev.Run(ctx); close(evalDone) }()
 
 	observers := []server.Observer{metrics, prom, ev}
+	estimator := tokens.NewCalibrated(nil)
+	if *calibrateEvery > 0 {
+		cal := calibrate.New(calibrate.Config{Estimator: estimator, AnthropicBase: *anthropicBase, Interval: *calibrateEvery, Log: log})
+		go cal.Run(ctx)
+		observers = append(observers, cal)
+	}
 	var aud *audit.Auditor
 	var sink *audit.JSONLSink
 	if *auditFile != "" {
@@ -125,7 +133,7 @@ func main() {
 	gw := server.New(server.Config{
 		Registry: reg, AnthropicBase: *anthropicBase, OpenAIBase: *openaiBase,
 		IdentityMode: server.IdentityMode(*identityMode), IdentityKey: []byte(os.Getenv(*identityKeyEnv)),
-		RequireIdentity: *requireIdentity, Estimator: tokens.NewCalibrated(nil), Observers: observers, Log: log,
+		RequireIdentity: *requireIdentity, Estimator: estimator, Observers: observers, Log: log,
 		MaxBodyBytes: *maxBody, UpstreamTimeout: *upstreamTimeout, StreamIdleTimeout: *streamIdle,
 	})
 	// No WriteTimeout: streamed responses are bounded by the gateway's

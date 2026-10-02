@@ -26,3 +26,29 @@ func TestCalibration(t *testing.T) {
 		t.Fatalf("EWMA = %v, want 1.45", f)
 	}
 }
+
+func TestCalibrationPerKind(t *testing.T) {
+	c := NewCalibrated(nil)
+	c.Observe("claude-x", 100, 120)
+	if f := c.FactorKind("claude-x", "toon"); f != 1.2 {
+		t.Fatalf("kind falls back to model factor: %v", f)
+	}
+	c.ObserveKind("claude-x", "toon", 100, 140)
+	c.ObserveKind("claude-x", KindJSON, 100, 110)
+	if f := c.FactorKind("claude-x", "toon"); f != 1.4 {
+		t.Fatalf("toon factor %v", f)
+	}
+	if f := c.FactorKind("claude-x", KindJSON); f != 1.1 {
+		t.Fatalf("json factor %v", f)
+	}
+	if f := c.Factor("claude-x"); f != 1.2 {
+		t.Fatalf("model factor changed: %v", f)
+	}
+	if got := c.Factors(); got["claude-x/toon"] != 1.4 || got["claude-x"] != 1.2 {
+		t.Fatalf("Factors() = %v", got)
+	}
+	var est Estimator = c
+	if EstimateKind(est, "hello world", "claude-x", "toon") != 3 { // 2 × 1.4 = 2.8
+		t.Fatal("EstimateKind did not use the kind factor")
+	}
+}

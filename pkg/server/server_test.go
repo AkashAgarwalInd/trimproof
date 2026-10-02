@@ -84,6 +84,12 @@ func toolUseReply(tenant string) string {
 
 func setup(t *testing.T, state policy.PromotionState, validate bool, replies ...reply) (*httptest.Server, *fakeUpstream, *recorder) {
 	t.Helper()
+	return setupWith(t, state, validate, nil, replies...)
+}
+
+// setupWith is setup with a hook to adjust the route policy.
+func setupWith(t *testing.T, state policy.PromotionState, validate bool, adjust func(*policy.RoutePolicy), replies ...reply) (*httptest.Server, *fakeUpstream, *recorder) {
+	t.Helper()
 	up := &fakeUpstream{replies: replies}
 	ups := httptest.NewServer(up)
 	t.Cleanup(ups.Close)
@@ -92,6 +98,9 @@ func setup(t *testing.T, state policy.PromotionState, validate bool, replies ...
 	p.TenantID, p.RouteID, p.Codec, p.State = "t1", "support", "tabular", state
 	p.MinPayloadTokens, p.MinNetSavings, p.AllowFallbackRetry = 50, 0.05, true
 	p.ToolSchemas = map[string][]byte{"refund": []byte(refundSchema)}
+	if adjust != nil {
+		adjust(&p)
+	}
 	if err := reg.Put(p, nil, validate); err != nil {
 		t.Fatal(err)
 	}
@@ -269,6 +278,34 @@ func TestOpenAIRouteTransforms(t *testing.T) {
 	json.Unmarshal(up.bodies[0], &sent)
 	if sent.Messages[0].Role != "system" {
 		t.Fatal("primer system message not inserted")
+	}
+}
+
+func TestAutoDetectData(t *testing.T) {
+	prompt := "Orders:\n```json\n" + rowsJSON(40) + "\n```\nHow many are refunded?"
+	pj, _ := json.Marshal(prompt)
+	bodies := map[string]string{
+		"/anthropic/v1/messages":      fmt.Sprintf(`{"model":"claude-test","max_tokens":100,"messages":[{"role":"user","content":[{"type":"text","text":%s}]}]}`, pj),
+		"/openai/v1/chat/completions": fmt.Sprintf(`{"model":"gpt-test","messages":[{"role":"user","content":%s}]}`, pj),
+	}
+	for path, body := range bodies {
+		for _, detect := range []bool{false, true} {
+			gw, up, _ := setupWith(t, policy.Enabled, false, func(p *policy.RoutePolicy) { p.AutoDetectData = detect },
+				reply{200, `{"content":[],"choices":[]}`, false})
+			call(t, gw, path, body)
+			sent := string(up.bodies[0])
+			if !detect {
+				if sent != body {
+					t.Fatalf("%s: body changed without auto_detect_data", path)
+				}
+				continue
+			}
+			for _, want := range []string{"Orders:\\n```tabular\\n[\\\"amount\\\"", "\\n```\\nHow many are refunded?", "table's first line"} {
+				if !strings.Contains(sent, want) {
+					t.Errorf("%s: sent body lacks %s:\n%s", path, want, sent)
+				}
+			}
+		}
 	}
 }
 

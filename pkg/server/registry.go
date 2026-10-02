@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 
@@ -72,6 +73,24 @@ func (r *Registry) Lookup(tenant, route string) *Route {
 	return &Route{Policy: p}
 }
 
+// Routes returns every configured route's policy, sorted by tenant and
+// route.
+func (r *Registry) Routes() []policy.RoutePolicy {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	out := make([]policy.RoutePolicy, 0, len(r.routes))
+	for _, rt := range r.routes {
+		out = append(out, rt.Policy)
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].TenantID != out[j].TenantID {
+			return out[i].TenantID < out[j].TenantID
+		}
+		return out[i].RouteID < out[j].RouteID
+	})
+	return out
+}
+
 // SetState moves a route through the promotion state machine. The route
 // keeps every other setting.
 func (r *Registry) SetState(tenant, route string, s policy.PromotionState) bool {
@@ -101,6 +120,7 @@ type fileRoute struct {
 	ShadowSampleRate   *float64                   `json:"shadow_sample_rate"`
 	AuditSampleRate    *float64                   `json:"audit_sample_rate"`
 	AllowFallbackRetry bool                       `json:"allow_fallback_retry"`
+	AutoDetectData     bool                       `json:"auto_detect_data"`
 	AllowUnion         bool                       `json:"allow_union"`
 	Validate           bool                       `json:"validate"`
 	ToolSchemas        map[string]json.RawMessage `json:"tool_schemas"`
@@ -157,7 +177,7 @@ func LoadRegistry(path string) (*Registry, error) {
 		}
 		setIf(&p.ShadowSampleRate, fr.ShadowSampleRate)
 		setIf(&p.AuditSampleRate, fr.AuditSampleRate)
-		p.AllowFallbackRetry, p.Lossy.AllowUnion = fr.AllowFallbackRetry, fr.AllowUnion
+		p.AllowFallbackRetry, p.Lossy.AllowUnion, p.AutoDetectData = fr.AllowFallbackRetry, fr.AllowUnion, fr.AutoDetectData
 		p.Rules, p.RedactKeys, p.EnableRawPayloadLogging = fr.Rules, fr.RedactKeys, fr.RawPayloadLogging
 		if len(fr.ToolSchemas) > 0 {
 			p.ToolSchemas = map[string][]byte{}

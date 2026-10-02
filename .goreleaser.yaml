@@ -11,6 +11,14 @@ builds:
     goarch: [amd64, arm64]
     flags: [-trimpath]
     ldflags: ['-s -w -X main.version={{.Version}}']
+  - id: cli
+    main: ./cmd/trimproof
+    binary: trimproof
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: ['-s -w -X main.version={{.Version}}']
   - id: bench
     main: ./cmd/bench
     binary: trimproof-bench

@@ -143,7 +143,7 @@ func (Adapter) RenderRequest(req *ir.Request) ([]byte, error) {
 		if err := json.Unmarshal(msgs[b.Loc.Message], &m); err != nil {
 			return nil, err
 		}
-		text := provider.RawString(string(b.Transform.Encoded))
+		text := provider.RawString(req.RenderedText(b.Loc))
 		if b.Loc.Part < 0 {
 			m["content"] = text
 		} else {

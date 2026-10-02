@@ -234,6 +234,9 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 	for _, loc := range parseMarks(r.Header.Get(HeaderData)) {
 		req.Mark(loc)
 	}
+	if pol.AutoDetectData && pol.Codec != "" && pol.State != policy.Off {
+		req.DetectData()
+	}
 
 	// Gates.
 	blocks := req.DataBlocks()

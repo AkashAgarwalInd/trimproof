@@ -118,7 +118,7 @@ func Decide(p RoutePolicy, blocks [][]byte, est tokens.Estimator, model string) 
 			b.FailedGate, b.Reason = GateMinSize, "below byte pre-check"
 			continue
 		}
-		b.JSONTokens = est.Estimate(string(b.Canonical), model)
+		b.JSONTokens = tokens.EstimateKind(est, string(b.Canonical), model, tokens.KindJSON)
 		if b.JSONTokens < p.MinPayloadTokens {
 			b.FailedGate, b.Reason = GateMinSize, fmt.Sprintf("%d < %d tokens", b.JSONTokens, p.MinPayloadTokens)
 			continue
@@ -136,7 +136,7 @@ func Decide(p RoutePolicy, blocks [][]byte, est tokens.Estimator, model string) 
 		if err != nil {
 			return nil, err
 		}
-		b.EncTokens = est.Estimate(string(b.Encoded), model)
+		b.EncTokens = tokens.EstimateKind(est, string(b.Encoded), model, c.Name())
 		// A block that does not shrink on its own only adds cost.
 		if b.EncTokens >= b.JSONTokens {
 			b.FailedGate, b.Reason = GateNetSavings, "encoding is not smaller"

@@ -97,7 +97,7 @@ Phase 0 showed that the codec changes how much reasoning models write:
 | gpt-oss-20b | 26% | +13% | 11% |
 | nemotron-120b | 23% | +36% | 4% |
 
-Promotion now uses the net figure. With the default 15% minimum, neither model's route would be promoted on this data: the input savings alone would clear 15%, but the net savings do not. Shadow samples also record each arm's latency, and the promotion reason reports the codec's median latency ratio.
+Promotion now uses the net figure. With the default 15% minimum, neither model's route would be promoted on this data: the input savings alone would clear 15%, but the net savings do not. The 15% net default is kept on purpose: a route where the codec makes the model write enough extra to cancel most of the input saving should not be promoted. Phase 0 answers are short, so this will be revisited with shadow data from real routes. Shadow samples also record each arm's latency, and the promotion reason reports the codec's median latency ratio.
 
 ## To reproduce
 

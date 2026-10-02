@@ -1,6 +1,7 @@
 // Package tokens provides local token estimators for the gates.
-// Estimates never make network calls. Per-model correction factors are
-// learned from provider-reported usage so gates drift toward real counts.
+// Estimates never make network calls. Correction factors per model, and
+// per model and representation, can be fed from exact provider counts (see
+// package calibrate) so the gates drift toward the provider's tokenizer.
 package tokens
 
 import (
@@ -14,6 +15,25 @@ import (
 // Estimator returns a local token estimate for text sent to model.
 type Estimator interface {
 	Estimate(text string, model string) int
+}
+
+// KindEstimator is an Estimator that can correct per representation:
+// kind is "json" or a codec name. A provider's tokenizer can treat JSON and
+// an encoding differently from o200k, which would bias Gate 4.
+type KindEstimator interface {
+	Estimator
+	EstimateKind(text, model, kind string) int
+}
+
+// KindJSON is the representation kind of compact canonical JSON.
+const KindJSON = "json"
+
+// EstimateKind uses est's per-representation correction when it has one.
+func EstimateKind(est Estimator, text, model, kind string) int {
+	if ke, ok := est.(KindEstimator); ok {
+		return ke.EstimateKind(text, model, kind)
+	}
+	return est.Estimate(text, model)
 }
 
 // BPE counts tokens with OpenAI's o200k_base vocabulary (embedded; no
@@ -57,9 +77,9 @@ func Heuristic(text string) int {
 // bytes cannot reach MinPayloadTokens, so the estimator is skipped.
 const MinBytesPerToken = 1
 
-// Calibrated wraps a BPE counter with a per-model multiplicative correction
-// learned from provider usage (an exponentially weighted moving average of
-// actual/estimated).
+// Calibrated wraps a BPE counter with multiplicative corrections per model
+// and per (model, representation), each an exponentially weighted moving
+// average of actual/estimated.
 type Calibrated struct {
 	Base  *BPE
 	Alpha float64 // EWMA weight of a new observation; default 0.1
@@ -82,6 +102,25 @@ func (c *Calibrated) Estimate(text, model string) int {
 	return int(float64(c.Base.Count(text))*c.Factor(model) + 0.5)
 }
 
+// EstimateKind implements KindEstimator.
+func (c *Calibrated) EstimateKind(text, model, kind string) int {
+	return int(float64(c.Base.Count(text))*c.FactorKind(model, kind) + 0.5)
+}
+
+// FactorKind returns the correction for model and representation kind,
+// falling back to Factor(model).
+func (c *Calibrated) FactorKind(model, kind string) float64 {
+	c.mu.RLock()
+	f, ok := c.factors[kindKey(model, kind)]
+	c.mu.RUnlock()
+	if ok {
+		return f
+	}
+	return c.Factor(model)
+}
+
+func kindKey(model, kind string) string { return model + "\x00" + kind }
+
 // Factor returns the correction for model: an exact match, else the longest
 // matching prefix, else 1.
 func (c *Calibrated) Factor(model string) float64 {
@@ -99,19 +138,41 @@ func (c *Calibrated) Factor(model string) float64 {
 	return best
 }
 
-// Observe feeds back one measurement: the uncalibrated estimate for a
-// request and the provider's reported input tokens.
+// Observe feeds back one measurement for model: the uncalibrated (raw
+// o200k) count of a text and the provider's exact count of it.
 func (c *Calibrated) Observe(model string, rawEstimate, actual int) {
+	c.observe(model, rawEstimate, actual)
+}
+
+// ObserveKind is Observe for one representation kind.
+func (c *Calibrated) ObserveKind(model, kind string, rawEstimate, actual int) {
+	c.observe(kindKey(model, kind), rawEstimate, actual)
+}
+
+// Factors returns a copy of the learned factors, keyed "model" or
+// "model/kind".
+func (c *Calibrated) Factors() map[string]float64 {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	out := make(map[string]float64, len(c.factors))
+	for k, f := range c.factors {
+		out[strings.Replace(k, "\x00", "/", 1)] = f
+	}
+	return out
+}
+
+func (c *Calibrated) observe(key string, rawEstimate, actual int) {
 	if rawEstimate <= 0 || actual <= 0 {
 		return
 	}
 	ratio := float64(actual) / float64(rawEstimate)
-	cur := c.Factor(model)
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if _, ok := c.factors[model]; !ok {
-		c.factors[model] = ratio
+	cur, ok := c.factors[key]
+	if !ok {
+		// The first exact measurement replaces any prefix default.
+		c.factors[key] = ratio
 		return
 	}
-	c.factors[model] = (1-c.Alpha)*cur + c.Alpha*ratio
+	c.factors[key] = (1-c.Alpha)*cur + c.Alpha*ratio
 }

@@ -216,6 +216,12 @@ func savings(s Stats) string {
 	return out
 }
 
+// NextLook returns the sample count at which the look after n samples is
+// taken.
+func (t Thresholds) NextLook(n int) int {
+	return t.NMin + t.lookIndex(n)*max(t.LookEvery, 1)
+}
+
 // lookIndex numbers the scheduled looks: 0 before NMin samples, then 1 at
 // NMin, 2 at NMin+LookEvery, and so on.
 func (t Thresholds) lookIndex(n int) int {
@@ -418,22 +424,12 @@ func lchoose(n, k int) float64 {
 // automatic control (SHADOW or ENABLED); OFF and MANUAL in the file always
 // win. It returns the transitions it applied (see Promoter.Resume).
 func ReplayTransitions(path string, reg *server.Registry) ([]Transition, error) {
-	f, err := os.Open(path)
-	if os.IsNotExist(err) {
-		return nil, nil
-	}
+	all, err := ReadTransitions(path)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
 	last := map[[2]string]Transition{}
-	sc := bufio.NewScanner(f)
-	sc.Buffer(make([]byte, 1<<20), 16<<20)
-	for sc.Scan() {
-		var tr Transition
-		if json.Unmarshal(sc.Bytes(), &tr) != nil {
-			continue
-		}
+	for _, tr := range all {
 		last[[2]string{tr.TenantID, tr.RouteID}] = tr
 	}
 	var applied []Transition
@@ -449,5 +445,29 @@ func ReplayTransitions(path string, reg *server.Registry) ([]Transition, error) 
 			applied = append(applied, tr)
 		}
 	}
-	return applied, sc.Err()
+	return applied, nil
+}
+
+// ReadTransitions reads a JSONL transition log in order, skipping lines
+// that do not parse. A missing file is an empty log.
+func ReadTransitions(path string) ([]Transition, error) {
+	f, err := os.Open(path)
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	var out []Transition
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 1<<20), 16<<20)
+	for sc.Scan() {
+		var tr Transition
+		if json.Unmarshal(sc.Bytes(), &tr) != nil {
+			continue
+		}
+		out = append(out, tr)
+	}
+	return out, sc.Err()
 }

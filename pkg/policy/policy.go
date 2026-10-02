@@ -45,7 +45,10 @@ type RoutePolicy struct {
 	ShadowSampleRate   float64
 	AuditSampleRate    float64
 	AllowFallbackRetry bool
-	Lossy              LossyOptimizationPolicy
+	// AutoDetectData treats JSON in user messages as data blocks: a text
+	// part that is wholly a JSON array or object, or fenced json code blocks.
+	AutoDetectData bool
+	Lossy          LossyOptimizationPolicy
 
 	ToolSchemas             map[string][]byte
 	Rules                   []string
