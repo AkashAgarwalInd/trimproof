@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -18,15 +19,24 @@ type Record struct {
 	Model        string `json:"model"`
 	Dataset      string `json:"dataset"`
 	Rows         int    `json:"rows"`
+	Seed         uint64 `json:"seed,omitempty"`
 	QuestionID   string `json:"question_id"`
 	Kind         string `json:"kind"`
+	Question     string `json:"question,omitempty"`
 	Format       string `json:"format"`
 	Answer       string `json:"answer"`
 	Reply        string `json:"reply"`
 	Correct      bool   `json:"correct"`
 	InputTokens  int    `json:"input_tokens"`
 	OutputTokens int    `json:"output_tokens"`
-	LatencyMS    int64  `json:"latency_ms"`
+	// ReasoningTokens is the part of OutputTokens spent on reasoning
+	// (estimated from the reasoning text when ReasoningEstimated is set).
+	ReasoningTokens    int   `json:"reasoning_tokens,omitempty"`
+	ReasoningEstimated bool  `json:"reasoning_estimated,omitempty"`
+	LatencyMS          int64 `json:"latency_ms"`
+	// Representation is the gateway's X-Trimproof-Representation header
+	// (gateway arm only).
+	Representation string `json:"representation,omitempty"`
 	// Empty is set when the provider returned no answer text even after
 	// retries. Such calls count as incorrect and are reported per format.
 	Empty bool   `json:"empty,omitempty"`
@@ -53,6 +63,12 @@ type RunConfig struct {
 	Concurrency int
 	RPM         int // requests per minute across all targets
 	MaxTokens   int
+	// MaxCalls caps the calls one invocation may plan; a run that would
+	// exceed it does not start. Empty replies are retried up to twice more.
+	MaxCalls int
+	// Gateway sends the "gateway" format: JSON through a trimproof gateway
+	// on a route that encodes it.
+	Gateway Client
 }
 
 // Run executes all (target, question, format) calls not already in Out.
@@ -95,6 +111,12 @@ func Run(ctx context.Context, cfg RunConfig) error {
 	if len(jobs) == 0 {
 		return nil
 	}
+	if len(jobs) > cfg.MaxCalls {
+		return fmt.Errorf("bench: %d calls planned, more than -max-calls %d; nothing was sent", len(jobs), cfg.MaxCalls)
+	}
+	if cfg.Gateway == nil && slices.Contains(cfg.Formats, "gateway") {
+		return fmt.Errorf("bench: the gateway format needs -via-gateway")
+	}
 
 	interval := time.Minute / time.Duration(max(1, cfg.RPM))
 	tick := time.NewTicker(interval)
@@ -107,7 +129,7 @@ func Run(ctx context.Context, cfg RunConfig) error {
 
 	rendered := map[string][2]string{}
 	render := func(d *Dataset, fm string) (string, string, error) {
-		k := d.Name + "|" + fmt.Sprint(d.Rows) + "|" + fm
+		k := d.Key() + "|" + fm
 		mu.Lock()
 		defer mu.Unlock()
 		if v, ok := rendered[k]; ok {
@@ -132,8 +154,15 @@ func Run(ctx context.Context, cfg RunConfig) error {
 		go func(j job) {
 			defer wg.Done()
 			defer func() { <-sem }()
-			rec := Record{Provider: j.t.Provider, Model: j.t.Model, Dataset: j.d.Name, Rows: j.d.Rows,
-				QuestionID: j.q.ID, Kind: j.q.Kind, Format: j.format, Answer: j.q.Answer}
+			rec := Record{Provider: j.t.Provider, Model: j.t.Model, Dataset: j.d.Name, Rows: j.d.Rows, Seed: j.d.Seed,
+				QuestionID: j.q.ID, Kind: j.q.Kind, Question: j.q.Text, Format: j.format, Answer: j.q.Answer}
+			if len(j.q.Answers) > 0 {
+				rec.Answer = strings.Join(j.q.Answers, " | ")
+			}
+			client := j.t.Client
+			if j.format == "gateway" {
+				client = cfg.Gateway
+			}
 			text, primer, err := render(j.d, j.format)
 			if err == nil {
 				var res *Result
@@ -141,7 +170,7 @@ func Run(ctx context.Context, cfg RunConfig) error {
 				// retry so a transport artifact is not scored as a format effect.
 				for attempt := 0; attempt < 3; attempt++ {
 					cctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
-					res, err = j.t.Client.Do(cctx, Call{
+					res, err = client.Do(cctx, Call{
 						Model: j.t.Model, Primer: primer, Question: j.q.Text,
 						Tool: j.d.Tool, ToolArgs: j.d.ToolArgs, ToolResult: text, MaxTokens: cfg.MaxTokens,
 					})
@@ -153,7 +182,9 @@ func Run(ctx context.Context, cfg RunConfig) error {
 				if err == nil {
 					rec.Empty = strings.TrimSpace(Clean(res.Text)) == ""
 					rec.Reply, rec.InputTokens, rec.OutputTokens = res.Text, res.InputTokens, res.OutputTokens
+					rec.ReasoningTokens, rec.ReasoningEstimated = res.ReasoningTokens, res.ReasoningEstimated
 					rec.LatencyMS = res.Latency.Milliseconds()
+					rec.Representation = res.Representation
 					rec.Correct = Correct(j.q, res.Text)
 				}
 			}
@@ -197,4 +228,23 @@ func ReadRecords(path string) ([]Record, error) {
 		out = append(out, r)
 	}
 	return out, sc.Err()
+}
+
+// LimitQuestions keeps the first n questions across datasets, in order;
+// n <= 0 keeps all.
+func LimitQuestions(ds []*Dataset, n int) []*Dataset {
+	if n <= 0 {
+		return ds
+	}
+	var out []*Dataset
+	for _, d := range ds {
+		if n == 0 {
+			break
+		}
+		c := *d
+		c.Questions = d.Questions[:min(n, len(d.Questions))]
+		n -= len(c.Questions)
+		out = append(out, &c)
+	}
+	return out
 }

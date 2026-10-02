@@ -31,7 +31,16 @@ func Render(format string, d *Dataset) (string, string, error) {
 		return "", "", err
 	}
 	switch format {
-	case "json-compact", "json-compact-2":
+	case "json-compact", "json-compact-2", "gateway":
+		// Source data keeps its own key order, as a client would send it;
+		// the gateway arm sends the same JSON and lets the gateway encode.
+		if d.Raw != nil {
+			var buf bytes.Buffer
+			if err := json.Compact(&buf, d.Raw); err != nil {
+				return "", "", err
+			}
+			return buf.String(), "", nil
+		}
 		return string(canon), "", nil
 	case "json-pretty":
 		var buf bytes.Buffer

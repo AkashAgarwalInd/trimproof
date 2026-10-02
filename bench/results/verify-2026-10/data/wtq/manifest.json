@@ -1,0 +1,1988 @@
+{
+  "source": "WikiTableQuestions, Panupong Pasupat and Percy Liang (ACL 2015)",
+  "license": "CC BY-SA 4.0; the questions and answers quoted here are under that licence",
+  "release": "https://github.com/ppasupat/WikiTableQuestions/releases/download/v1.0.2/WikiTableQuestions-1.0.2-compact.zip",
+  "release_sha256": "7c9ca7cc1ccd75fe4be0255b44be63f7b566761005f4ee6ce67e51c129d8b085",
+  "split": "pristine-unseen-tables",
+  "min_rows": 15,
+  "n": 100,
+  "seed": 1000,
+  "items": [
+    {
+      "id": "nu-1028",
+      "question": "what are the total number of laps will power drove?",
+      "answers": [
+        "85"
+      ],
+      "table": "csv/204-csv/366.tsv",
+      "table_sha256": "a053bdb9fb1b119d6256ae6e7e90015035879c5b17e99fb5cde206fabf5fa884",
+      "rows": 27,
+      "columns": [
+        "Pos",
+        "No.",
+        "Driver",
+        "Team",
+        "Engine",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Laps Led",
+        "Points"
+      ],
+      "json_bytes": 4767
+    },
+    {
+      "id": "nu-1052",
+      "question": "what is the difference in length between the amvets memorial highway and the horseneck beach connector?",
+      "answers": [
+        "27.88"
+      ],
+      "table": "csv/203-csv/100.tsv",
+      "table_sha256": "88e0f03793761244cf208b8235cb031c3e0f5214e31aacc0df9f05baf779dc2a",
+      "rows": 28,
+      "columns": [
+        "Name",
+        "Route number(s)",
+        "Length (mi)",
+        "Location",
+        "Notes"
+      ],
+      "json_bytes": 8980
+    },
+    {
+      "id": "nu-1064",
+      "question": "who was the only player drafted from sweden?",
+      "answers": [
+        "Johan Mellstrom"
+      ],
+      "table": "csv/203-csv/566.tsv",
+      "table_sha256": "5cc9cce4faa5c548f31d71188a9e22820dcd523a7e866682bbf667e104ff9d0d",
+      "rows": 21,
+      "columns": [
+        "Pick #",
+        "Player",
+        "Position",
+        "Nationality",
+        "NHL team",
+        "College/junior/club team"
+      ],
+      "json_bytes": 3621
+    },
+    {
+      "id": "nu-1234",
+      "question": "tim schenken finished in 76 laps. who was next?",
+      "answers": [
+        "Jo Siffert"
+      ],
+      "table": "csv/204-csv/953.tsv",
+      "table_sha256": "eac7f39aa8151b89c09810e95a041d07f78e7adc6db8e159ab06a0f267e97dfb",
+      "rows": 23,
+      "columns": [
+        "Pos",
+        "No",
+        "Driver",
+        "Constructor",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Points"
+      ],
+      "json_bytes": 3080
+    },
+    {
+      "id": "nu-1280",
+      "question": "who is first in tournament runner up wins?",
+      "answers": [
+        "Stephen Hendry"
+      ],
+      "table": "csv/203-csv/140.tsv",
+      "table_sha256": "c447df88ac08cd9ab01e0e907df970bb159864da7cac5107f26c4110729635d3",
+      "rows": 19,
+      "columns": [
+        "Date",
+        "Date_2",
+        "col2",
+        "Rank",
+        "Tournament name",
+        "Venue",
+        "City",
+        "Winner",
+        "Runner-up",
+        "Score"
+      ],
+      "json_bytes": 4055
+    },
+    {
+      "id": "nu-1285",
+      "question": "what is the number of fans who attended the october 7th game against millwall this season?",
+      "answers": [
+        "13,129"
+      ],
+      "table": "csv/204-csv/848.tsv",
+      "table_sha256": "d8f6340f43c2239ec9190bec2581e0fce2b83ba8db58f4044ed09beadaef98e7",
+      "rows": 46,
+      "columns": [
+        "Date",
+        "Opponents",
+        "Venue",
+        "Result",
+        "Scorers",
+        "Attendance"
+      ],
+      "json_bytes": 5756
+    },
+    {
+      "id": "nu-1316",
+      "question": "out of all the people who scored points, who had the most?",
+      "answers": [
+        "Alain Prost"
+      ],
+      "table": "csv/204-csv/462.tsv",
+      "table_sha256": "f1d513baa480c723e788bb707a7c5b970792a55bd6db8cce24a88e3c8ce0287f",
+      "rows": 35,
+      "columns": [
+        "Pos",
+        "No",
+        "Driver",
+        "Constructor",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Points"
+      ],
+      "json_bytes": 4807
+    },
+    {
+      "id": "nu-1370",
+      "question": "who was the opponent after the october 26 game at the texas stadium?",
+      "answers": [
+        "New York Giants"
+      ],
+      "table": "csv/203-csv/334.tsv",
+      "table_sha256": "fc0d32a3a3f7fdf9bfe57897b90489a55e4f1f183c31b9526274b581e5c96bc8",
+      "rows": 16,
+      "columns": [
+        "Week",
+        "Date",
+        "Opponent",
+        "Result",
+        "Game site",
+        "NFL Recap",
+        "Attendance"
+      ],
+      "json_bytes": 2614
+    },
+    {
+      "id": "nu-1386",
+      "question": "did position 8 have at least 30 points?",
+      "answers": [
+        "no"
+      ],
+      "table": "csv/204-csv/366.tsv",
+      "table_sha256": "a053bdb9fb1b119d6256ae6e7e90015035879c5b17e99fb5cde206fabf5fa884",
+      "rows": 27,
+      "columns": [
+        "Pos",
+        "No.",
+        "Driver",
+        "Team",
+        "Engine",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Laps Led",
+        "Points"
+      ],
+      "json_bytes": 4767
+    },
+    {
+      "id": "nu-1390",
+      "question": "in how many games did brad miller have the highest number of points and rebounds?",
+      "answers": [
+        "2"
+      ],
+      "table": "csv/203-csv/227.tsv",
+      "table_sha256": "9ca03090b56a1ff3597d6b9551464569c232d2b16d7b553561efdcf73f932ce7",
+      "rows": 16,
+      "columns": [
+        "Game",
+        "Date",
+        "Team",
+        "Score",
+        "High points",
+        "High rebounds",
+        "High assists",
+        "Location Attendance",
+        "Record"
+      ],
+      "json_bytes": 4046
+    },
+    {
+      "id": "nu-1396",
+      "question": "which driver did not finish the race?",
+      "answers": [
+        "Paul Tracy"
+      ],
+      "table": "csv/204-csv/491.tsv",
+      "table_sha256": "5034ef0fd0db87cad6ff934c09ad6f2409d18de8a3942518dc501561bd3510a1",
+      "rows": 17,
+      "columns": [
+        "Pos",
+        "Name",
+        "Team",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Points"
+      ],
+      "json_bytes": 2085
+    },
+    {
+      "id": "nu-1431",
+      "question": "how many players have at least 1 fa cup apps?",
+      "answers": [
+        "10"
+      ],
+      "table": "csv/203-csv/602.tsv",
+      "table_sha256": "67df27ef617d9ce90972727e3bcea85075edb5891fdde15e05b585086caa90ca",
+      "rows": 30,
+      "columns": [
+        "Name",
+        "Nation",
+        "Position",
+        "League Apps",
+        "League Goals",
+        "FA Cup Apps",
+        "FA Cup Goals",
+        "Total Apps",
+        "Total Goals"
+      ],
+      "json_bytes": 5112
+    },
+    {
+      "id": "nu-1450",
+      "question": "how many points did gaston rahier receive?",
+      "answers": [
+        "1112"
+      ],
+      "table": "csv/204-csv/417.tsv",
+      "table_sha256": "671944bd35603e2f9d4df37dd6d98160d642a0cb14b3c1de1a6b21dbee9e6cf7",
+      "rows": 20,
+      "columns": [
+        "Place",
+        "Rider",
+        "Country",
+        "Team",
+        "Points",
+        "Wins"
+      ],
+      "json_bytes": 2080
+    },
+    {
+      "id": "nu-1463",
+      "question": "in total, how many contestants participated in this event?",
+      "answers": [
+        "18"
+      ],
+      "table": "csv/203-csv/849.tsv",
+      "table_sha256": "b77ab2c991b2678efa6b2887811ddb39a04594b5e750950d9bd7481d1daf3c23",
+      "rows": 18,
+      "columns": [
+        "Represented",
+        "Contestant",
+        "Age",
+        "Height",
+        "Hometown"
+      ],
+      "json_bytes": 2313
+    },
+    {
+      "id": "nu-1496",
+      "question": "how many movies were made in 2010?",
+      "answers": [
+        "2"
+      ],
+      "table": "csv/203-csv/463.tsv",
+      "table_sha256": "f57c6d1b97176c70c3f4d3897a566a148a019ad467fd22492b151d4f0a714a4d",
+      "rows": 17,
+      "columns": [
+        "Year",
+        "Film",
+        "Role",
+        "Language",
+        "Notes"
+      ],
+      "json_bytes": 1870
+    },
+    {
+      "id": "nu-1634",
+      "question": "which one is the last on the chart",
+      "answers": [
+        "Brighton \u0026 Hove Albion"
+      ],
+      "table": "csv/204-csv/848.tsv",
+      "table_sha256": "d8f6340f43c2239ec9190bec2581e0fce2b83ba8db58f4044ed09beadaef98e7",
+      "rows": 46,
+      "columns": [
+        "Date",
+        "Opponents",
+        "Venue",
+        "Result",
+        "Scorers",
+        "Attendance"
+      ],
+      "json_bytes": 5756
+    },
+    {
+      "id": "nu-1721",
+      "question": "what was the first year they played regular season, 3rd, heartland?",
+      "answers": [
+        "2005"
+      ],
+      "table": "csv/204-csv/972.tsv",
+      "table_sha256": "be0b6b4a3866ee9e2b26f846a8fc5867ab2298df4d65ba4bb90b7c9809883764",
+      "rows": 16,
+      "columns": [
+        "Year",
+        "Division",
+        "League",
+        "Regular Season",
+        "Playoffs",
+        "Open Cup"
+      ],
+      "json_bytes": 2272
+    },
+    {
+      "id": "nu-1732",
+      "question": "which of these is not a composition date: 1903, 1904, or 1905?",
+      "answers": [
+        "1905"
+      ],
+      "table": "csv/204-csv/271.tsv",
+      "table_sha256": "78aa5961cda0188234ec281a7abc9562eaafd9d10a9f09c7990ac9404ec9acfa",
+      "rows": 18,
+      "columns": [
+        "Opus",
+        "Title",
+        "Sub­divisions",
+        "Compo-sition",
+        "Première date",
+        "Place, theatre"
+      ],
+      "json_bytes": 3034
+    },
+    {
+      "id": "nu-1767",
+      "question": "who is the next oldest living president after richard nixon?",
+      "answers": [
+        "Ronald Reagan"
+      ],
+      "table": "csv/203-csv/260.tsv",
+      "table_sha256": "e3d180b06f9eb4e4702a0b4aee48f3d1ded3995cd4a46e1f981f8fcd1963ae12",
+      "rows": 26,
+      "columns": [
+        "President",
+        "Became Oldest Living President",
+        "Ceased to Be Oldest Living President",
+        "Age at Start Date",
+        "Age at End Date",
+        "Duration (Years, Days)",
+        "Duration (Days)"
+      ],
+      "json_bytes": 7855
+    },
+    {
+      "id": "nu-1773",
+      "question": "how many leagues are usl pdl?",
+      "answers": [
+        "15"
+      ],
+      "table": "csv/204-csv/972.tsv",
+      "table_sha256": "be0b6b4a3866ee9e2b26f846a8fc5867ab2298df4d65ba4bb90b7c9809883764",
+      "rows": 16,
+      "columns": [
+        "Year",
+        "Division",
+        "League",
+        "Regular Season",
+        "Playoffs",
+        "Open Cup"
+      ],
+      "json_bytes": 2272
+    },
+    {
+      "id": "nu-1838",
+      "question": "how many contestants received the same number of votes as ivan demidov?",
+      "answers": [
+        "2"
+      ],
+      "table": "csv/204-csv/827.tsv",
+      "table_sha256": "b21447118952551e1bdc084715e207b186dae5a072824fcfabb7624ec005bad8",
+      "rows": 19,
+      "columns": [
+        "Contestant",
+        "Original Tribe",
+        "Switched Tribe",
+        "Merged Tribe",
+        "Finish",
+        "Total Votes"
+      ],
+      "json_bytes": 3526
+    },
+    {
+      "id": "nu-1948",
+      "question": "what was the total toy sales in 2003?",
+      "answers": [
+        "20.7"
+      ],
+      "table": "csv/203-csv/66.tsv",
+      "table_sha256": "f23b7a8d5af9f3c05dcc26f532fd1265c78ff2eac214bd4740ecdb36463a6bfc",
+      "rows": 16,
+      "columns": [
+        "Year",
+        "Injuries (US $000)",
+        "Deaths (age \u003c15)",
+        "CPSC toy safety funding (US$ Millions)",
+        "Toy sales (US $ Billions)"
+      ],
+      "json_bytes": 2371
+    },
+    {
+      "id": "nu-1953",
+      "question": "when was the last year as a winner?",
+      "answers": [
+        "1999"
+      ],
+      "table": "csv/204-csv/758.tsv",
+      "table_sha256": "f22ea5f9c6cc9704512a8d7af07b3f9d8ba614e1658a48bd52124de4cc7261e1",
+      "rows": 20,
+      "columns": [
+        "Outcome",
+        "No.",
+        "Date",
+        "Championship",
+        "Surface",
+        "Opponent in the final",
+        "Score in the final"
+      ],
+      "json_bytes": 4069
+    },
+    {
+      "id": "nu-1988",
+      "question": "which company owns the most radio stations?",
+      "answers": [
+        "RAI"
+      ],
+      "table": "csv/203-csv/500.tsv",
+      "table_sha256": "d9a7cb61fee521da5c6664744e82614af2beae7bf163d5f0a15e4fd2da2eb0dd",
+      "rows": 30,
+      "columns": [
+        "Name",
+        "Owner",
+        "Location",
+        "Notes",
+        "Transmission",
+        "Website"
+      ],
+      "json_bytes": 4977
+    },
+    {
+      "id": "nu-2031",
+      "question": "how many times did alexander mcqueen win?",
+      "answers": [
+        "3"
+      ],
+      "table": "csv/203-csv/205.tsv",
+      "table_sha256": "bcdeba072502aabe2f535d6939076b2718f4c8a0908487fe4ebd054bfd5f8307",
+      "rows": 50,
+      "columns": [
+        "Year",
+        "Designer(s)",
+        "Brief description",
+        "Selected by:",
+        "Associated publication"
+      ],
+      "json_bytes": 12586
+    },
+    {
+      "id": "nu-205",
+      "question": "what is the number of drives that della penna motorsports had?",
+      "answers": [
+        "2"
+      ],
+      "table": "csv/204-csv/531.tsv",
+      "table_sha256": "284548b69a3b2280289b04d207b14bbfdffdcf785d4625a87961e5fcd2890b9c",
+      "rows": 30,
+      "columns": [
+        "Team",
+        "Chassis",
+        "Engine",
+        "Tires",
+        "No",
+        "Drivers"
+      ],
+      "json_bytes": 3956
+    },
+    {
+      "id": "nu-2068",
+      "question": "was she nominated for awards for the film alemari or addhuri?",
+      "answers": [
+        "Addhuri"
+      ],
+      "table": "csv/203-csv/463.tsv",
+      "table_sha256": "f57c6d1b97176c70c3f4d3897a566a148a019ad467fd22492b151d4f0a714a4d",
+      "rows": 17,
+      "columns": [
+        "Year",
+        "Film",
+        "Role",
+        "Language",
+        "Notes"
+      ],
+      "json_bytes": 1870
+    },
+    {
+      "id": "nu-2151",
+      "question": "which root, f or e, has c as it's perfect fifth?",
+      "answers": [
+        "F"
+      ],
+      "table": "csv/204-csv/653.tsv",
+      "table_sha256": "814a40207bcd3ff5e0947317b6d8c12799c0a44d206f20c3f2a6864c49bca63e",
+      "rows": 17,
+      "columns": [
+        "Chord",
+        "Root",
+        "Minor Third",
+        "Perfect Fifth",
+        "Major Seventh"
+      ],
+      "json_bytes": 1637
+    },
+    {
+      "id": "nu-2177",
+      "question": "how many other belgian teams played the same number of european club matches as club brugge?",
+      "answers": [
+        "0"
+      ],
+      "table": "csv/203-csv/582.tsv",
+      "table_sha256": "400c6907f2530ad2028da27c282bda1edc2fbf23e1db85b6f930e1c6341207d1",
+      "rows": 24,
+      "columns": [
+        "Date",
+        "Team",
+        "Competition",
+        "Round",
+        "Leg",
+        "Opponent",
+        "Location",
+        "Score"
+      ],
+      "json_bytes": 4622
+    },
+    {
+      "id": "nu-2226",
+      "question": "what is the total population of africa in 2005?",
+      "answers": [
+        "98 453"
+      ],
+      "table": "csv/203-csv/666.tsv",
+      "table_sha256": "570ada829fd567600efd41712e582f4c97ff08721b35539409ad64f5d5c52223",
+      "rows": 19,
+      "columns": [
+        "Naturalisations by origin",
+        "2000",
+        "2005",
+        "2009",
+        "% Total 2009"
+      ],
+      "json_bytes": 2100
+    },
+    {
+      "id": "nu-2276",
+      "question": "what was the title of the last episode?",
+      "answers": [
+        "\"Home Again\""
+      ],
+      "table": "csv/203-csv/542.tsv",
+      "table_sha256": "861c219ab1252b6bb5e96e865675b0d790dde50cf53e74cfc05759ec018bf5bc",
+      "rows": 22,
+      "columns": [
+        "№",
+        "#",
+        "Title",
+        "Directed by",
+        "Written by",
+        "Original air date",
+        "Production code"
+      ],
+      "json_bytes": 3993
+    },
+    {
+      "id": "nu-2331",
+      "question": "what model has the same quantity as the new flyer d60?",
+      "answers": [
+        "MCI D4500"
+      ],
+      "table": "csv/203-csv/690.tsv",
+      "table_sha256": "da8cc2d03923ec626b72c64a31a5d899b8f2764c5520c31caa862cd57bcbe496",
+      "rows": 22,
+      "columns": [
+        "Year",
+        "Manufacturer",
+        "Model",
+        "Length (feet)",
+        "Quantity",
+        "Fleet Series",
+        "Fuel Propulsion",
+        "Powertrain"
+      ],
+      "json_bytes": 4117
+    },
+    {
+      "id": "nu-2333",
+      "question": "which area has more naturalizations in 2000: maghreb or north america?",
+      "answers": [
+        "Maghreb"
+      ],
+      "table": "csv/203-csv/666.tsv",
+      "table_sha256": "570ada829fd567600efd41712e582f4c97ff08721b35539409ad64f5d5c52223",
+      "rows": 19,
+      "columns": [
+        "Naturalisations by origin",
+        "2000",
+        "2005",
+        "2009",
+        "% Total 2009"
+      ],
+      "json_bytes": 2100
+    },
+    {
+      "id": "nu-2404",
+      "question": "what location has the most radio stations?",
+      "answers": [
+        "Rome"
+      ],
+      "table": "csv/203-csv/500.tsv",
+      "table_sha256": "d9a7cb61fee521da5c6664744e82614af2beae7bf163d5f0a15e4fd2da2eb0dd",
+      "rows": 30,
+      "columns": [
+        "Name",
+        "Owner",
+        "Location",
+        "Notes",
+        "Transmission",
+        "Website"
+      ],
+      "json_bytes": 4977
+    },
+    {
+      "id": "nu-2453",
+      "question": "for which film did georgina hale receive her bafta award?",
+      "answers": [
+        "Mahler"
+      ],
+      "table": "csv/202-csv/248.tsv",
+      "table_sha256": "81e701606b8cb0e9f578791dc645227d10072a02bae19b066c7180c7845a70ab",
+      "rows": 21,
+      "columns": [
+        "Year",
+        "Film",
+        "Role",
+        "Notes"
+      ],
+      "json_bytes": 1632
+    },
+    {
+      "id": "nu-2504",
+      "question": "how long did head coach carl prause serve?",
+      "answers": [
+        "8 years"
+      ],
+      "table": "csv/204-csv/8.tsv",
+      "table_sha256": "e0782268a56cd46704e63f86783702c711693fe568dca17f14f0b83fabeb9da4",
+      "rows": 111,
+      "columns": [
+        "Season",
+        "Conference",
+        "Head Coach",
+        "Total Wins",
+        "Total Losses",
+        "Total Ties",
+        "Conference Wins",
+        "Conference Losses",
+        "Conference Ties",
+        "Conference Standing",
+        "Postseason Result"
+      ],
+      "json_bytes": 28084
+    },
+    {
+      "id": "nu-2524",
+      "question": "how many consecutive vehicles were built under jr kyushu jet ferries",
+      "answers": [
+        "1"
+      ],
+      "table": "csv/204-csv/280.tsv",
+      "table_sha256": "3a8c828201d206ee5f45577fddffdb9c79eabed152f385ab3257bd87149ba203",
+      "rows": 15,
+      "columns": [
+        "Hull",
+        "Type",
+        "Original Name",
+        "Original Operator",
+        "Delivery",
+        "Disposition (2012)",
+        "2nd name",
+        "2nd operator",
+        "3rd Name",
+        "3rd operator"
+      ],
+      "json_bytes": 3563
+    },
+    {
+      "id": "nu-2548",
+      "question": "what's the next destination after princess street?",
+      "answers": [
+        "Cataraqui Town Centre St. Lawrence College"
+      ],
+      "table": "csv/203-csv/335.tsv",
+      "table_sha256": "e1553f303e3e2f4a3f3e6b40059d1943c31caa2041f5e4463b74f44c00c2d8dc",
+      "rows": 16,
+      "columns": [
+        "Route",
+        "Destinations",
+        "Via",
+        "Frequency (minutes)",
+        "Peak Hours Only",
+        "Former"
+      ],
+      "json_bytes": 2728
+    },
+    {
+      "id": "nu-2763",
+      "question": "which country is the only country to have more than 40 total medals?",
+      "answers": [
+        "China (CHN)"
+      ],
+      "table": "csv/204-csv/347.tsv",
+      "table_sha256": "3b2f57f2ef8d42f45ee87fc24641287590e697b0c1611352bdf72530f3919ac3",
+      "rows": 16,
+      "columns": [
+        "Rank",
+        "Nation",
+        "Gold",
+        "Silver",
+        "Bronze",
+        "Total"
+      ],
+      "json_bytes": 1436
+    },
+    {
+      "id": "nu-2768",
+      "question": "what was the number of acts listed in the 16th opus?",
+      "answers": [
+        "3"
+      ],
+      "table": "csv/204-csv/271.tsv",
+      "table_sha256": "78aa5961cda0188234ec281a7abc9562eaafd9d10a9f09c7990ac9404ec9acfa",
+      "rows": 18,
+      "columns": [
+        "Opus",
+        "Title",
+        "Sub­divisions",
+        "Compo-sition",
+        "Première date",
+        "Place, theatre"
+      ],
+      "json_bytes": 3034
+    },
+    {
+      "id": "nu-2799",
+      "question": "how many games did michigan play before their first game that ended in a tie?",
+      "answers": [
+        "25"
+      ],
+      "table": "csv/204-csv/367.tsv",
+      "table_sha256": "b5912187c09e39b42211174c9a96546f0882564c36f2ecd22978967020c024e5",
+      "rows": 30,
+      "columns": [
+        "Date",
+        "Opponent",
+        "Score",
+        "Result",
+        "Location"
+      ],
+      "json_bytes": 3390
+    },
+    {
+      "id": "nu-2816",
+      "question": "what route is listed directly above the one that starts at georgetown university (37th \u0026 o streets nw) and ends at ledroit park?",
+      "answers": [
+        "E6"
+      ],
+      "table": "csv/204-csv/50.tsv",
+      "table_sha256": "63d75e61000b4aeda95895f84ee7d436a62962acce817bafd4cecbd4e273d0c2",
+      "rows": 60,
+      "columns": [
+        "Route",
+        "Name",
+        "Fare Type",
+        "Terminals",
+        "Terminals_2",
+        "Major streets",
+        "Notes",
+        "History"
+      ],
+      "json_bytes": 32170
+    },
+    {
+      "id": "nu-2861",
+      "question": "how many elements are in the same group as neon?",
+      "answers": [
+        "6"
+      ],
+      "table": "csv/203-csv/599.tsv",
+      "table_sha256": "b0e40128afc92f6befbabf788537bb4ca5ed79cad73553fee8d7039e6a26f7e2",
+      "rows": 118,
+      "columns": [
+        "Atomic no.",
+        "Name",
+        "Symbol",
+        "Group",
+        "Period",
+        "Block",
+        "State at STP",
+        "Occurrence",
+        "Description"
+      ],
+      "json_bytes": 19471
+    },
+    {
+      "id": "nu-2876",
+      "question": "alfred haemerlick and jef demuysere won on behalf of which country?",
+      "answers": [
+        "Belgium"
+      ],
+      "table": "csv/204-csv/406.tsv",
+      "table_sha256": "c80edf87f8565d1a09e72623cc41e171bcde6ddaef31699b6d2be1438739eb6d",
+      "rows": 24,
+      "columns": [
+        "Stage",
+        "Date",
+        "Route",
+        "Terrain",
+        "Length",
+        "Winner",
+        "Race leader"
+      ],
+      "json_bytes": 4598
+    },
+    {
+      "id": "nu-2906",
+      "question": "which comet has the longest orbital period?",
+      "answers": [
+        "153P/Ikeya-Zhang"
+      ],
+      "table": "csv/202-csv/81.tsv",
+      "table_sha256": "57fb5aa5c0b68970e6542b51c6053c9fe75a80d15faf325c25f3f98849ab24cf",
+      "rows": 297,
+      "columns": [
+        "Comet",
+        "Discoverer(s) or namesake(s)",
+        "Orbital period (years)",
+        "Spacecraft encounter(s)"
+      ],
+      "json_bytes": 41578
+    },
+    {
+      "id": "nu-295",
+      "question": "in what other year other than 1935/36 were championships held without playoffs?",
+      "answers": [
+        "1953/54"
+      ],
+      "table": "csv/203-csv/435.tsv",
+      "table_sha256": "8e2ace59459b671d745acea63654bf8080963f5584bb0f05ec090876361f4f3f",
+      "rows": 27,
+      "columns": [
+        "Year",
+        "Division",
+        "League",
+        "Reg. Season",
+        "Playoffs",
+        "National Cup"
+      ],
+      "json_bytes": 3177
+    },
+    {
+      "id": "nu-2957",
+      "question": "what is the total number of ships listed as \"disposed of\"?",
+      "answers": [
+        "2"
+      ],
+      "table": "csv/203-csv/369.tsv",
+      "table_sha256": "8665cd99563a7dfe928377b9172026781996ba8f6d8a709e367f76d44f3bc12e",
+      "rows": 60,
+      "columns": [
+        "Designation",
+        "Keel Laid",
+        "Launched",
+        "Commissioned",
+        "Fate"
+      ],
+      "json_bytes": 8806
+    },
+    {
+      "id": "nu-2982",
+      "question": "which america has a larger number of naturalisations in 2009?",
+      "answers": [
+        "South and Central America"
+      ],
+      "table": "csv/203-csv/666.tsv",
+      "table_sha256": "570ada829fd567600efd41712e582f4c97ff08721b35539409ad64f5d5c52223",
+      "rows": 19,
+      "columns": [
+        "Naturalisations by origin",
+        "2000",
+        "2005",
+        "2009",
+        "% Total 2009"
+      ],
+      "json_bytes": 2100
+    },
+    {
+      "id": "nu-3051",
+      "question": "the chicago stags have the highest win percentage of any defunct team, but who played for the most seasons?",
+      "answers": [
+        "Baltimore Bullets"
+      ],
+      "table": "csv/204-csv/773.tsv",
+      "table_sha256": "d8e85046b80616949a06e86ed3f5adfaf498d3d3dacb63d2e5e4f39b80b1fb80",
+      "rows": 17,
+      "columns": [
+        "Team",
+        "City",
+        "Years active",
+        "Seasons played",
+        "Win–loss record",
+        "Win%",
+        "Playoffs appearances"
+      ],
+      "json_bytes": 3035
+    },
+    {
+      "id": "nu-3104",
+      "question": "who directed the least amount of \"i spy\" episodes?",
+      "answers": [
+        "Sheldon Leonard"
+      ],
+      "table": "csv/203-csv/315.tsv",
+      "table_sha256": "c0a6debd60356762da191bbf63c6c1e74ded87791ea37f22fa568ba24c5a48ac",
+      "rows": 28,
+      "columns": [
+        "No. in series",
+        "No. in season",
+        "Title",
+        "Directed by",
+        "Written by",
+        "Original air date",
+        "Prod. code"
+      ],
+      "json_bytes": 5708
+    },
+    {
+      "id": "nu-3194",
+      "question": "out of all the people who scored points , who had the least?",
+      "answers": [
+        "Aguri Suzuki"
+      ],
+      "table": "csv/204-csv/462.tsv",
+      "table_sha256": "f1d513baa480c723e788bb707a7c5b970792a55bd6db8cce24a88e3c8ce0287f",
+      "rows": 35,
+      "columns": [
+        "Pos",
+        "No",
+        "Driver",
+        "Constructor",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Points"
+      ],
+      "json_bytes": 4807
+    },
+    {
+      "id": "nu-3197",
+      "question": "what was the last reactor to be shut down in the '90's?",
+      "answers": [
+        "Chernobyl-1"
+      ],
+      "table": "csv/204-csv/566.tsv",
+      "table_sha256": "4f053c94a3a5f9d7f826d204312e124424118e065c38bfdb0078f613233f5068",
+      "rows": 26,
+      "columns": [
+        "Location",
+        "Reactor type",
+        "Status",
+        "Net Capacity (MWe)",
+        "Gross Capacity (MWe)"
+      ],
+      "json_bytes": 3874
+    },
+    {
+      "id": "nu-3234",
+      "question": "what year had the highest earnings?",
+      "answers": [
+        "2003"
+      ],
+      "table": "csv/202-csv/110.tsv",
+      "table_sha256": "7974581825e5e050872fbddeca6c040f4b8d09ca68f1511d735f949244bd6c2f",
+      "rows": 30,
+      "columns": [
+        "Year",
+        "Wins (majors)",
+        "Earnings ($)",
+        "Rank"
+      ],
+      "json_bytes": 2227
+    },
+    {
+      "id": "nu-329",
+      "question": "what was the first movie that won the filmfare award for best actress?",
+      "answers": [
+        "Moggina Manasu"
+      ],
+      "table": "csv/203-csv/463.tsv",
+      "table_sha256": "f57c6d1b97176c70c3f4d3897a566a148a019ad467fd22492b151d4f0a714a4d",
+      "rows": 17,
+      "columns": [
+        "Year",
+        "Film",
+        "Role",
+        "Language",
+        "Notes"
+      ],
+      "json_bytes": 1870
+    },
+    {
+      "id": "nu-3341",
+      "question": "which district is the most percentage of the state population?",
+      "answers": [
+        "Mumbai Suburban"
+      ],
+      "table": "csv/202-csv/260.tsv",
+      "table_sha256": "be6ed77852b7eed6aac741d5f61f9d1ea92f7d6f292ca76e8e4d1099d99d4ea6",
+      "rows": 36,
+      "columns": [
+        "No",
+        "Name",
+        "Code",
+        "Formed",
+        "Headquarters",
+        "Administrative Division",
+        "Area (km2)",
+        "Population (2001 census)",
+        "% of State Population",
+        "Density (per km2)",
+        "Urban (%)",
+        "Literacy (%)",
+        "Sex Ratio",
+        "Tehsils",
+        "Source"
+      ],
+      "json_bytes": 12491
+    },
+    {
+      "id": "nu-3358",
+      "question": "which party is the most represented by the representatives?",
+      "answers": [
+        "Republican"
+      ],
+      "table": "csv/204-csv/580.tsv",
+      "table_sha256": "c3c4a29e4bcba923c15cbb5a4be5b5df78d8d2ce48b047f255274a3caf4aba5e",
+      "rows": 99,
+      "columns": [
+        "District",
+        "Representative",
+        "Party",
+        "Home Town, County",
+        "Term of Service"
+      ],
+      "json_bytes": 14699
+    },
+    {
+      "id": "nu-3368",
+      "question": "what is the number of times that colorado state has won in the trophy era?",
+      "answers": [
+        "14"
+      ],
+      "table": "csv/204-csv/528.tsv",
+      "table_sha256": "9f96175416a24d0683ce19784961e865ede3d0adabaf9bf83c93590c1f574262",
+      "rows": 34,
+      "columns": [
+        "Date",
+        "Site",
+        "Winning team",
+        "Winning team_2",
+        "Losing team",
+        "Losing team_2",
+        "Series"
+      ],
+      "json_bytes": 6137
+    },
+    {
+      "id": "nu-3406",
+      "question": "how many accolades ranked the album below 100th place?",
+      "answers": [
+        "4"
+      ],
+      "table": "csv/203-csv/821.tsv",
+      "table_sha256": "5ec97908e4195e151aaeab793d9d5ba85364baa3fe91c313fc393712032d925d",
+      "rows": 29,
+      "columns": [
+        "Publication",
+        "Country",
+        "Accolade",
+        "Year",
+        "Rank"
+      ],
+      "json_bytes": 3782
+    },
+    {
+      "id": "nu-354",
+      "question": "who was the second operator to work on the pegasus",
+      "answers": [
+        "Tane Yaku Jetfoils"
+      ],
+      "table": "csv/204-csv/280.tsv",
+      "table_sha256": "3a8c828201d206ee5f45577fddffdb9c79eabed152f385ab3257bd87149ba203",
+      "rows": 15,
+      "columns": [
+        "Hull",
+        "Type",
+        "Original Name",
+        "Original Operator",
+        "Delivery",
+        "Disposition (2012)",
+        "2nd name",
+        "2nd operator",
+        "3rd Name",
+        "3rd operator"
+      ],
+      "json_bytes": 3563
+    },
+    {
+      "id": "nu-3556",
+      "question": "which ambassador served the russian empire for the most amount of time?",
+      "answers": [
+        "Dmitry Mikhailovich Golitsyn"
+      ],
+      "table": "csv/203-csv/840.tsv",
+      "table_sha256": "e394ed3ea6a220f38c4658c09b31f2437736af1dc0dd45e69d405d3b0d89120e",
+      "rows": 34,
+      "columns": [
+        "Name",
+        "Title",
+        "Date from",
+        "Date until",
+        "Russian state",
+        "Austrian state"
+      ],
+      "json_bytes": 6923
+    },
+    {
+      "id": "nu-3561",
+      "question": "what is the densest species of timber used for engineering purposes in india?",
+      "answers": [
+        "Tamarind"
+      ],
+      "table": "csv/203-csv/738.tsv",
+      "table_sha256": "8b50a93c6fccc74c9d3921d232bb3eb52aaf8368f66667f9466722769b792fa6",
+      "rows": 40,
+      "columns": [
+        "Common name",
+        "Binomial nomenclature",
+        "Colour",
+        "Density ¹",
+        "Location",
+        "Characteristics, Usage and Status"
+      ],
+      "json_bytes": 15609
+    },
+    {
+      "id": "nu-3593",
+      "question": "which athlete from the united states has the same time record as an athlete from jamaica?",
+      "answers": [
+        "Tommie Smith"
+      ],
+      "table": "csv/203-csv/433.tsv",
+      "table_sha256": "4b5bd6fe4c0ec87a946be3d8a9f35a48a0d19604748f80f4cad1e59ef9239cf3",
+      "rows": 19,
+      "columns": [
+        "Time",
+        "Wind",
+        "Auto",
+        "Athlete",
+        "Nationality",
+        "Location of race",
+        "Date"
+      ],
+      "json_bytes": 3077
+    },
+    {
+      "id": "nu-3633",
+      "question": "what year was the last national cup that earned the title champion?",
+      "answers": [
+        "1953/54"
+      ],
+      "table": "csv/203-csv/435.tsv",
+      "table_sha256": "8e2ace59459b671d745acea63654bf8080963f5584bb0f05ec090876361f4f3f",
+      "rows": 27,
+      "columns": [
+        "Year",
+        "Division",
+        "League",
+        "Reg. Season",
+        "Playoffs",
+        "National Cup"
+      ],
+      "json_bytes": 3177
+    },
+    {
+      "id": "nu-366",
+      "question": "how long is the caen-dinan route? (in miles)",
+      "answers": [
+        "132 mi"
+      ],
+      "table": "csv/204-csv/406.tsv",
+      "table_sha256": "c80edf87f8565d1a09e72623cc41e171bcde6ddaef31699b6d2be1438739eb6d",
+      "rows": 24,
+      "columns": [
+        "Stage",
+        "Date",
+        "Route",
+        "Terrain",
+        "Length",
+        "Winner",
+        "Race leader"
+      ],
+      "json_bytes": 4598
+    },
+    {
+      "id": "nu-3685",
+      "question": "how many people have points less than 9?",
+      "answers": [
+        "17"
+      ],
+      "table": "csv/203-csv/578.tsv",
+      "table_sha256": "7b5557f025c88192df0d33a4066d20c9f2cc7696259c3cbdae592e8e29b13c40",
+      "rows": 27,
+      "columns": [
+        "Rank",
+        "Name",
+        "Club",
+        "Nationality",
+        "Points"
+      ],
+      "json_bytes": 2635
+    },
+    {
+      "id": "nu-3767",
+      "question": "how many goals did manchester have in 1997-1998?",
+      "answers": [
+        "0"
+      ],
+      "table": "csv/200-csv/29.tsv",
+      "table_sha256": "34a23380c10afbaf6b46b9a3d72effb38bcd79e1080127e2bdb0b58b8ca09601",
+      "rows": 35,
+      "columns": [
+        "Club performance Season Norway",
+        "Club performance Club Norway",
+        "Club performance League Norway",
+        "League Apps League",
+        "League Goals League",
+        "Cup Apps Norwegian Cup",
+        "Cup Goals Norwegian Cup",
+        "Total Apps Total",
+        "Total Goals Total"
+      ],
+      "json_bytes": 10432
+    },
+    {
+      "id": "nu-3769",
+      "question": "did tom ford or alexander mcqueen win the award in 1999?",
+      "answers": [
+        "Alexander McQueen"
+      ],
+      "table": "csv/203-csv/205.tsv",
+      "table_sha256": "bcdeba072502aabe2f535d6939076b2718f4c8a0908487fe4ebd054bfd5f8307",
+      "rows": 50,
+      "columns": [
+        "Year",
+        "Designer(s)",
+        "Brief description",
+        "Selected by:",
+        "Associated publication"
+      ],
+      "json_bytes": 12586
+    },
+    {
+      "id": "nu-3802",
+      "question": "how many games took place in fort collins?",
+      "answers": [
+        "17"
+      ],
+      "table": "csv/204-csv/528.tsv",
+      "table_sha256": "9f96175416a24d0683ce19784961e865ede3d0adabaf9bf83c93590c1f574262",
+      "rows": 34,
+      "columns": [
+        "Date",
+        "Site",
+        "Winning team",
+        "Winning team_2",
+        "Losing team",
+        "Losing team_2",
+        "Series"
+      ],
+      "json_bytes": 6137
+    },
+    {
+      "id": "nu-382",
+      "question": "what is the number of german flags on this table?",
+      "answers": [
+        "1"
+      ],
+      "table": "csv/203-csv/140.tsv",
+      "table_sha256": "c447df88ac08cd9ab01e0e907df970bb159864da7cac5107f26c4110729635d3",
+      "rows": 19,
+      "columns": [
+        "Date",
+        "Date_2",
+        "col2",
+        "Rank",
+        "Tournament name",
+        "Venue",
+        "City",
+        "Winner",
+        "Runner-up",
+        "Score"
+      ],
+      "json_bytes": 4055
+    },
+    {
+      "id": "nu-3824",
+      "question": "how many more points did mike parkes have than john taylor?",
+      "answers": [
+        "5"
+      ],
+      "table": "csv/203-csv/479.tsv",
+      "table_sha256": "83d0d0b9bf78d86a8849c8e12d8fb8f21c51a2de2184bdf6a6d4f77a60e1fe73",
+      "rows": 18,
+      "columns": [
+        "Pos",
+        "No",
+        "Driver",
+        "Constructor",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Points"
+      ],
+      "json_bytes": 2476
+    },
+    {
+      "id": "nu-390",
+      "question": "what is the total of seasons played between baltimore bullets and chicago stags?",
+      "answers": [
+        "12"
+      ],
+      "table": "csv/204-csv/773.tsv",
+      "table_sha256": "d8e85046b80616949a06e86ed3f5adfaf498d3d3dacb63d2e5e4f39b80b1fb80",
+      "rows": 17,
+      "columns": [
+        "Team",
+        "City",
+        "Years active",
+        "Seasons played",
+        "Win–loss record",
+        "Win%",
+        "Playoffs appearances"
+      ],
+      "json_bytes": 3035
+    },
+    {
+      "id": "nu-3920",
+      "question": "how many times is the untied states listed as the country?",
+      "answers": [
+        "5"
+      ],
+      "table": "csv/204-csv/417.tsv",
+      "table_sha256": "671944bd35603e2f9d4df37dd6d98160d642a0cb14b3c1de1a6b21dbee9e6cf7",
+      "rows": 20,
+      "columns": [
+        "Place",
+        "Rider",
+        "Country",
+        "Team",
+        "Points",
+        "Wins"
+      ],
+      "json_bytes": 2080
+    },
+    {
+      "id": "nu-3921",
+      "question": "what teams did they not win at texas stadium?",
+      "answers": [
+        "Atlanta Falcons",
+        "Los Angeles Raiders",
+        "Seattle Seahawks",
+        "Philadelphia Eagles",
+        "Chicago Bears"
+      ],
+      "table": "csv/203-csv/334.tsv",
+      "table_sha256": "fc0d32a3a3f7fdf9bfe57897b90489a55e4f1f183c31b9526274b581e5c96bc8",
+      "rows": 16,
+      "columns": [
+        "Week",
+        "Date",
+        "Opponent",
+        "Result",
+        "Game site",
+        "NFL Recap",
+        "Attendance"
+      ],
+      "json_bytes": 2614
+    },
+    {
+      "id": "nu-3971",
+      "question": "of the routes that have a listed length, how many are longer than 25 miles?",
+      "answers": [
+        "7"
+      ],
+      "table": "csv/203-csv/100.tsv",
+      "table_sha256": "88e0f03793761244cf208b8235cb031c3e0f5214e31aacc0df9f05baf779dc2a",
+      "rows": 28,
+      "columns": [
+        "Name",
+        "Route number(s)",
+        "Length (mi)",
+        "Location",
+        "Notes"
+      ],
+      "json_bytes": 8980
+    },
+    {
+      "id": "nu-3984",
+      "question": "what is the total amount of years listed?",
+      "answers": [
+        "17"
+      ],
+      "table": "csv/204-csv/919.tsv",
+      "table_sha256": "be14e5330803d1381fd85fb44a89b14d11587b03294a2b838be90d2e28c71ea5",
+      "rows": 38,
+      "columns": [
+        "Year",
+        "Single",
+        "Peak chart positions US Country",
+        "Peak chart positions CAN Country",
+        "Album"
+      ],
+      "json_bytes": 5923
+    },
+    {
+      "id": "nu-403",
+      "question": "which location is previous to lake louise canada on 30 nov 2012",
+      "answers": [
+        "Bansko, Bulgaria"
+      ],
+      "table": "csv/204-csv/921.tsv",
+      "table_sha256": "e58fb5a426308cc5b19b276eab698daba166ab377a6bee0cf70ab967d662ff59",
+      "rows": 16,
+      "columns": [
+        "Season",
+        "Date",
+        "Location",
+        "Discipline",
+        "Place"
+      ],
+      "json_bytes": 1767
+    },
+    {
+      "id": "nu-405",
+      "question": "how many times is the cataraqui town centre listed as a destination?",
+      "answers": [
+        "6"
+      ],
+      "table": "csv/203-csv/335.tsv",
+      "table_sha256": "e1553f303e3e2f4a3f3e6b40059d1943c31caa2041f5e4463b74f44c00c2d8dc",
+      "rows": 16,
+      "columns": [
+        "Route",
+        "Destinations",
+        "Via",
+        "Frequency (minutes)",
+        "Peak Hours Only",
+        "Former"
+      ],
+      "json_bytes": 2728
+    },
+    {
+      "id": "nu-4117",
+      "question": "who has a larger amount of league appearance john battye or jimmy glazzard?",
+      "answers": [
+        "John Battye"
+      ],
+      "table": "csv/203-csv/602.tsv",
+      "table_sha256": "67df27ef617d9ce90972727e3bcea85075edb5891fdde15e05b585086caa90ca",
+      "rows": 30,
+      "columns": [
+        "Name",
+        "Nation",
+        "Position",
+        "League Apps",
+        "League Goals",
+        "FA Cup Apps",
+        "FA Cup Goals",
+        "Total Apps",
+        "Total Goals"
+      ],
+      "json_bytes": 5112
+    },
+    {
+      "id": "nu-4176",
+      "question": "who took office in 1861 but left office just two days later?",
+      "answers": [
+        "Oliver P. Morton"
+      ],
+      "table": "csv/203-csv/194.tsv",
+      "table_sha256": "796444604d67bd8e141548ba12cd1b66546241a949cc2681aada8e250031c31e",
+      "rows": 56,
+      "columns": [
+        "#",
+        "Name",
+        "Took office",
+        "Left office",
+        "Party",
+        "Governor",
+        "Notes"
+      ],
+      "json_bytes": 9149
+    },
+    {
+      "id": "nu-4199",
+      "question": "how many were in the north district?",
+      "answers": [
+        "16"
+      ],
+      "table": "csv/204-csv/512.tsv",
+      "table_sha256": "3505bf7ba1020bab5cebad4fad898cdab6086503cbfb672e539b22c89e0eee97",
+      "rows": 75,
+      "columns": [
+        "Common name",
+        "District",
+        "Hebrew",
+        "Arabic",
+        "Population (2009)",
+        "Area (km²)",
+        "Mayor"
+      ],
+      "json_bytes": 13264
+    },
+    {
+      "id": "nu-4259",
+      "question": "during 2009 what was the total number of vessels that canada ordered?",
+      "answers": [
+        "9"
+      ],
+      "table": "csv/204-csv/390.tsv",
+      "table_sha256": "c50092cec0239cc69cdc7c51f72523e8f4fbb0165b4cc948dcee328b61e7d22d",
+      "rows": 17,
+      "columns": [
+        "Nation",
+        "Date",
+        "Quantity",
+        "Type",
+        "Notes"
+      ],
+      "json_bytes": 4007
+    },
+    {
+      "id": "nu-4296",
+      "question": "what was the date of the first vessel that was acquired?",
+      "answers": [
+        "2001"
+      ],
+      "table": "csv/204-csv/390.tsv",
+      "table_sha256": "c50092cec0239cc69cdc7c51f72523e8f4fbb0165b4cc948dcee328b61e7d22d",
+      "rows": 17,
+      "columns": [
+        "Nation",
+        "Date",
+        "Quantity",
+        "Type",
+        "Notes"
+      ],
+      "json_bytes": 4007
+    },
+    {
+      "id": "nu-4318",
+      "question": "which island has the most area, tiree or kasos?",
+      "answers": [
+        "Tiree"
+      ],
+      "table": "csv/203-csv/144.tsv",
+      "table_sha256": "e11e84222a6d2a67695b4c38d923bf078f4cae86f97d2f7880e55d6874399580",
+      "rows": 95,
+      "columns": [
+        "Rank",
+        "Island",
+        "Area (km²)",
+        "Area (sq mi)",
+        "Country/Countries/Region"
+      ],
+      "json_bytes": 10966
+    },
+    {
+      "id": "nu-4325",
+      "question": "what is the least entry listed under notes?",
+      "answers": [
+        "60.28 m"
+      ],
+      "table": "csv/203-csv/819.tsv",
+      "table_sha256": "f523fca1360c832a47bdb17fbdd5c4153d16eb3325d8eb67bde9f20a69bde96d",
+      "rows": 15,
+      "columns": [
+        "Year",
+        "Competition",
+        "Venue",
+        "Position",
+        "Notes"
+      ],
+      "json_bytes": 1744
+    },
+    {
+      "id": "nu-4343",
+      "question": "how many more awards did she win in 2009 than in 2007?",
+      "answers": [
+        "6"
+      ],
+      "table": "csv/203-csv/63.tsv",
+      "table_sha256": "137d1568cff0e996c4dc62c582b63310e02bf603bc8282916fb3ffacbd9b0406",
+      "rows": 22,
+      "columns": [
+        "Year",
+        "Award",
+        "Nominated work",
+        "Category",
+        "Result"
+      ],
+      "json_bytes": 2863
+    },
+    {
+      "id": "nu-447",
+      "question": "which team only had two drivers?",
+      "answers": [
+        "Mücke Motorsport"
+      ],
+      "table": "csv/204-csv/305.tsv",
+      "table_sha256": "adf4c35d12b5eaf330c44f3af55735dd60b4205bf4c7dc1527ebe3e1903de6cc",
+      "rows": 19,
+      "columns": [
+        "Team",
+        "No",
+        "Driver",
+        "Class",
+        "Rounds"
+      ],
+      "json_bytes": 1681
+    },
+    {
+      "id": "nu-462",
+      "question": "how many times does the role of gwen appear?",
+      "answers": [
+        "2"
+      ],
+      "table": "csv/201-csv/23.tsv",
+      "table_sha256": "c3fd8afb4bb9535c0398c850068b9b818be09ef896d4787544a30d44eb432a53",
+      "rows": 31,
+      "columns": [
+        "Year",
+        "Title",
+        "Role",
+        "Notes"
+      ],
+      "json_bytes": 2555
+    },
+    {
+      "id": "nu-49",
+      "question": "how many times were consecutive games played against millwall?",
+      "answers": [
+        "1"
+      ],
+      "table": "csv/204-csv/857.tsv",
+      "table_sha256": "2c51daf8fa91cb83d47bbc00da1895e137d175252239cad56920ba500b53e5d8",
+      "rows": 42,
+      "columns": [
+        "Date",
+        "Opponents",
+        "Venue",
+        "Result",
+        "Scorers",
+        "Attendance"
+      ],
+      "json_bytes": 5072
+    },
+    {
+      "id": "nu-499",
+      "question": "which country held the most accolades?",
+      "answers": [
+        "United States"
+      ],
+      "table": "csv/203-csv/821.tsv",
+      "table_sha256": "5ec97908e4195e151aaeab793d9d5ba85364baa3fe91c313fc393712032d925d",
+      "rows": 29,
+      "columns": [
+        "Publication",
+        "Country",
+        "Accolade",
+        "Year",
+        "Rank"
+      ],
+      "json_bytes": 3782
+    },
+    {
+      "id": "nu-553",
+      "question": "name all models with the same mpg as fiat 500 1.4 pop.",
+      "answers": [
+        "Fiat 500 1.4 LOUNGE 3D",
+        "Fiat 500 1.4 SPORT",
+        "Citroen C4 2.0 SX 5DR 6SP A D",
+        "Volkswagen Golf TDI 103KW 4MOTION",
+        "Peugeot 207 XS 1.4 5DR 5SPD M P",
+        "Saab 9-3 Linear CONVERTIBLE 1.9TID M",
+        "Suzuki Swift GLX 1.5 5DR",
+        "Suzuki Swift GLXH 1.5 5DR",
+        "Suzuki Swift GLXH2 1.5 5DR"
+      ],
+      "table": "csv/204-csv/815.tsv",
+      "table_sha256": "8b62799fd2c6cb44f8849d813e1ded042b9b7244835ad3fb59c249d5e1385721",
+      "rows": 176,
+      "columns": [
+        "Model",
+        "Fuel Type",
+        "mpg (US gallons)",
+        "L/100 km",
+        "NZ Rating (Stars)"
+      ],
+      "json_bytes": 22881
+    },
+    {
+      "id": "nu-566",
+      "question": "who was rank 4 li yihua or elsa tenorio?",
+      "answers": [
+        "Li Yihua"
+      ],
+      "table": "csv/203-csv/373.tsv",
+      "table_sha256": "61f61aa40dfde84622cd54ae1db80f869f1616738fe9e92730e439594acda2d8",
+      "rows": 24,
+      "columns": [
+        "Rank",
+        "Diver",
+        "Preliminary Points",
+        "Preliminary Rank",
+        "Final Points"
+      ],
+      "json_bytes": 2880
+    },
+    {
+      "id": "nu-567",
+      "question": "the distributor at the top of the list",
+      "answers": [
+        "Arch Linux"
+      ],
+      "table": "csv/203-csv/477.tsv",
+      "table_sha256": "214034cc087bdf10f82b602d0430c38a98ed01d2257a893867404cc2b388d42d",
+      "rows": 35,
+      "columns": [
+        "Distribution",
+        "x86",
+        "x86-64",
+        "ia64",
+        "ppc",
+        "ppc64",
+        "sparc32",
+        "sparc64",
+        "arm",
+        "hppa",
+        "mips",
+        "sh",
+        "s390",
+        "s390x",
+        "alpha",
+        "m68k"
+      ],
+      "json_bytes": 8523
+    },
+    {
+      "id": "nu-58",
+      "question": "who was the top placing competitor?",
+      "answers": [
+        "Esther Shahamorov"
+      ],
+      "table": "csv/203-csv/0.tsv",
+      "table_sha256": "0e0f2a1e372c3c542e9f75b404f5f1533f30967a3e3c4e0d8af40c27ab6298cb",
+      "rows": 18,
+      "columns": [
+        "Name",
+        "Sport",
+        "Event",
+        "Placing",
+        "Performance"
+      ],
+      "json_bytes": 2535
+    },
+    {
+      "id": "nu-641",
+      "question": "how many teams completed 87 laps?",
+      "answers": [
+        "8"
+      ],
+      "table": "csv/203-csv/659.tsv",
+      "table_sha256": "5f6a17f9cdfc1203f2e5ab7408505a0ce0ac2a404966a6720ee404b725e2aeed",
+      "rows": 19,
+      "columns": [
+        "Pos",
+        "No",
+        "Driver",
+        "Team",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Points"
+      ],
+      "json_bytes": 2655
+    },
+    {
+      "id": "nu-673",
+      "question": "who got 15th place?",
+      "answers": [
+        "Kate Anderson"
+      ],
+      "table": "csv/203-csv/693.tsv",
+      "table_sha256": "31a23f34a96e9653cc11779b0976a99da8218a6f4e9bbf00aecbaf6d807116c1",
+      "rows": 42,
+      "columns": [
+        "Heat",
+        "Rank",
+        "Name",
+        "Result",
+        "Notes"
+      ],
+      "json_bytes": 3680
+    },
+    {
+      "id": "nu-68",
+      "question": "how many drivers have no laps led?",
+      "answers": [
+        "18"
+      ],
+      "table": "csv/204-csv/578.tsv",
+      "table_sha256": "371fa064a229563b5cb4d08b9a65d413fc7ea0fc71da299a1cd3aa868d043080",
+      "rows": 21,
+      "columns": [
+        "Pos",
+        "No.",
+        "Driver",
+        "Team",
+        "Laps",
+        "Time/Retired",
+        "Grid",
+        "Laps Led",
+        "Points"
+      ],
+      "json_bytes": 3284
+    },
+    {
+      "id": "nu-699",
+      "question": "who became head coach after ellis johnson?",
+      "answers": [
+        "John Zernhelt"
+      ],
+      "table": "csv/204-csv/8.tsv",
+      "table_sha256": "e0782268a56cd46704e63f86783702c711693fe568dca17f14f0b83fabeb9da4",
+      "rows": 111,
+      "columns": [
+        "Season",
+        "Conference",
+        "Head Coach",
+        "Total Wins",
+        "Total Losses",
+        "Total Ties",
+        "Conference Wins",
+        "Conference Losses",
+        "Conference Ties",
+        "Conference Standing",
+        "Postseason Result"
+      ],
+      "json_bytes": 28084
+    },
+    {
+      "id": "nu-745",
+      "question": "how many replay games took place?",
+      "answers": [
+        "4"
+      ],
+      "table": "csv/203-csv/567.tsv",
+      "table_sha256": "d63189accf5c9c596403038efa1d8bf4850f4c8ca0ac2307afc11a89f9afccac",
+      "rows": 20,
+      "columns": [
+        "Tie no",
+        "Home team",
+        "Score",
+        "Away team",
+        "Date",
+        "Attendance"
+      ],
+      "json_bytes": 2697
+    },
+    {
+      "id": "nu-911",
+      "question": "in what year was the least money won?",
+      "answers": [
+        "1979"
+      ],
+      "table": "csv/204-csv/825.tsv",
+      "table_sha256": "22d3ae81dab6c026a52e1da57f0e0108e79af01ec06434dd34123c230566cfd0",
+      "rows": 36,
+      "columns": [
+        "Year",
+        "Winner",
+        "Jockey",
+        "Trainer",
+        "Owner",
+        "Distance (Miles)",
+        "Time",
+        "Win $"
+      ],
+      "json_bytes": 6618
+    },
+    {
+      "id": "nu-989",
+      "question": "how long has the henry j. kaiser been active?",
+      "answers": [
+        "28"
+      ],
+      "table": "csv/204-csv/559.tsv",
+      "table_sha256": "3de7a14522e301d77fc20cb34a40de8f6d3d63a920b923168726318cdc138800",
+      "rows": 18,
+      "columns": [
+        "Ship",
+        "Hull No.",
+        "Status",
+        "Years Active",
+        "NVR Page"
+      ],
+      "json_bytes": 2722
+    }
+  ]
+}

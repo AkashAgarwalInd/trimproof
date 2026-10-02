@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -82,6 +83,61 @@ func BenchmarkGatewayOverhead(b *testing.B) {
 				q := func(f float64) float64 { return float64(lat[int(f*float64(len(lat)-1))].Microseconds()) / 1000 }
 				b.ReportMetric(q(0.50), "p50-ms")
 				b.ReportMetric(q(0.99), "p99-ms")
+			})
+		}
+	}
+}
+
+// BenchmarkGatewayOverheadParallel is BenchmarkGatewayOverhead under
+// concurrency: GOMAXPROCS×parallelism goroutines send requests at once, and
+// it reports throughput as well as per-request p50/p99.
+//
+//	go test ./pkg/server -run '^$' -bench GatewayOverheadParallel -benchtime 2000x -cpu 8
+func BenchmarkGatewayOverheadParallel(b *testing.B) {
+	for _, size := range []int{10 << 10, 100 << 10} {
+		body := []byte(anthropicBody(payloadRows(size), false))
+		for _, st := range []policy.PromotionState{policy.Off, policy.Enabled} {
+			b.Run(fmt.Sprintf("%dKB/%s", size>>10, st), func(b *testing.B) {
+				reg := NewRegistry()
+				p := policy.Defaults()
+				p.TenantID, p.RouteID, p.Codec, p.State = "*", "support", "toon", st
+				if err := reg.Put(p, nil, false); err != nil {
+					b.Fatal(err)
+				}
+				s := New(Config{Registry: reg, AnthropicBase: "http://upstream.invalid",
+					HTTP: &http.Client{Transport: stubTransport{body: []byte(`{"content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":5,"output_tokens":1}}`)}}})
+				var mu sync.Mutex
+				lat := make([]time.Duration, 0, b.N)
+				b.SetBytes(int64(len(body)))
+				b.ReportAllocs()
+				b.SetParallelism(4)
+				start := time.Now()
+				b.ResetTimer()
+				b.RunParallel(func(pb *testing.PB) {
+					var mine []time.Duration
+					for pb.Next() {
+						r := httptest.NewRequest("POST", "/anthropic/v1/messages", bytes.NewReader(body))
+						r.Header.Set(HeaderRoute, "support")
+						w := httptest.NewRecorder()
+						t0 := time.Now()
+						s.ServeHTTP(w, r)
+						mine = append(mine, time.Since(t0))
+						if w.Code != 200 {
+							b.Errorf("status %d", w.Code)
+							return
+						}
+					}
+					mu.Lock()
+					lat = append(lat, mine...)
+					mu.Unlock()
+				})
+				b.StopTimer()
+				elapsed := time.Since(start)
+				slices.Sort(lat)
+				q := func(f float64) float64 { return float64(lat[int(f*float64(len(lat)-1))].Microseconds()) / 1000 }
+				b.ReportMetric(q(0.50), "p50-ms")
+				b.ReportMetric(q(0.99), "p99-ms")
+				b.ReportMetric(float64(len(lat))/elapsed.Seconds(), "req/s")
 			})
 		}
 	}

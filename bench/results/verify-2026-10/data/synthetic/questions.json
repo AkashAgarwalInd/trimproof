@@ -1,0 +1,2072 @@
+[
+  {
+    "id": "orders-30-s1000-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10029?",
+    "answer": "Initech Foods",
+    "numeric": false,
+    "dataset": "orders-30-s1000",
+    "file": "orders-30-s1000.json"
+  },
+  {
+    "id": "orders-30-s1000-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10027?",
+    "answer": "1249.62",
+    "numeric": true,
+    "dataset": "orders-30-s1000",
+    "file": "orders-30-s1000.json"
+  },
+  {
+    "id": "orders-30-s1000-q3",
+    "kind": "count",
+    "text": "How many orders have status \"paid\"?",
+    "answer": "9",
+    "numeric": true,
+    "dataset": "orders-30-s1000",
+    "file": "orders-30-s1000.json"
+  },
+  {
+    "id": "orders-30-s1000-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"EUR\"?",
+    "answer": "3",
+    "numeric": true,
+    "dataset": "orders-30-s1000",
+    "file": "orders-30-s1000.json"
+  },
+  {
+    "id": "orders-30-s1000-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10024",
+    "numeric": true,
+    "dataset": "orders-30-s1000",
+    "file": "orders-30-s1000.json"
+  },
+  {
+    "id": "orders-30-s1000-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Oscorp Corp\"?",
+    "answer": "36",
+    "numeric": true,
+    "dataset": "orders-30-s1000",
+    "file": "orders-30-s1000.json"
+  },
+  {
+    "id": "orders-30-s1000-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10004?",
+    "answer": "2026-04-15T05:49:00Z",
+    "numeric": false,
+    "dataset": "orders-30-s1000",
+    "file": "orders-30-s1000.json"
+  },
+  {
+    "id": "orders-120-s1000-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10117?",
+    "answer": "Oscorp Systems",
+    "numeric": false,
+    "dataset": "orders-120-s1000",
+    "file": "orders-120-s1000.json"
+  },
+  {
+    "id": "orders-120-s1000-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10070?",
+    "answer": "1459.81",
+    "numeric": true,
+    "dataset": "orders-120-s1000",
+    "file": "orders-120-s1000.json"
+  },
+  {
+    "id": "orders-120-s1000-q3",
+    "kind": "count",
+    "text": "How many orders have status \"paid\"?",
+    "answer": "24",
+    "numeric": true,
+    "dataset": "orders-120-s1000",
+    "file": "orders-120-s1000.json"
+  },
+  {
+    "id": "orders-120-s1000-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"EUR\"?",
+    "answer": "8",
+    "numeric": true,
+    "dataset": "orders-120-s1000",
+    "file": "orders-120-s1000.json"
+  },
+  {
+    "id": "orders-120-s1000-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10079",
+    "numeric": true,
+    "dataset": "orders-120-s1000",
+    "file": "orders-120-s1000.json"
+  },
+  {
+    "id": "orders-120-s1000-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Wayne Logistics\"?",
+    "answer": "12",
+    "numeric": true,
+    "dataset": "orders-120-s1000",
+    "file": "orders-120-s1000.json"
+  },
+  {
+    "id": "orders-120-s1000-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10099?",
+    "answer": "2026-03-11T21:04:00Z",
+    "numeric": false,
+    "dataset": "orders-120-s1000",
+    "file": "orders-120-s1000.json"
+  },
+  {
+    "id": "logs-30-s1000-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id 969de62ca2f07c35?",
+    "answer": "1224",
+    "numeric": true,
+    "dataset": "logs-30-s1000",
+    "file": "logs-30-s1000.json"
+  },
+  {
+    "id": "logs-30-s1000-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"billing\"?",
+    "answer": "2",
+    "numeric": true,
+    "dataset": "logs-30-s1000",
+    "file": "logs-30-s1000.json"
+  },
+  {
+    "id": "logs-30-s1000-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "d4565997dad9e38e",
+    "numeric": false,
+    "dataset": "logs-30-s1000",
+    "file": "logs-30-s1000.json"
+  },
+  {
+    "id": "logs-30-s1000-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "5",
+    "numeric": true,
+    "dataset": "logs-30-s1000",
+    "file": "logs-30-s1000.json"
+  },
+  {
+    "id": "logs-30-s1000-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:00:09.629Z?",
+    "answer": "worker",
+    "numeric": false,
+    "dataset": "logs-30-s1000",
+    "file": "logs-30-s1000.json"
+  },
+  {
+    "id": "logs-30-s1000-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id 2649d5d0fb51c38e?",
+    "answer": "payment authorized",
+    "numeric": false,
+    "dataset": "logs-30-s1000",
+    "file": "logs-30-s1000.json"
+  },
+  {
+    "id": "logs-120-s1000-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id b8ee81b576a2453a?",
+    "answer": "19",
+    "numeric": true,
+    "dataset": "logs-120-s1000",
+    "file": "logs-120-s1000.json"
+  },
+  {
+    "id": "logs-120-s1000-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"auth\"?",
+    "answer": "3",
+    "numeric": true,
+    "dataset": "logs-120-s1000",
+    "file": "logs-120-s1000.json"
+  },
+  {
+    "id": "logs-120-s1000-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "41c0eeb5f46155b9",
+    "numeric": false,
+    "dataset": "logs-120-s1000",
+    "file": "logs-120-s1000.json"
+  },
+  {
+    "id": "logs-120-s1000-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "12",
+    "numeric": true,
+    "dataset": "logs-120-s1000",
+    "file": "logs-120-s1000.json"
+  },
+  {
+    "id": "logs-120-s1000-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:01:32.439Z?",
+    "answer": "worker",
+    "numeric": false,
+    "dataset": "logs-120-s1000",
+    "file": "logs-120-s1000.json"
+  },
+  {
+    "id": "logs-120-s1000-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id 1e67b72076daba22?",
+    "answer": "connection reset by peer",
+    "numeric": false,
+    "dataset": "logs-120-s1000",
+    "file": "logs-120-s1000.json"
+  },
+  {
+    "id": "search-30-s1000-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Qudit leader index guide\"?",
+    "answer": "https://docs.example.com/qudit-leader-index-guide",
+    "numeric": false,
+    "dataset": "search-30-s1000",
+    "file": "search-30-s1000.json"
+  },
+  {
+    "id": "search-30-s1000-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 5?",
+    "answer": "D-34053",
+    "numeric": false,
+    "dataset": "search-30-s1000",
+    "file": "search-30-s1000.json"
+  },
+  {
+    "id": "search-30-s1000-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-35443?",
+    "answer": "0.3204",
+    "numeric": true,
+    "dataset": "search-30-s1000",
+    "file": "search-30-s1000.json"
+  },
+  {
+    "id": "search-30-s1000-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain blog.example.org?",
+    "answer": "4",
+    "numeric": true,
+    "dataset": "search-30-s1000",
+    "file": "search-30-s1000.json"
+  },
+  {
+    "id": "search-120-s1000-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Rpan latency cluster guide\"?",
+    "answer": "https://blog.example.org/rpan-latency-cluster-guide",
+    "numeric": false,
+    "dataset": "search-120-s1000",
+    "file": "search-120-s1000.json"
+  },
+  {
+    "id": "search-120-s1000-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 27?",
+    "answer": "D-10132",
+    "numeric": false,
+    "dataset": "search-120-s1000",
+    "file": "search-120-s1000.json"
+  },
+  {
+    "id": "search-120-s1000-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-20616?",
+    "answer": "0.3069",
+    "numeric": true,
+    "dataset": "search-120-s1000",
+    "file": "search-120-s1000.json"
+  },
+  {
+    "id": "search-120-s1000-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain wiki.internal?",
+    "answer": "21",
+    "numeric": true,
+    "dataset": "search-120-s1000",
+    "file": "search-120-s1000.json"
+  },
+  {
+    "id": "employees-30-s1000-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5009?",
+    "answer": "chen.tanaka@example.com",
+    "numeric": false,
+    "dataset": "employees-30-s1000",
+    "file": "employees-30-s1000.json"
+  },
+  {
+    "id": "employees-30-s1000-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Support\" and located in Berlin?",
+    "answer": "1",
+    "numeric": true,
+    "dataset": "employees-30-s1000",
+    "file": "employees-30-s1000.json"
+  },
+  {
+    "id": "employees-30-s1000-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Engineering\" has the highest salary? Answer with their first and last name.",
+    "answer": "Rosa Duarte",
+    "numeric": false,
+    "dataset": "employees-30-s1000",
+    "file": "employees-30-s1000.json"
+  },
+  {
+    "id": "employees-30-s1000-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Quinn Kowalski?",
+    "answer": "5006",
+    "numeric": true,
+    "dataset": "employees-30-s1000",
+    "file": "employees-30-s1000.json"
+  },
+  {
+    "id": "employees-30-s1000-q5",
+    "kind": "count",
+    "text": "How many employees have level L5?",
+    "answer": "3",
+    "numeric": true,
+    "dataset": "employees-30-s1000",
+    "file": "employees-30-s1000.json"
+  },
+  {
+    "id": "employees-30-s1000-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5025?",
+    "answer": "2024-07-19",
+    "numeric": false,
+    "dataset": "employees-30-s1000",
+    "file": "employees-30-s1000.json"
+  },
+  {
+    "id": "employees-120-s1000-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5087?",
+    "answer": "hana.castillo@example.com",
+    "numeric": false,
+    "dataset": "employees-120-s1000",
+    "file": "employees-120-s1000.json"
+  },
+  {
+    "id": "employees-120-s1000-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Marketing\" and located in Bangalore?",
+    "answer": "7",
+    "numeric": true,
+    "dataset": "employees-120-s1000",
+    "file": "employees-120-s1000.json"
+  },
+  {
+    "id": "employees-120-s1000-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Marketing\" has the highest salary? Answer with their first and last name.",
+    "answer": "Daria Rossi",
+    "numeric": false,
+    "dataset": "employees-120-s1000",
+    "file": "employees-120-s1000.json"
+  },
+  {
+    "id": "employees-120-s1000-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Goran Sato?",
+    "answer": "5008",
+    "numeric": true,
+    "dataset": "employees-120-s1000",
+    "file": "employees-120-s1000.json"
+  },
+  {
+    "id": "employees-120-s1000-q5",
+    "kind": "count",
+    "text": "How many employees have level L1?",
+    "answer": "21",
+    "numeric": true,
+    "dataset": "employees-120-s1000",
+    "file": "employees-120-s1000.json"
+  },
+  {
+    "id": "employees-120-s1000-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5028?",
+    "answer": "2023-05-21",
+    "numeric": false,
+    "dataset": "employees-120-s1000",
+    "file": "employees-120-s1000.json"
+  },
+  {
+    "id": "orders-30-s1001-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10026?",
+    "answer": "Vandelay Corp",
+    "numeric": false,
+    "dataset": "orders-30-s1001",
+    "file": "orders-30-s1001.json"
+  },
+  {
+    "id": "orders-30-s1001-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10007?",
+    "answer": "1695.05",
+    "numeric": true,
+    "dataset": "orders-30-s1001",
+    "file": "orders-30-s1001.json"
+  },
+  {
+    "id": "orders-30-s1001-q3",
+    "kind": "count",
+    "text": "How many orders have status \"pending\"?",
+    "answer": "7",
+    "numeric": true,
+    "dataset": "orders-30-s1001",
+    "file": "orders-30-s1001.json"
+  },
+  {
+    "id": "orders-30-s1001-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"GBP\"?",
+    "answer": "4",
+    "numeric": true,
+    "dataset": "orders-30-s1001",
+    "file": "orders-30-s1001.json"
+  },
+  {
+    "id": "orders-30-s1001-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10021",
+    "numeric": true,
+    "dataset": "orders-30-s1001",
+    "file": "orders-30-s1001.json"
+  },
+  {
+    "id": "orders-30-s1001-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Aperture Industries\"?",
+    "answer": "15",
+    "numeric": true,
+    "dataset": "orders-30-s1001",
+    "file": "orders-30-s1001.json"
+  },
+  {
+    "id": "orders-30-s1001-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10012?",
+    "answer": "2026-03-06T06:27:00Z",
+    "numeric": false,
+    "dataset": "orders-30-s1001",
+    "file": "orders-30-s1001.json"
+  },
+  {
+    "id": "orders-120-s1001-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10041?",
+    "answer": "Hooli Labs",
+    "numeric": false,
+    "dataset": "orders-120-s1001",
+    "file": "orders-120-s1001.json"
+  },
+  {
+    "id": "orders-120-s1001-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10043?",
+    "answer": "51.95",
+    "numeric": true,
+    "dataset": "orders-120-s1001",
+    "file": "orders-120-s1001.json"
+  },
+  {
+    "id": "orders-120-s1001-q3",
+    "kind": "count",
+    "text": "How many orders have status \"pending\"?",
+    "answer": "31",
+    "numeric": true,
+    "dataset": "orders-120-s1001",
+    "file": "orders-120-s1001.json"
+  },
+  {
+    "id": "orders-120-s1001-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"EUR\"?",
+    "answer": "7",
+    "numeric": true,
+    "dataset": "orders-120-s1001",
+    "file": "orders-120-s1001.json"
+  },
+  {
+    "id": "orders-120-s1001-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10029",
+    "numeric": true,
+    "dataset": "orders-120-s1001",
+    "file": "orders-120-s1001.json"
+  },
+  {
+    "id": "orders-120-s1001-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Hooli Labs\"?",
+    "answer": "30",
+    "numeric": true,
+    "dataset": "orders-120-s1001",
+    "file": "orders-120-s1001.json"
+  },
+  {
+    "id": "orders-120-s1001-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10108?",
+    "answer": "2026-05-29T16:51:00Z",
+    "numeric": false,
+    "dataset": "orders-120-s1001",
+    "file": "orders-120-s1001.json"
+  },
+  {
+    "id": "logs-30-s1001-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id 841272c203b08f04?",
+    "answer": "2871",
+    "numeric": true,
+    "dataset": "logs-30-s1001",
+    "file": "logs-30-s1001.json"
+  },
+  {
+    "id": "logs-30-s1001-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"worker\"?",
+    "answer": "2",
+    "numeric": true,
+    "dataset": "logs-30-s1001",
+    "file": "logs-30-s1001.json"
+  },
+  {
+    "id": "logs-30-s1001-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "b090ea24c5b5fae1",
+    "numeric": false,
+    "dataset": "logs-30-s1001",
+    "file": "logs-30-s1001.json"
+  },
+  {
+    "id": "logs-30-s1001-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "4",
+    "numeric": true,
+    "dataset": "logs-30-s1001",
+    "file": "logs-30-s1001.json"
+  },
+  {
+    "id": "logs-30-s1001-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:00:12.680Z?",
+    "answer": "worker",
+    "numeric": false,
+    "dataset": "logs-30-s1001",
+    "file": "logs-30-s1001.json"
+  },
+  {
+    "id": "logs-30-s1001-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id b42fc58a4cfe4e02?",
+    "answer": "invalid signature",
+    "numeric": false,
+    "dataset": "logs-30-s1001",
+    "file": "logs-30-s1001.json"
+  },
+  {
+    "id": "logs-120-s1001-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id ec531f66e8214cd4?",
+    "answer": "2179",
+    "numeric": true,
+    "dataset": "logs-120-s1001",
+    "file": "logs-120-s1001.json"
+  },
+  {
+    "id": "logs-120-s1001-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"worker\"?",
+    "answer": "6",
+    "numeric": true,
+    "dataset": "logs-120-s1001",
+    "file": "logs-120-s1001.json"
+  },
+  {
+    "id": "logs-120-s1001-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "8d325a771666a2d1",
+    "numeric": false,
+    "dataset": "logs-120-s1001",
+    "file": "logs-120-s1001.json"
+  },
+  {
+    "id": "logs-120-s1001-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "6",
+    "numeric": true,
+    "dataset": "logs-120-s1001",
+    "file": "logs-120-s1001.json"
+  },
+  {
+    "id": "logs-120-s1001-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:02:39.834Z?",
+    "answer": "auth",
+    "numeric": false,
+    "dataset": "logs-120-s1001",
+    "file": "logs-120-s1001.json"
+  },
+  {
+    "id": "logs-120-s1001-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id eea3555747c87e4d?",
+    "answer": "connection reset by peer",
+    "numeric": false,
+    "dataset": "logs-120-s1001",
+    "file": "logs-120-s1001.json"
+  },
+  {
+    "id": "search-30-s1001-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Sompaction region shard guide\"?",
+    "answer": "https://docs.example.com/sompaction-region-shard-guide",
+    "numeric": false,
+    "dataset": "search-30-s1001",
+    "file": "search-30-s1001.json"
+  },
+  {
+    "id": "search-30-s1001-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 13?",
+    "answer": "D-03854",
+    "numeric": false,
+    "dataset": "search-30-s1001",
+    "file": "search-30-s1001.json"
+  },
+  {
+    "id": "search-30-s1001-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-89164?",
+    "answer": "0.2157",
+    "numeric": true,
+    "dataset": "search-30-s1001",
+    "file": "search-30-s1001.json"
+  },
+  {
+    "id": "search-30-s1001-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain kb.example.net?",
+    "answer": "6",
+    "numeric": true,
+    "dataset": "search-30-s1001",
+    "file": "search-30-s1001.json"
+  },
+  {
+    "id": "search-120-s1001-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Martition query router guide\"?",
+    "answer": "https://support.example.com/martition-query-router-guide",
+    "numeric": false,
+    "dataset": "search-120-s1001",
+    "file": "search-120-s1001.json"
+  },
+  {
+    "id": "search-120-s1001-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 115?",
+    "answer": "D-73360",
+    "numeric": false,
+    "dataset": "search-120-s1001",
+    "file": "search-120-s1001.json"
+  },
+  {
+    "id": "search-120-s1001-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-72627?",
+    "answer": "0.316",
+    "numeric": true,
+    "dataset": "search-120-s1001",
+    "file": "search-120-s1001.json"
+  },
+  {
+    "id": "search-120-s1001-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain docs.example.com?",
+    "answer": "30",
+    "numeric": true,
+    "dataset": "search-120-s1001",
+    "file": "search-120-s1001.json"
+  },
+  {
+    "id": "employees-30-s1001-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5014?",
+    "answer": "uma.brennan@example.com",
+    "numeric": false,
+    "dataset": "employees-30-s1001",
+    "file": "employees-30-s1001.json"
+  },
+  {
+    "id": "employees-30-s1001-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Sales\" and located in Bangalore?",
+    "answer": "0",
+    "numeric": true,
+    "dataset": "employees-30-s1001",
+    "file": "employees-30-s1001.json"
+  },
+  {
+    "id": "employees-30-s1001-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Engineering\" has the highest salary? Answer with their first and last name.",
+    "answer": "Tara Duarte",
+    "numeric": false,
+    "dataset": "employees-30-s1001",
+    "file": "employees-30-s1001.json"
+  },
+  {
+    "id": "employees-30-s1001-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Kofi Novak?",
+    "answer": "5007",
+    "numeric": true,
+    "dataset": "employees-30-s1001",
+    "file": "employees-30-s1001.json"
+  },
+  {
+    "id": "employees-30-s1001-q5",
+    "kind": "count",
+    "text": "How many employees have level L3?",
+    "answer": "4",
+    "numeric": true,
+    "dataset": "employees-30-s1001",
+    "file": "employees-30-s1001.json"
+  },
+  {
+    "id": "employees-30-s1001-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5005?",
+    "answer": "2015-07-12",
+    "numeric": false,
+    "dataset": "employees-30-s1001",
+    "file": "employees-30-s1001.json"
+  },
+  {
+    "id": "employees-120-s1001-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5019?",
+    "answer": "ivan.haddad@example.com",
+    "numeric": false,
+    "dataset": "employees-120-s1001",
+    "file": "employees-120-s1001.json"
+  },
+  {
+    "id": "employees-120-s1001-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Engineering\" and located in Toronto?",
+    "answer": "6",
+    "numeric": true,
+    "dataset": "employees-120-s1001",
+    "file": "employees-120-s1001.json"
+  },
+  {
+    "id": "employees-120-s1001-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Sales\" has the highest salary? Answer with their first and last name.",
+    "answer": "Goran Castillo",
+    "numeric": false,
+    "dataset": "employees-120-s1001",
+    "file": "employees-120-s1001.json"
+  },
+  {
+    "id": "employees-120-s1001-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Hana Brennan?",
+    "answer": "5031",
+    "numeric": true,
+    "dataset": "employees-120-s1001",
+    "file": "employees-120-s1001.json"
+  },
+  {
+    "id": "employees-120-s1001-q5",
+    "kind": "count",
+    "text": "How many employees have level L4?",
+    "answer": "26",
+    "numeric": true,
+    "dataset": "employees-120-s1001",
+    "file": "employees-120-s1001.json"
+  },
+  {
+    "id": "employees-120-s1001-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5007?",
+    "answer": "2019-08-13",
+    "numeric": false,
+    "dataset": "employees-120-s1001",
+    "file": "employees-120-s1001.json"
+  },
+  {
+    "id": "orders-30-s1002-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10026?",
+    "answer": "Oscorp Partners",
+    "numeric": false,
+    "dataset": "orders-30-s1002",
+    "file": "orders-30-s1002.json"
+  },
+  {
+    "id": "orders-30-s1002-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10027?",
+    "answer": "1558.54",
+    "numeric": true,
+    "dataset": "orders-30-s1002",
+    "file": "orders-30-s1002.json"
+  },
+  {
+    "id": "orders-30-s1002-q3",
+    "kind": "count",
+    "text": "How many orders have status \"refunded\"?",
+    "answer": "10",
+    "numeric": true,
+    "dataset": "orders-30-s1002",
+    "file": "orders-30-s1002.json"
+  },
+  {
+    "id": "orders-30-s1002-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"GBP\"?",
+    "answer": "3",
+    "numeric": true,
+    "dataset": "orders-30-s1002",
+    "file": "orders-30-s1002.json"
+  },
+  {
+    "id": "orders-30-s1002-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10024",
+    "numeric": true,
+    "dataset": "orders-30-s1002",
+    "file": "orders-30-s1002.json"
+  },
+  {
+    "id": "orders-30-s1002-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Hooli Corp\"?",
+    "answer": "23",
+    "numeric": true,
+    "dataset": "orders-30-s1002",
+    "file": "orders-30-s1002.json"
+  },
+  {
+    "id": "orders-30-s1002-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10006?",
+    "answer": "2026-05-27T22:07:00Z",
+    "numeric": false,
+    "dataset": "orders-30-s1002",
+    "file": "orders-30-s1002.json"
+  },
+  {
+    "id": "orders-120-s1002-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10021?",
+    "answer": "Monarch Partners",
+    "numeric": false,
+    "dataset": "orders-120-s1002",
+    "file": "orders-120-s1002.json"
+  },
+  {
+    "id": "orders-120-s1002-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10117?",
+    "answer": "563.59",
+    "numeric": true,
+    "dataset": "orders-120-s1002",
+    "file": "orders-120-s1002.json"
+  },
+  {
+    "id": "orders-120-s1002-q3",
+    "kind": "count",
+    "text": "How many orders have status \"refunded\"?",
+    "answer": "36",
+    "numeric": true,
+    "dataset": "orders-120-s1002",
+    "file": "orders-120-s1002.json"
+  },
+  {
+    "id": "orders-120-s1002-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"GBP\"?",
+    "answer": "8",
+    "numeric": true,
+    "dataset": "orders-120-s1002",
+    "file": "orders-120-s1002.json"
+  },
+  {
+    "id": "orders-120-s1002-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10038",
+    "numeric": true,
+    "dataset": "orders-120-s1002",
+    "file": "orders-120-s1002.json"
+  },
+  {
+    "id": "orders-120-s1002-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Umbrella Holdings\"?",
+    "answer": "19",
+    "numeric": true,
+    "dataset": "orders-120-s1002",
+    "file": "orders-120-s1002.json"
+  },
+  {
+    "id": "orders-120-s1002-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10023?",
+    "answer": "2026-04-14T23:48:00Z",
+    "numeric": false,
+    "dataset": "orders-120-s1002",
+    "file": "orders-120-s1002.json"
+  },
+  {
+    "id": "logs-30-s1002-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id 184a55f4ade7c790?",
+    "answer": "2190",
+    "numeric": true,
+    "dataset": "logs-30-s1002",
+    "file": "logs-30-s1002.json"
+  },
+  {
+    "id": "logs-30-s1002-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"billing\"?",
+    "answer": "1",
+    "numeric": true,
+    "dataset": "logs-30-s1002",
+    "file": "logs-30-s1002.json"
+  },
+  {
+    "id": "logs-30-s1002-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "e6d29863b5780e6c",
+    "numeric": false,
+    "dataset": "logs-30-s1002",
+    "file": "logs-30-s1002.json"
+  },
+  {
+    "id": "logs-30-s1002-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "1",
+    "numeric": true,
+    "dataset": "logs-30-s1002",
+    "file": "logs-30-s1002.json"
+  },
+  {
+    "id": "logs-30-s1002-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:00:50.645Z?",
+    "answer": "api",
+    "numeric": false,
+    "dataset": "logs-30-s1002",
+    "file": "logs-30-s1002.json"
+  },
+  {
+    "id": "logs-30-s1002-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id 56a4cf8baad8c5ad?",
+    "answer": "rate limited by upstream",
+    "numeric": false,
+    "dataset": "logs-30-s1002",
+    "file": "logs-30-s1002.json"
+  },
+  {
+    "id": "logs-120-s1002-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id f5d5e4a59fde9139?",
+    "answer": "2911",
+    "numeric": true,
+    "dataset": "logs-120-s1002",
+    "file": "logs-120-s1002.json"
+  },
+  {
+    "id": "logs-120-s1002-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"api\"?",
+    "answer": "5",
+    "numeric": true,
+    "dataset": "logs-120-s1002",
+    "file": "logs-120-s1002.json"
+  },
+  {
+    "id": "logs-120-s1002-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "d807fb58ef8e6f55",
+    "numeric": false,
+    "dataset": "logs-120-s1002",
+    "file": "logs-120-s1002.json"
+  },
+  {
+    "id": "logs-120-s1002-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "10",
+    "numeric": true,
+    "dataset": "logs-120-s1002",
+    "file": "logs-120-s1002.json"
+  },
+  {
+    "id": "logs-120-s1002-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:00:46.662Z?",
+    "answer": "search",
+    "numeric": false,
+    "dataset": "logs-120-s1002",
+    "file": "logs-120-s1002.json"
+  },
+  {
+    "id": "logs-120-s1002-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id 9d59d8e2eaec2579?",
+    "answer": "cache miss",
+    "numeric": false,
+    "dataset": "logs-120-s1002",
+    "file": "logs-120-s1002.json"
+  },
+  {
+    "id": "search-30-s1002-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Whard worker cache guide\"?",
+    "answer": "https://wiki.internal/whard-worker-cache-guide",
+    "numeric": false,
+    "dataset": "search-30-s1002",
+    "file": "search-30-s1002.json"
+  },
+  {
+    "id": "search-30-s1002-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 15?",
+    "answer": "D-89779",
+    "numeric": false,
+    "dataset": "search-30-s1002",
+    "file": "search-30-s1002.json"
+  },
+  {
+    "id": "search-30-s1002-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-04694?",
+    "answer": "0.8896",
+    "numeric": true,
+    "dataset": "search-30-s1002",
+    "file": "search-30-s1002.json"
+  },
+  {
+    "id": "search-30-s1002-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain docs.example.com?",
+    "answer": "4",
+    "numeric": true,
+    "dataset": "search-30-s1002",
+    "file": "search-30-s1002.json"
+  },
+  {
+    "id": "search-120-s1002-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Qnapshot backoff quota guide\"?",
+    "answer": "https://wiki.internal/qnapshot-backoff-quota-guide",
+    "numeric": false,
+    "dataset": "search-120-s1002",
+    "file": "search-120-s1002.json"
+  },
+  {
+    "id": "search-120-s1002-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 72?",
+    "answer": "D-72059",
+    "numeric": false,
+    "dataset": "search-120-s1002",
+    "file": "search-120-s1002.json"
+  },
+  {
+    "id": "search-120-s1002-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-01789?",
+    "answer": "0.9658",
+    "numeric": true,
+    "dataset": "search-120-s1002",
+    "file": "search-120-s1002.json"
+  },
+  {
+    "id": "search-120-s1002-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain kb.example.net?",
+    "answer": "23",
+    "numeric": true,
+    "dataset": "search-120-s1002",
+    "file": "search-120-s1002.json"
+  },
+  {
+    "id": "employees-30-s1002-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5025?",
+    "answer": "jia.mbeki@example.com",
+    "numeric": false,
+    "dataset": "employees-30-s1002",
+    "file": "employees-30-s1002.json"
+  },
+  {
+    "id": "employees-30-s1002-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Sales\" and located in Bangalore?",
+    "answer": "0",
+    "numeric": true,
+    "dataset": "employees-30-s1002",
+    "file": "employees-30-s1002.json"
+  },
+  {
+    "id": "employees-30-s1002-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Sales\" has the highest salary? Answer with their first and last name.",
+    "answer": "Bilal Weiss",
+    "numeric": false,
+    "dataset": "employees-30-s1002",
+    "file": "employees-30-s1002.json"
+  },
+  {
+    "id": "employees-30-s1002-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Mateo Okafor?",
+    "answer": "5001",
+    "numeric": true,
+    "dataset": "employees-30-s1002",
+    "file": "employees-30-s1002.json"
+  },
+  {
+    "id": "employees-30-s1002-q5",
+    "kind": "count",
+    "text": "How many employees have level L2?",
+    "answer": "11",
+    "numeric": true,
+    "dataset": "employees-30-s1002",
+    "file": "employees-30-s1002.json"
+  },
+  {
+    "id": "employees-30-s1002-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5009?",
+    "answer": "2020-04-05",
+    "numeric": false,
+    "dataset": "employees-30-s1002",
+    "file": "employees-30-s1002.json"
+  },
+  {
+    "id": "employees-120-s1002-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5005?",
+    "answer": "daria.brennan@example.com",
+    "numeric": false,
+    "dataset": "employees-120-s1002",
+    "file": "employees-120-s1002.json"
+  },
+  {
+    "id": "employees-120-s1002-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Support\" and located in Austin?",
+    "answer": "4",
+    "numeric": true,
+    "dataset": "employees-120-s1002",
+    "file": "employees-120-s1002.json"
+  },
+  {
+    "id": "employees-120-s1002-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Finance\" has the highest salary? Answer with their first and last name.",
+    "answer": "Goran Iyer",
+    "numeric": false,
+    "dataset": "employees-120-s1002",
+    "file": "employees-120-s1002.json"
+  },
+  {
+    "id": "employees-120-s1002-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Daria Rossi?",
+    "answer": "5017",
+    "numeric": true,
+    "dataset": "employees-120-s1002",
+    "file": "employees-120-s1002.json"
+  },
+  {
+    "id": "employees-120-s1002-q5",
+    "kind": "count",
+    "text": "How many employees have level L5?",
+    "answer": "26",
+    "numeric": true,
+    "dataset": "employees-120-s1002",
+    "file": "employees-120-s1002.json"
+  },
+  {
+    "id": "employees-120-s1002-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5017?",
+    "answer": "2019-02-02",
+    "numeric": false,
+    "dataset": "employees-120-s1002",
+    "file": "employees-120-s1002.json"
+  },
+  {
+    "id": "orders-30-s1003-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10013?",
+    "answer": "Acme Foods",
+    "numeric": false,
+    "dataset": "orders-30-s1003",
+    "file": "orders-30-s1003.json"
+  },
+  {
+    "id": "orders-30-s1003-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10027?",
+    "answer": "1909.99",
+    "numeric": true,
+    "dataset": "orders-30-s1003",
+    "file": "orders-30-s1003.json"
+  },
+  {
+    "id": "orders-30-s1003-q3",
+    "kind": "count",
+    "text": "How many orders have status \"pending\"?",
+    "answer": "8",
+    "numeric": true,
+    "dataset": "orders-30-s1003",
+    "file": "orders-30-s1003.json"
+  },
+  {
+    "id": "orders-30-s1003-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"EUR\"?",
+    "answer": "4",
+    "numeric": true,
+    "dataset": "orders-30-s1003",
+    "file": "orders-30-s1003.json"
+  },
+  {
+    "id": "orders-30-s1003-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10012",
+    "numeric": true,
+    "dataset": "orders-30-s1003",
+    "file": "orders-30-s1003.json"
+  },
+  {
+    "id": "orders-30-s1003-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Acme Foods\"?",
+    "answer": "6",
+    "numeric": true,
+    "dataset": "orders-30-s1003",
+    "file": "orders-30-s1003.json"
+  },
+  {
+    "id": "orders-30-s1003-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10022?",
+    "answer": "2026-05-09T00:33:00Z",
+    "numeric": false,
+    "dataset": "orders-30-s1003",
+    "file": "orders-30-s1003.json"
+  },
+  {
+    "id": "orders-120-s1003-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10028?",
+    "answer": "Vandelay Corp",
+    "numeric": false,
+    "dataset": "orders-120-s1003",
+    "file": "orders-120-s1003.json"
+  },
+  {
+    "id": "orders-120-s1003-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10026?",
+    "answer": "1475.43",
+    "numeric": true,
+    "dataset": "orders-120-s1003",
+    "file": "orders-120-s1003.json"
+  },
+  {
+    "id": "orders-120-s1003-q3",
+    "kind": "count",
+    "text": "How many orders have status \"refunded\"?",
+    "answer": "28",
+    "numeric": true,
+    "dataset": "orders-120-s1003",
+    "file": "orders-120-s1003.json"
+  },
+  {
+    "id": "orders-120-s1003-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"GBP\"?",
+    "answer": "10",
+    "numeric": true,
+    "dataset": "orders-120-s1003",
+    "file": "orders-120-s1003.json"
+  },
+  {
+    "id": "orders-120-s1003-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10085",
+    "numeric": true,
+    "dataset": "orders-120-s1003",
+    "file": "orders-120-s1003.json"
+  },
+  {
+    "id": "orders-120-s1003-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Umbrella Partners\"?",
+    "answer": "21",
+    "numeric": true,
+    "dataset": "orders-120-s1003",
+    "file": "orders-120-s1003.json"
+  },
+  {
+    "id": "orders-120-s1003-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10094?",
+    "answer": "2026-03-01T23:50:00Z",
+    "numeric": false,
+    "dataset": "orders-120-s1003",
+    "file": "orders-120-s1003.json"
+  },
+  {
+    "id": "logs-30-s1003-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id c4a1f01149362ec6?",
+    "answer": "965",
+    "numeric": true,
+    "dataset": "logs-30-s1003",
+    "file": "logs-30-s1003.json"
+  },
+  {
+    "id": "logs-30-s1003-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"auth\"?",
+    "answer": "0",
+    "numeric": true,
+    "dataset": "logs-30-s1003",
+    "file": "logs-30-s1003.json"
+  },
+  {
+    "id": "logs-30-s1003-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "65bc74514197398b",
+    "numeric": false,
+    "dataset": "logs-30-s1003",
+    "file": "logs-30-s1003.json"
+  },
+  {
+    "id": "logs-30-s1003-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "2",
+    "numeric": true,
+    "dataset": "logs-30-s1003",
+    "file": "logs-30-s1003.json"
+  },
+  {
+    "id": "logs-30-s1003-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:00:08.004Z?",
+    "answer": "search",
+    "numeric": false,
+    "dataset": "logs-30-s1003",
+    "file": "logs-30-s1003.json"
+  },
+  {
+    "id": "logs-30-s1003-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id ce7c719cdec07959?",
+    "answer": "index rebuilt",
+    "numeric": false,
+    "dataset": "logs-30-s1003",
+    "file": "logs-30-s1003.json"
+  },
+  {
+    "id": "logs-120-s1003-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id 227a38c6931fc173?",
+    "answer": "240",
+    "numeric": true,
+    "dataset": "logs-120-s1003",
+    "file": "logs-120-s1003.json"
+  },
+  {
+    "id": "logs-120-s1003-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"search\"?",
+    "answer": "3",
+    "numeric": true,
+    "dataset": "logs-120-s1003",
+    "file": "logs-120-s1003.json"
+  },
+  {
+    "id": "logs-120-s1003-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "ad81946de3362972",
+    "numeric": false,
+    "dataset": "logs-120-s1003",
+    "file": "logs-120-s1003.json"
+  },
+  {
+    "id": "logs-120-s1003-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "9",
+    "numeric": true,
+    "dataset": "logs-120-s1003",
+    "file": "logs-120-s1003.json"
+  },
+  {
+    "id": "logs-120-s1003-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:01:53.423Z?",
+    "answer": "auth",
+    "numeric": false,
+    "dataset": "logs-120-s1003",
+    "file": "logs-120-s1003.json"
+  },
+  {
+    "id": "logs-120-s1003-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id 41c35f8a1a5b5ea5?",
+    "answer": "rate limited by upstream",
+    "numeric": false,
+    "dataset": "logs-120-s1003",
+    "file": "logs-120-s1003.json"
+  },
+  {
+    "id": "search-30-s1003-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Reploy audit queue guide\"?",
+    "answer": "https://kb.example.net/reploy-audit-queue-guide",
+    "numeric": false,
+    "dataset": "search-30-s1003",
+    "file": "search-30-s1003.json"
+  },
+  {
+    "id": "search-30-s1003-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 14?",
+    "answer": "D-51219",
+    "numeric": false,
+    "dataset": "search-30-s1003",
+    "file": "search-30-s1003.json"
+  },
+  {
+    "id": "search-30-s1003-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-87005?",
+    "answer": "0.5443",
+    "numeric": true,
+    "dataset": "search-30-s1003",
+    "file": "search-30-s1003.json"
+  },
+  {
+    "id": "search-30-s1003-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain wiki.internal?",
+    "answer": "7",
+    "numeric": true,
+    "dataset": "search-30-s1003",
+    "file": "search-30-s1003.json"
+  },
+  {
+    "id": "search-120-s1003-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Span tenant gateway guide\"?",
+    "answer": "https://kb.example.net/span-tenant-gateway-guide",
+    "numeric": false,
+    "dataset": "search-120-s1003",
+    "file": "search-120-s1003.json"
+  },
+  {
+    "id": "search-120-s1003-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 72?",
+    "answer": "D-94851",
+    "numeric": false,
+    "dataset": "search-120-s1003",
+    "file": "search-120-s1003.json"
+  },
+  {
+    "id": "search-120-s1003-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-26586?",
+    "answer": "0.7645",
+    "numeric": true,
+    "dataset": "search-120-s1003",
+    "file": "search-120-s1003.json"
+  },
+  {
+    "id": "search-120-s1003-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain wiki.internal?",
+    "answer": "27",
+    "numeric": true,
+    "dataset": "search-120-s1003",
+    "file": "search-120-s1003.json"
+  },
+  {
+    "id": "employees-30-s1003-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5003?",
+    "answer": "daria.novak@example.com",
+    "numeric": false,
+    "dataset": "employees-30-s1003",
+    "file": "employees-30-s1003.json"
+  },
+  {
+    "id": "employees-30-s1003-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Sales\" and located in Bangalore?",
+    "answer": "0",
+    "numeric": true,
+    "dataset": "employees-30-s1003",
+    "file": "employees-30-s1003.json"
+  },
+  {
+    "id": "employees-30-s1003-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Support\" has the highest salary? Answer with their first and last name.",
+    "answer": "Sven Brennan",
+    "numeric": false,
+    "dataset": "employees-30-s1003",
+    "file": "employees-30-s1003.json"
+  },
+  {
+    "id": "employees-30-s1003-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Ana Novak?",
+    "answer": "5010",
+    "numeric": true,
+    "dataset": "employees-30-s1003",
+    "file": "employees-30-s1003.json"
+  },
+  {
+    "id": "employees-30-s1003-q5",
+    "kind": "count",
+    "text": "How many employees have level L4?",
+    "answer": "5",
+    "numeric": true,
+    "dataset": "employees-30-s1003",
+    "file": "employees-30-s1003.json"
+  },
+  {
+    "id": "employees-30-s1003-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5026?",
+    "answer": "2025-10-03",
+    "numeric": false,
+    "dataset": "employees-30-s1003",
+    "file": "employees-30-s1003.json"
+  },
+  {
+    "id": "employees-120-s1003-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5111?",
+    "answer": "ana.petrov@example.com",
+    "numeric": false,
+    "dataset": "employees-120-s1003",
+    "file": "employees-120-s1003.json"
+  },
+  {
+    "id": "employees-120-s1003-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Support\" and located in Lisbon?",
+    "answer": "6",
+    "numeric": true,
+    "dataset": "employees-120-s1003",
+    "file": "employees-120-s1003.json"
+  },
+  {
+    "id": "employees-120-s1003-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Sales\" has the highest salary? Answer with their first and last name.",
+    "answer": "Jia Brennan",
+    "numeric": false,
+    "dataset": "employees-120-s1003",
+    "file": "employees-120-s1003.json"
+  },
+  {
+    "id": "employees-120-s1003-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Yusuf Lindqvist?",
+    "answer": "5020",
+    "numeric": true,
+    "dataset": "employees-120-s1003",
+    "file": "employees-120-s1003.json"
+  },
+  {
+    "id": "employees-120-s1003-q5",
+    "kind": "count",
+    "text": "How many employees have level L4?",
+    "answer": "18",
+    "numeric": true,
+    "dataset": "employees-120-s1003",
+    "file": "employees-120-s1003.json"
+  },
+  {
+    "id": "employees-120-s1003-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5018?",
+    "answer": "2020-09-04",
+    "numeric": false,
+    "dataset": "employees-120-s1003",
+    "file": "employees-120-s1003.json"
+  },
+  {
+    "id": "orders-30-s1004-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10023?",
+    "answer": "Initech Industries",
+    "numeric": false,
+    "dataset": "orders-30-s1004",
+    "file": "orders-30-s1004.json"
+  },
+  {
+    "id": "orders-30-s1004-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10009?",
+    "answer": "2352.66",
+    "numeric": true,
+    "dataset": "orders-30-s1004",
+    "file": "orders-30-s1004.json"
+  },
+  {
+    "id": "orders-30-s1004-q3",
+    "kind": "count",
+    "text": "How many orders have status \"shipped\"?",
+    "answer": "11",
+    "numeric": true,
+    "dataset": "orders-30-s1004",
+    "file": "orders-30-s1004.json"
+  },
+  {
+    "id": "orders-30-s1004-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"EUR\"?",
+    "answer": "2",
+    "numeric": true,
+    "dataset": "orders-30-s1004",
+    "file": "orders-30-s1004.json"
+  },
+  {
+    "id": "orders-30-s1004-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10010",
+    "numeric": true,
+    "dataset": "orders-30-s1004",
+    "file": "orders-30-s1004.json"
+  },
+  {
+    "id": "orders-30-s1004-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Gringotts Labs\"?",
+    "answer": "36",
+    "numeric": true,
+    "dataset": "orders-30-s1004",
+    "file": "orders-30-s1004.json"
+  },
+  {
+    "id": "orders-30-s1004-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10025?",
+    "answer": "2026-03-11T18:31:00Z",
+    "numeric": false,
+    "dataset": "orders-30-s1004",
+    "file": "orders-30-s1004.json"
+  },
+  {
+    "id": "orders-120-s1004-q1",
+    "kind": "lookup",
+    "text": "What is the customer name on order id 10003?",
+    "answer": "Umbrella Labs",
+    "numeric": false,
+    "dataset": "orders-120-s1004",
+    "file": "orders-120-s1004.json"
+  },
+  {
+    "id": "orders-120-s1004-q2",
+    "kind": "lookup",
+    "text": "What is the amount of order id 10049?",
+    "answer": "2242.16",
+    "numeric": true,
+    "dataset": "orders-120-s1004",
+    "file": "orders-120-s1004.json"
+  },
+  {
+    "id": "orders-120-s1004-q3",
+    "kind": "count",
+    "text": "How many orders have status \"refunded\"?",
+    "answer": "31",
+    "numeric": true,
+    "dataset": "orders-120-s1004",
+    "file": "orders-120-s1004.json"
+  },
+  {
+    "id": "orders-120-s1004-q4",
+    "kind": "count",
+    "text": "How many orders have status \"paid\" and currency \"EUR\"?",
+    "answer": "16",
+    "numeric": true,
+    "dataset": "orders-120-s1004",
+    "file": "orders-120-s1004.json"
+  },
+  {
+    "id": "orders-120-s1004-q5",
+    "kind": "argmax",
+    "text": "Which order id has the largest amount?",
+    "answer": "10090",
+    "numeric": true,
+    "dataset": "orders-120-s1004",
+    "file": "orders-120-s1004.json"
+  },
+  {
+    "id": "orders-120-s1004-q6",
+    "kind": "sum",
+    "text": "What is the total number of items across all orders from customer \"Tyrell Holdings\"?",
+    "answer": "33",
+    "numeric": true,
+    "dataset": "orders-120-s1004",
+    "file": "orders-120-s1004.json"
+  },
+  {
+    "id": "orders-120-s1004-q7",
+    "kind": "lookup",
+    "text": "What is the created_at timestamp of order id 10028?",
+    "answer": "2026-04-27T16:31:00Z",
+    "numeric": false,
+    "dataset": "orders-120-s1004",
+    "file": "orders-120-s1004.json"
+  },
+  {
+    "id": "logs-30-s1004-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id a7462e8e57deb8f5?",
+    "answer": "3452",
+    "numeric": true,
+    "dataset": "logs-30-s1004",
+    "file": "logs-30-s1004.json"
+  },
+  {
+    "id": "logs-30-s1004-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"api\"?",
+    "answer": "2",
+    "numeric": true,
+    "dataset": "logs-30-s1004",
+    "file": "logs-30-s1004.json"
+  },
+  {
+    "id": "logs-30-s1004-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "0ed1727d5413807f",
+    "numeric": false,
+    "dataset": "logs-30-s1004",
+    "file": "logs-30-s1004.json"
+  },
+  {
+    "id": "logs-30-s1004-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "5",
+    "numeric": true,
+    "dataset": "logs-30-s1004",
+    "file": "logs-30-s1004.json"
+  },
+  {
+    "id": "logs-30-s1004-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:00:22.739Z?",
+    "answer": "search",
+    "numeric": false,
+    "dataset": "logs-30-s1004",
+    "file": "logs-30-s1004.json"
+  },
+  {
+    "id": "logs-30-s1004-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id 78a668bcb1eea903?",
+    "answer": "rate limited by upstream",
+    "numeric": false,
+    "dataset": "logs-30-s1004",
+    "file": "logs-30-s1004.json"
+  },
+  {
+    "id": "logs-120-s1004-q1",
+    "kind": "lookup",
+    "text": "What is the latency_ms of the log entry with trace_id 91d1ccf54b80a680?",
+    "answer": "2746",
+    "numeric": true,
+    "dataset": "logs-120-s1004",
+    "file": "logs-120-s1004.json"
+  },
+  {
+    "id": "logs-120-s1004-q2",
+    "kind": "count",
+    "text": "How many ERROR-level entries are from service \"api\"?",
+    "answer": "5",
+    "numeric": true,
+    "dataset": "logs-120-s1004",
+    "file": "logs-120-s1004.json"
+  },
+  {
+    "id": "logs-120-s1004-q3",
+    "kind": "argmax",
+    "text": "Which trace_id has the highest latency_ms?",
+    "answer": "44e385ebbc57f246",
+    "numeric": false,
+    "dataset": "logs-120-s1004",
+    "file": "logs-120-s1004.json"
+  },
+  {
+    "id": "logs-120-s1004-q4",
+    "kind": "count",
+    "text": "How many entries have status 500?",
+    "answer": "12",
+    "numeric": true,
+    "dataset": "logs-120-s1004",
+    "file": "logs-120-s1004.json"
+  },
+  {
+    "id": "logs-120-s1004-q5",
+    "kind": "lookup",
+    "text": "Which service logged the entry at ts 2026-09-30T14:03:20.711Z?",
+    "answer": "worker",
+    "numeric": false,
+    "dataset": "logs-120-s1004",
+    "file": "logs-120-s1004.json"
+  },
+  {
+    "id": "logs-120-s1004-q6",
+    "kind": "lookup",
+    "text": "What is the message of the entry with trace_id d903b98f74187f1e?",
+    "answer": "retrying request",
+    "numeric": false,
+    "dataset": "logs-120-s1004",
+    "file": "logs-120-s1004.json"
+  },
+  {
+    "id": "search-30-s1004-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Tetric audit limit guide\"?",
+    "answer": "https://kb.example.net/tetric-audit-limit-guide",
+    "numeric": false,
+    "dataset": "search-30-s1004",
+    "file": "search-30-s1004.json"
+  },
+  {
+    "id": "search-30-s1004-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 5?",
+    "answer": "D-31907",
+    "numeric": false,
+    "dataset": "search-30-s1004",
+    "file": "search-30-s1004.json"
+  },
+  {
+    "id": "search-30-s1004-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-72314?",
+    "answer": "0.4732",
+    "numeric": true,
+    "dataset": "search-30-s1004",
+    "file": "search-30-s1004.json"
+  },
+  {
+    "id": "search-30-s1004-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain wiki.internal?",
+    "answer": "6",
+    "numeric": true,
+    "dataset": "search-30-s1004",
+    "file": "search-30-s1004.json"
+  },
+  {
+    "id": "search-120-s1004-q1",
+    "kind": "lookup",
+    "text": "What is the url of the result titled \"Veplica stream follower guide\"?",
+    "answer": "https://blog.example.org/veplica-stream-follower-guide",
+    "numeric": false,
+    "dataset": "search-120-s1004",
+    "file": "search-120-s1004.json"
+  },
+  {
+    "id": "search-120-s1004-q2",
+    "kind": "lookup",
+    "text": "What is the doc_id of the result with rank 93?",
+    "answer": "D-39985",
+    "numeric": false,
+    "dataset": "search-120-s1004",
+    "file": "search-120-s1004.json"
+  },
+  {
+    "id": "search-120-s1004-q3",
+    "kind": "lookup",
+    "text": "What is the score of document D-39110?",
+    "answer": "0.4581",
+    "numeric": true,
+    "dataset": "search-120-s1004",
+    "file": "search-120-s1004.json"
+  },
+  {
+    "id": "search-120-s1004-q4",
+    "kind": "count",
+    "text": "How many results have a url on the domain support.example.com?",
+    "answer": "22",
+    "numeric": true,
+    "dataset": "search-120-s1004",
+    "file": "search-120-s1004.json"
+  },
+  {
+    "id": "employees-30-s1004-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5015?",
+    "answer": "tara.silva@example.com",
+    "numeric": false,
+    "dataset": "employees-30-s1004",
+    "file": "employees-30-s1004.json"
+  },
+  {
+    "id": "employees-30-s1004-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Engineering\" and located in Toronto?",
+    "answer": "2",
+    "numeric": true,
+    "dataset": "employees-30-s1004",
+    "file": "employees-30-s1004.json"
+  },
+  {
+    "id": "employees-30-s1004-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Sales\" has the highest salary? Answer with their first and last name.",
+    "answer": "Ivan Castillo",
+    "numeric": false,
+    "dataset": "employees-30-s1004",
+    "file": "employees-30-s1004.json"
+  },
+  {
+    "id": "employees-30-s1004-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Bilal Lindqvist?",
+    "answer": "5004",
+    "numeric": true,
+    "dataset": "employees-30-s1004",
+    "file": "employees-30-s1004.json"
+  },
+  {
+    "id": "employees-30-s1004-q5",
+    "kind": "count",
+    "text": "How many employees have level L3?",
+    "answer": "4",
+    "numeric": true,
+    "dataset": "employees-30-s1004",
+    "file": "employees-30-s1004.json"
+  },
+  {
+    "id": "employees-30-s1004-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5013?",
+    "answer": "2020-07-20",
+    "numeric": false,
+    "dataset": "employees-30-s1004",
+    "file": "employees-30-s1004.json"
+  },
+  {
+    "id": "employees-120-s1004-q1",
+    "kind": "lookup",
+    "text": "What is the email of employee id 5007?",
+    "answer": "yusuf.nguyen@example.com",
+    "numeric": false,
+    "dataset": "employees-120-s1004",
+    "file": "employees-120-s1004.json"
+  },
+  {
+    "id": "employees-120-s1004-q2",
+    "kind": "count",
+    "text": "How many active employees are in department \"Finance\" and located in Bangalore?",
+    "answer": "5",
+    "numeric": true,
+    "dataset": "employees-120-s1004",
+    "file": "employees-120-s1004.json"
+  },
+  {
+    "id": "employees-120-s1004-q3",
+    "kind": "argmax",
+    "text": "Which employee in department \"Marketing\" has the highest salary? Answer with their first and last name.",
+    "answer": "Rosa Nguyen",
+    "numeric": false,
+    "dataset": "employees-120-s1004",
+    "file": "employees-120-s1004.json"
+  },
+  {
+    "id": "employees-120-s1004-q4",
+    "kind": "lookup",
+    "text": "What is the manager_id of Lena Petrov?",
+    "answer": "5012",
+    "numeric": true,
+    "dataset": "employees-120-s1004",
+    "file": "employees-120-s1004.json"
+  },
+  {
+    "id": "employees-120-s1004-q5",
+    "kind": "count",
+    "text": "How many employees have level L2?",
+    "answer": "25",
+    "numeric": true,
+    "dataset": "employees-120-s1004",
+    "file": "employees-120-s1004.json"
+  },
+  {
+    "id": "employees-120-s1004-q6",
+    "kind": "lookup",
+    "text": "What is the start_date of employee id 5080?",
+    "answer": "2024-03-19",
+    "numeric": false,
+    "dataset": "employees-120-s1004",
+    "file": "employees-120-s1004.json"
+  }
+]

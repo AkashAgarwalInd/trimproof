@@ -27,6 +27,9 @@ func Clean(s string) string {
 
 // Correct scores a reply against the ground truth.
 func Correct(q Question, reply string) bool {
+	if q.Check != nil {
+		return q.Check(reply)
+	}
 	got := Clean(reply)
 	if q.Numeric {
 		want, ok := new(big.Rat).SetString(q.Answer)

@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/AkashAgarwalInd/trimproof/pkg/tokens"
 )
 
 const systemPrompt = `You are a data assistant inside an application. Answer the user's question using only the tool result in the conversation. Reply with only the final answer value: no words, units, currency symbols or explanation.`
@@ -35,6 +37,22 @@ type Result struct {
 	// Representation is the gateway's X-Trimproof-Representation response
 	// header, when the call went through a trimproof gateway.
 	Representation string
+	// ReasoningTokens is the part of OutputTokens spent on reasoning. When
+	// the provider does not report it, it is counted with o200k from the
+	// returned reasoning text and ReasoningEstimated is set.
+	ReasoningTokens    int
+	ReasoningEstimated bool
+}
+
+var o200k tokens.BPE
+
+// reasoning returns the reasoning token count: the provider's figure if it
+// gave one, else an o200k count of the reasoning text.
+func reasoning(reported int, text string) (int, bool) {
+	if reported > 0 || text == "" {
+		return reported, false
+	}
+	return o200k.Count(text), true
 }
 
 // Client sends a Call to one provider API.
@@ -84,8 +102,11 @@ func (o *OpenAI) Do(ctx context.Context, c Call) (*Result, error) {
 			} `json:"message"`
 		} `json:"choices"`
 		Usage struct {
-			PromptTokens     int `json:"prompt_tokens"`
-			CompletionTokens int `json:"completion_tokens"`
+			PromptTokens            int `json:"prompt_tokens"`
+			CompletionTokens        int `json:"completion_tokens"`
+			CompletionTokensDetails struct {
+				ReasoningTokens int `json:"reasoning_tokens"`
+			} `json:"completion_tokens_details"`
 		} `json:"usage"`
 	}
 	hdr := map[string]string{"Authorization": "Bearer " + o.APIKey}
@@ -100,8 +121,15 @@ func (o *OpenAI) Do(ctx context.Context, c Call) (*Result, error) {
 	if len(resp.Choices) == 0 {
 		return nil, errors.New("openai: no choices")
 	}
-	return &Result{Text: resp.Choices[0].Message.Content, InputTokens: resp.Usage.PromptTokens, OutputTokens: resp.Usage.CompletionTokens,
-		Latency: time.Since(start), Representation: respHdr.Get("X-Trimproof-Representation")}, nil
+	m := resp.Choices[0].Message
+	think := m.ReasoningContent
+	if t := thinkRe.FindString(m.Content); t != "" {
+		think += t // models that reason inline in <think> tags
+	}
+	r := &Result{Text: m.Content, InputTokens: resp.Usage.PromptTokens, OutputTokens: resp.Usage.CompletionTokens,
+		Latency: time.Since(start), Representation: respHdr.Get("X-Trimproof-Representation")}
+	r.ReasoningTokens, r.ReasoningEstimated = reasoning(resp.Usage.CompletionTokensDetails.ReasoningTokens, think)
+	return r, nil
 }
 
 // Anthropic speaks the Anthropic Messages API.

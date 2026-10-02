@@ -1,0 +1,365 @@
+{
+  "fetched_at": "2026-10-02T12:51:08.991168Z",
+  "entries": [
+    {
+      "api": "github",
+      "name": "go-issues",
+      "url": "https://api.github.com/repos/golang/go/issues?per_page=50",
+      "file": "github-go-issues.json",
+      "bytes": 248036,
+      "sha256": "3dd704914a582e1b45d487467df34518dcc962587e7187932dcdb7795a599a0b",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "rust-closed-issues",
+      "url": "https://api.github.com/repos/rust-lang/rust/issues?state=closed\u0026per_page=50",
+      "file": "github-rust-closed-issues.json",
+      "bytes": 384820,
+      "sha256": "76314e29769367caa91a3c4adba6109c56b7a07a49bbdf469058999f9864c267",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "kubernetes-pulls",
+      "url": "https://api.github.com/repos/kubernetes/kubernetes/pulls?per_page=30",
+      "file": "github-kubernetes-pulls.json",
+      "bytes": 720594,
+      "sha256": "5476909b98f0a8366200c1a6d39bf83eb237468725938aa910f4907f7527075c",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "cpython-closed-pulls",
+      "url": "https://api.github.com/repos/python/cpython/pulls?state=closed\u0026per_page=30",
+      "file": "github-cpython-closed-pulls.json",
+      "bytes": 546348,
+      "sha256": "64521e9733d762bb0e9f3ee9ba14bcdb57e826e5734b0ab8bcdcd039c4d3957d",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "linux-commits",
+      "url": "https://api.github.com/repos/torvalds/linux/commits?per_page=30",
+      "file": "github-linux-commits.json",
+      "bytes": 126611,
+      "sha256": "0be0ddd90c51400e698e82a636a4680d81aa19635560ea9725a4af55a15e9b75",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "vscode-releases",
+      "url": "https://api.github.com/repos/microsoft/vscode/releases?per_page=20",
+      "file": "github-vscode-releases.json",
+      "bytes": 39413,
+      "sha256": "0475dae8e245b55104c8a7d3d3e9265e1412335a4ee5aea900fff6696bf2d765",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "react-contributors",
+      "url": "https://api.github.com/repos/facebook/react/contributors?per_page=100",
+      "file": "github-react-contributors.json",
+      "bytes": 95551,
+      "sha256": "89a6efcacfd9758cb77c78c9281466a945d90ea90b968584ed4507bbb4ef0f9a",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "node-tags",
+      "url": "https://api.github.com/repos/nodejs/node/tags?per_page=100",
+      "file": "github-node-tags.json",
+      "bytes": 40133,
+      "sha256": "005650a760c8156ef688b85776917c8fefdf1fd85eee7b293c364758242a2bd0",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "go-labels",
+      "url": "https://api.github.com/repos/golang/go/labels?per_page=100",
+      "file": "github-go-labels.json",
+      "bytes": 26476,
+      "sha256": "1c69e7c44423ee8bddae56e01d765606fe1fdf8ef0b8024dfb0f42711d3b74a0",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "google-repos",
+      "url": "https://api.github.com/orgs/google/repos?per_page=50",
+      "file": "github-google-repos.json",
+      "bytes": 275083,
+      "sha256": "ade14001c521cd23a9085d4877a07139fd81a7f214f5e2859aa5c67081fe6704",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "go-workflow-runs",
+      "url": "https://api.github.com/repos/golang/go/actions/runs?per_page=30",
+      "file": "github-go-workflow-runs.json",
+      "bytes": 364488,
+      "sha256": "863490f65aec9499b99fde12b4ea87c977550f269aaf19eb7b38a93ab8c632cb",
+      "status": 200
+    },
+    {
+      "api": "github",
+      "name": "search-repos",
+      "url": "https://api.github.com/search/repositories?q=llm+gateway\u0026per_page=30",
+      "file": "github-search-repos.json",
+      "bytes": 165186,
+      "sha256": "18312034bd5f7d2e06a1d2b42b014c23abb36aedc8a7f093da88788069cbb00c",
+      "status": 200
+    },
+    {
+      "api": "npm",
+      "name": "search-react",
+      "url": "https://registry.npmjs.org/-/v1/search?text=react\u0026size=50",
+      "file": "npm-search-react.json",
+      "bytes": 53256,
+      "sha256": "729e8bafbc084fba80eb05e7562f0b00e92a80bba9ae2d6b258976a8912488fb",
+      "status": 200
+    },
+    {
+      "api": "npm",
+      "name": "search-cli",
+      "url": "https://registry.npmjs.org/-/v1/search?text=keywords:cli\u0026size=50",
+      "file": "npm-search-cli.json",
+      "bytes": 53374,
+      "sha256": "4ddfa69c35116608fd8c328e02a1a0568901c9796b048f3372c185a7e7a4486a",
+      "status": 200
+    },
+    {
+      "api": "pypi",
+      "name": "requests",
+      "url": "https://pypi.org/pypi/requests/json",
+      "file": "pypi-requests.json",
+      "bytes": 192973,
+      "sha256": "bcfc6a202592e4e90f5a28ff002694eaa7c58ba741b76077f432b8bee1480111",
+      "status": 200
+    },
+    {
+      "api": "pypi",
+      "name": "flask",
+      "url": "https://pypi.org/pypi/flask/json",
+      "file": "pypi-flask.json",
+      "bytes": 88766,
+      "sha256": "2bebc9ab169de02f525a8460feaedbb6f32960eb9125800d9afb83cd10c25a80",
+      "status": 200
+    },
+    {
+      "api": "hn",
+      "name": "topstories-ids",
+      "url": "https://hacker-news.firebaseio.com/v0/topstories.json",
+      "file": "hn-topstories-ids.json",
+      "bytes": 4501,
+      "sha256": "d85aa47d1b9f9c3f631cdcb5d7f7f0986edbb9f8addf7f30fd083da30af778d1",
+      "status": 200
+    },
+    {
+      "api": "hn",
+      "name": "item",
+      "url": "https://hacker-news.firebaseio.com/v0/item/8863.json",
+      "file": "hn-item.json",
+      "bytes": 375,
+      "sha256": "e050660a2b8bba8e81ed1e12bcd8639e06fdaf56883fbb2b305b6f6334c7c6a9",
+      "status": 200
+    },
+    {
+      "api": "hn-algolia",
+      "name": "search-llm",
+      "url": "https://hn.algolia.com/api/v1/search?query=llm\u0026hitsPerPage=50",
+      "file": "hn-algolia-search-llm.json",
+      "bytes": 77404,
+      "sha256": "727e44a5371c349aa2663cad4670152dff09e6dec59e32f2d0d3500d088bdf39",
+      "status": 200
+    },
+    {
+      "api": "hn-algolia",
+      "name": "latest-stories",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story\u0026hitsPerPage=50",
+      "file": "hn-algolia-latest-stories.json",
+      "bytes": 41900,
+      "sha256": "8c77e1e8ae734b6359594d0418d2316b0a1818c0b1ba4be20ef09dbfe665543f",
+      "status": 200
+    },
+    {
+      "api": "open-meteo",
+      "name": "berlin-hourly",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=52.52\u0026longitude=13.41\u0026hourly=temperature_2m,relative_humidity_2m,wind_speed_10m\u0026forecast_days=3",
+      "file": "open-meteo-berlin-hourly.json",
+      "bytes": 2591,
+      "sha256": "770469e7572fc81c492ac73a465d7504a9718c4146856e0474070b669f059e70",
+      "status": 200
+    },
+    {
+      "api": "usgs",
+      "name": "quakes-week-m2.5",
+      "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson",
+      "file": "usgs-quakes-week-m2.5.json",
+      "bytes": 231133,
+      "sha256": "2a0bb0984e6358571d417ccc2c84dc9dc7ce4636bc9d4ed6c9bb1e4a756dfdbf",
+      "status": 200
+    },
+    {
+      "api": "nws",
+      "name": "alerts-ca",
+      "url": "https://api.weather.gov/alerts/active?area=CA",
+      "file": "nws-alerts-ca.json",
+      "bytes": 105441,
+      "sha256": "7bbd642ac3cd620f5234f3f77f49a83e4d0d305f568de079b620bee4697895f7",
+      "status": 200
+    },
+    {
+      "api": "coingecko",
+      "name": "markets",
+      "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd\u0026per_page=50\u0026page=1",
+      "file": "coingecko-markets.json",
+      "bytes": 39108,
+      "sha256": "67b28b91798114280e4049d5b928471ae871908723eee7f311c37197bb10bb99",
+      "status": 200
+    },
+    {
+      "api": "coingecko",
+      "name": "exchanges",
+      "url": "https://api.coingecko.com/api/v3/exchanges?per_page=50",
+      "file": "coingecko-exchanges.json",
+      "bytes": 52627,
+      "sha256": "7eca120e58d8bb92a8085b4d9c30bf653ac57f934e5752de92fd5ca4f9cd6702",
+      "status": 200
+    },
+    {
+      "api": "frankfurter",
+      "name": "rates-september",
+      "url": "https://api.frankfurter.dev/v1/2026-09-01..2026-09-30?to=USD,GBP,JPY",
+      "file": "frankfurter-rates-september.json",
+      "bytes": 1280,
+      "sha256": "356a6fc33a91ef3fc7bb0941689596f520804d62bbb912993478d6714ae9b71b",
+      "status": 200
+    },
+    {
+      "api": "stackexchange",
+      "name": "so-questions",
+      "url": "https://api.stackexchange.com/2.3/questions?order=desc\u0026sort=activity\u0026site=stackoverflow\u0026pagesize=50",
+      "file": "stackexchange-so-questions.json",
+      "bytes": 38254,
+      "sha256": "662c4e8747ad6574eae38e72806b6c9359d4f77056e12541ecdcf10557e7a046",
+      "status": 200
+    },
+    {
+      "api": "openlibrary",
+      "name": "search",
+      "url": "https://openlibrary.org/search.json?q=distributed+systems\u0026limit=50",
+      "file": "openlibrary-search.json",
+      "bytes": 19407,
+      "sha256": "dfbd6271824555bd3917ba3043ef0946db782dafeee523a624e8ee0b5a9f010c",
+      "status": 200
+    },
+    {
+      "api": "crossref",
+      "name": "works-llm",
+      "url": "https://api.crossref.org/works?query=large+language+models\u0026rows=30",
+      "file": "crossref-works-llm.json",
+      "bytes": 182846,
+      "sha256": "4e2cfcf7ddf13bbd83f68dcc60963a09342e680b6ba67ea104d35c49b417ca96",
+      "status": 200
+    },
+    {
+      "api": "nobelprize",
+      "name": "laureates",
+      "url": "https://api.nobelprize.org/2.1/laureates?limit=50",
+      "file": "nobelprize-laureates.json",
+      "bytes": 191135,
+      "sha256": "0689dbea9db986368ee2f1a7ee64ec1a07cf8cd5ae6b0bb0d53c6545acf49248",
+      "status": 200
+    },
+    {
+      "api": "nyc-opendata",
+      "name": "311-requests",
+      "url": "https://data.cityofnewyork.us/resource/erm2-nwe9.json?$limit=100",
+      "file": "nyc-opendata-311-requests.json",
+      "bytes": 120854,
+      "sha256": "9b0c2adbc1cb61ef750ca4bb35cc6b451f45084e27b2544c6f62eaa363a9aa52",
+      "status": 200
+    },
+    {
+      "api": "nyc-opendata",
+      "name": "collisions",
+      "url": "https://data.cityofnewyork.us/resource/h9gi-nx95.json?$limit=100",
+      "file": "nyc-opendata-collisions.json",
+      "bytes": 72215,
+      "sha256": "539d780168312608283642f8201288b8aaf8e16e1f92956b2c0d8257f2a3aa7a",
+      "status": 200
+    },
+    {
+      "api": "tvmaze",
+      "name": "shows",
+      "url": "https://api.tvmaze.com/shows?page=1",
+      "file": "tvmaze-shows.json",
+      "bytes": 358938,
+      "sha256": "f003dc350dde7a2028e825339bcd2c004d19f2930ac4c71277e45888b0e22ca2",
+      "status": 200
+    },
+    {
+      "api": "tvmaze",
+      "name": "schedule-us",
+      "url": "https://api.tvmaze.com/schedule?country=US\u0026date=2026-09-30",
+      "file": "tvmaze-schedule-us.json",
+      "bytes": 303431,
+      "sha256": "7fcf37854c8f76792bbb0a18912471cc31436e3c01b939e685ce14e9ced1244e",
+      "status": 200
+    },
+    {
+      "api": "pokeapi",
+      "name": "pokemon-list",
+      "url": "https://pokeapi.co/api/v2/pokemon?limit=100",
+      "file": "pokeapi-pokemon-list.json",
+      "bytes": 6636,
+      "sha256": "928696b94d0737dcaca45571d7e0e3685b8f83017b113d8e9bd7f84691065407",
+      "status": 200
+    },
+    {
+      "api": "artic",
+      "name": "artworks",
+      "url": "https://api.artic.edu/api/v1/artworks?limit=50",
+      "file": "artic-artworks.json",
+      "bytes": 465313,
+      "sha256": "85e9454e1a7c9b06a93991c0a5315a717f89368e155f1c84b48ce01e7e44809e",
+      "status": 200
+    },
+    {
+      "api": "federalregister",
+      "name": "documents",
+      "url": "https://www.federalregister.gov/api/v1/documents.json?per_page=50",
+      "file": "federalregister-documents.json",
+      "bytes": 70196,
+      "sha256": "81449b4c1e25492a49d4a42af06d231bd994453f92882abf4916fa0d78dc507c",
+      "status": 200
+    },
+    {
+      "api": "carbonintensity",
+      "name": "uk-today",
+      "url": "https://api.carbonintensity.org.uk/intensity/date",
+      "file": "carbonintensity-uk-today.json",
+      "bytes": 8460,
+      "sha256": "167268c8d74cca6a7fb40276ad0c3d825ac57fa447fe39627f3dffeaf3ca6669",
+      "status": 200
+    },
+    {
+      "api": "openbrewerydb",
+      "name": "breweries",
+      "url": "https://api.openbrewerydb.org/v1/breweries?per_page=50",
+      "file": "openbrewerydb-breweries.json",
+      "bytes": 20731,
+      "sha256": "f4ed3b55dbf02ab3e5d54317a614784899ad0b7a9bcc724db809f899eed1a09e",
+      "status": 200
+    },
+    {
+      "api": "worldbank",
+      "name": "countries",
+      "url": "https://api.worldbank.org/v2/country?format=json\u0026per_page=100",
+      "file": "worldbank-countries.json",
+      "bytes": 38202,
+      "sha256": "b14ae2165c43060637fac36563f441467d269b4db4ffb6d2ec21b5109953b467",
+      "status": 200
+    }
+  ]
+}

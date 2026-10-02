@@ -1,0 +1,7 @@
+id	utterance	context	targetValue	tokens	targetCanon	targetCanonType
+nu-0	which city hosted in 1994?	csv/200-csv/0.csv	Rome	x	Rome	string
+nu-1	who was ranked 1?	csv/200-csv/1.csv	Rider 1 (ITA)	x	Rider 1 (ITA)	string
+nu-2	how many riders?	csv/200-csv/1.csv	20	x	20.0	number
+nu-3	which names are first two?	csv/200-csv/2.csv	A0|A1	x	A0|A1	string|string
+nu-4	total points?	csv/200-csv/2.csv	1,200	x	1200.0	number
+nu-5	what team has \p?	csv/200-csv/1.csv	Team \p1	x	Team \p1	string

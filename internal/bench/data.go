@@ -22,20 +22,43 @@ type Question struct {
 	Answer string `json:"answer"`
 	// Numeric answers are compared as numbers; others as normalized strings.
 	Numeric bool `json:"numeric"`
+	// Answers lists every gold value when there are several (WTQ).
+	Answers []string `json:"answers,omitempty"`
+	// Check, when set, replaces the default scoring (Correct).
+	Check func(reply string) bool `json:"-"`
 }
 
 // Dataset is one tool result table plus its questions.
 type Dataset struct {
-	Name      string           `json:"name"`
-	Rows      int              `json:"rows"`
-	Tool      string           `json:"tool"`
-	ToolArgs  string           `json:"tool_args"`
-	Records   []map[string]any `json:"-"`
-	Questions []Question       `json:"questions"`
+	// ID, when set, identifies the table where Name, Rows and Seed do not
+	// (one WTQ table per question).
+	ID       string           `json:"id,omitempty"`
+	Name     string           `json:"name"`
+	Rows     int              `json:"rows"`
+	Seed     uint64           `json:"seed"`
+	Tool     string           `json:"tool"`
+	ToolArgs string           `json:"tool_args"`
+	Records  []map[string]any `json:"-"`
+	// Raw, when set, is the tool result as the source has it (e.g. WTQ
+	// columns in table order); Records is then unused.
+	Raw       []byte     `json:"-"`
+	Questions []Question `json:"questions"`
 }
 
-// JSON returns the records as a JSON array with keys in canonical order.
+// Key identifies the dataset's content.
+func (d *Dataset) Key() string {
+	if d.ID != "" {
+		return d.ID
+	}
+	return fmt.Sprintf("%s-%d-s%d", d.Name, d.Rows, d.Seed)
+}
+
+// JSON returns the tool result: Raw if set, else the records as a JSON
+// array with keys in canonical order.
 func (d *Dataset) JSON() []byte {
+	if d.Raw != nil {
+		return d.Raw
+	}
 	b, err := json.Marshal(d.Records) // map keys are sorted; numbers are json.Number
 	if err != nil {
 		panic(err)
@@ -57,8 +80,28 @@ func Generate(names []string, sizes []int, seed uint64) []*Dataset {
 	for _, name := range names {
 		for _, n := range sizes {
 			r := rand.New(rand.NewPCG(seed, uint64(n)*1000+uint64(len(name))))
-			out = append(out, Generators[name](r, n))
+			d := Generators[name](r, n)
+			d.Seed = seed
+			if seed != PhaseZeroSeed {
+				for i := range d.Questions {
+					d.Questions[i].ID = fmt.Sprintf("%s-q%d", d.Key(), i+1)
+				}
+			}
+			out = append(out, d)
 		}
+	}
+	return out
+}
+
+// PhaseZeroSeed generated the Phase 0 datasets, whose question IDs
+// ("orders-30-q1") predate the seed in the ID and are kept for its records.
+const PhaseZeroSeed = 42
+
+// GenerateSeeds is Generate for seeds seed..seed+n-1.
+func GenerateSeeds(names []string, sizes []int, seed uint64, n int) []*Dataset {
+	var out []*Dataset
+	for i := 0; i < max(n, 1); i++ {
+		out = append(out, Generate(names, sizes, seed+uint64(i))...)
 	}
 	return out
 }

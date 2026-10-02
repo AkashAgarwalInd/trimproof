@@ -1,14 +1,29 @@
-// Command bench runs the Phase 0 kill-or-go benchmark.
+// Command bench runs trimproof's benchmarks.
 //
-//	bench tokens                       offline o200k token table (no network)
-//	bench run -targets openai:MODEL    live calls; appends to -out JSONL (resumable)
-//	bench report -in results.jsonl     markdown report with go/no-go verdicts
-//	bench drive -gateway URL -route R  production traffic through a gateway
-//	                                   (exercises shadow evaluation/promotion)
+//	bench tokens                          offline o200k token table (no network)
+//	bench run -targets nim:MODEL -max-calls N
+//	                                      live calls; appends to -out JSONL (resumable)
+//	bench report -in results.jsonl        Phase 0 report with go/no-go verdicts
+//	bench verify-report -in results.jsonl verification tables with bootstrap intervals
+//	bench datapoints -in results.jsonl    every measured question, arms side by side
+//	bench dump-data -dir DIR              the generated datasets and questions as sent
+//	bench fetch-wtq                       download WikiTableQuestions (CC BY-SA) to -wtq-dir
+//	bench payloads [-fetch] [-dir DIR]    real public-API responses through the gateway's gates
+//	bench drive -gateway URL -route R     production traffic through a gateway
+//	                                      (exercises shadow evaluation/promotion)
 //
-// Provider credentials come from the environment: OPENAI_API_KEY and
-// OPENAI_API_BASE (any OpenAI-compatible endpoint), ANTHROPIC_API_KEY and
-// optional ANTHROPIC_BASE_URL.
+// Targets are provider:model. Providers and their credentials:
+//
+//	nim        integrate.api.nvidia.com; NVIDIA_API_KEY, or OPENAI_API_KEY when
+//	           OPENAI_API_BASE points at NIM
+//	github     GitHub Models; GITHUB_MODELS_TOKEN
+//	gemini     Gemini's OpenAI-compatible endpoint; GEMINI_API_KEY
+//	openai     OPENAI_API_BASE (required) with OPENAI_API_KEY
+//	anthropic  ANTHROPIC_BASE_URL (default api.anthropic.com) with ANTHROPIC_API_KEY
+//
+// Live calls go only to free endpoints (bench.FreeHosts) unless -allow-paid
+// is given, and run refuses to start if it would make more than -max-calls
+// calls.
 package main
 
 import (
@@ -19,11 +34,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/AkashAgarwalInd/trimproof/internal/bench"
+	"github.com/AkashAgarwalInd/trimproof/internal/bench/payloads"
+	"github.com/AkashAgarwalInd/trimproof/internal/bench/wtq"
 )
 
 func main() {
@@ -47,12 +65,39 @@ func main() {
 	gateway := fs.String("gateway", "http://localhost:8080/openai/v1", "gateway OpenAI base URL (drive)")
 	route := fs.String("route", "", "X-Trimproof-Route value (drive)")
 	model := fs.String("model", "openai/gpt-oss-20b", "model (drive)")
-	n := fs.Int("n", 300, "maximum requests (drive)")
+	n := fs.Int("n", 0, "maximum questions (run; 0 = all) or requests (drive; default 300)")
 	untilEncoded := fs.Int("until-encoded", 0, "stop after this many encoded responses (drive)")
-	seeds := fs.Int("seeds", 1, "number of data seeds starting at -seed (drive)")
+	seeds := fs.Int("seeds", 1, "number of data seeds starting at -seed (run, drive, dump-data)")
+	formats := fs.String("formats", strings.Join(bench.LiveFormats, ","), "formats to send (run)")
+	maxCalls := fs.Int("max-calls", 0, "refuse to start a run that would make more calls than this (run; required)")
+	viaGateway := fs.String("via-gateway", "", "gateway OpenAI base URL for the gateway format (run)")
+	allowPaid := fs.Bool("allow-paid", false, "allow endpoints that may bill (default: free endpoints only)")
+	dir := fs.String("dir", "", "output directory (dump-data) or payload directory (payloads)")
+	source := fs.String("source", "synthetic", "question source: synthetic | wtq (run, dump-data)")
+	wtqDir := fs.String("wtq-dir", wtq.DefaultDir(), "WikiTableQuestions release directory (fetch-wtq, -source wtq)")
+	minRows := fs.Int("min-rows", 15, "smallest WTQ table to sample (-source wtq)")
+	fetch := fs.Bool("fetch", false, "download the public API payloads first (payloads)")
 	_ = fs.Parse(args)
 
-	ds := bench.Generate(split(*datasets), ints(*sizes), *seed)
+	ds := bench.GenerateSeeds(split(*datasets), ints(*sizes), *seed, *seeds)
+	var items []wtq.Item
+	if *source == "wtq" && cmd != "fetch-wtq" {
+		var err error
+		if items, err = wtq.Load(*wtqDir, *n, *minRows, *seed); err != nil {
+			log.Fatalf("wtq: %v (run `bench fetch-wtq` first)", err)
+		}
+		ds = bench.WTQDatasets(items)
+	} else if *source != "synthetic" {
+		log.Fatalf("unknown -source %q", *source)
+	}
+	// manifest records which WTQ items a run or dump used.
+	manifest := func(path string) {
+		if items != nil {
+			if err := bench.WriteWTQManifest(path, *wtqDir, items, *n, *minRows, *seed); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 
 	switch cmd {
 	case "tokens":
@@ -62,15 +107,31 @@ func main() {
 	case "run":
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer stop()
-		ts, err := parseTargets(*targets)
+		ts, err := parseTargets(*targets, *allowPaid)
 		if err != nil {
 			log.Fatal(err)
+		}
+		if *maxCalls <= 0 {
+			log.Fatal("run: -max-calls is required")
 		}
 		if err := os.MkdirAll(dirOf(*out), 0o755); err != nil {
 			log.Fatal(err)
 		}
-		cfg := bench.RunConfig{Targets: ts, Datasets: ds, Formats: bench.LiveFormats, Out: *out,
-			Concurrency: *conc, RPM: *rpm, MaxTokens: *maxTok}
+		cfg := bench.RunConfig{Targets: ts, Datasets: bench.LimitQuestions(ds, *n), Formats: split(*formats), Out: *out,
+			Concurrency: *conc, RPM: *rpm, MaxTokens: *maxTok, MaxCalls: *maxCalls}
+		if *viaGateway != "" {
+			if len(ts) != 1 {
+				log.Fatal("run: -via-gateway takes exactly one target")
+			}
+			if err := bench.CheckEndpoint(*viaGateway, *allowPaid); err != nil {
+				log.Fatal(err)
+			}
+			// The gateway forwards the target's own key to its upstream.
+			key := ts[0].Client.(*bench.OpenAI).APIKey
+			cfg.Gateway = &bench.OpenAI{BaseURL: strings.TrimRight(*viaGateway, "/"), APIKey: key,
+				HTTP: &http.Client{Timeout: 6 * time.Minute}, Header: map[string]string{"X-Trimproof-Route": *route}}
+		}
+		manifest(strings.TrimSuffix(*out, ".jsonl") + ".manifest.json")
 		if err := bench.Run(ctx, cfg); err != nil {
 			log.Fatal(err)
 		}
@@ -85,11 +146,49 @@ func main() {
 			log.Fatal(err)
 		}
 		bench.LiveReport(os.Stdout, recs, bench.GoCriteria{MinReduction: *minRed, Alpha: *alpha})
+	case "verify-report", "datapoints":
+		recs, err := bench.ReadRecords(*in)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if cmd == "datapoints" {
+			bench.DatapointsReport(os.Stdout, recs)
+		} else {
+			bench.VerifyReport(os.Stdout, recs, bench.DefaultVerify())
+		}
+	case "dump-data":
+		if *dir == "" {
+			log.Fatal("dump-data: -dir is required")
+		}
+		if err := bench.DumpData(*dir, ds); err != nil {
+			log.Fatal(err)
+		}
+		manifest(filepath.Join(*dir, "wtq-manifest.json"))
+	case "payloads":
+		if *dir == "" {
+			*dir = payloads.DefaultDir()
+		}
+		if *fetch {
+			if _, err := payloads.Fetch(context.Background(), *dir); err != nil {
+				log.Fatal(err)
+			}
+		}
+		if err := payloads.Analyze(*dir, os.Stdout); err != nil {
+			log.Fatalf("payloads: %v (fetch them with -fetch)", err)
+		}
+	case "fetch-wtq":
+		if err := wtq.Fetch(context.Background(), *wtqDir); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("WikiTableQuestions release in", *wtqDir)
 	case "drive":
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer stop()
-		for i := 1; i < *seeds; i++ {
-			ds = append(ds, bench.Generate(split(*datasets), ints(*sizes), *seed+uint64(i))...)
+		if err := bench.CheckEndpoint(*gateway, *allowPaid); err != nil {
+			log.Fatal(err)
+		}
+		if *n == 0 {
+			*n = 300
 		}
 		c := &bench.OpenAI{BaseURL: strings.TrimRight(*gateway, "/"), APIKey: os.Getenv("OPENAI_API_KEY"),
 			HTTP: &http.Client{Timeout: 6 * time.Minute}, Header: map[string]string{"X-Trimproof-Route": *route}}
@@ -101,7 +200,7 @@ func main() {
 	}
 }
 
-func parseTargets(s string) ([]bench.Target, error) {
+func parseTargets(s string, allowPaid bool) ([]bench.Target, error) {
 	hc := &http.Client{Timeout: 6 * time.Minute}
 	var out []bench.Target
 	for _, t := range split(s) {
@@ -109,22 +208,42 @@ func parseTargets(s string) ([]bench.Target, error) {
 		if !ok {
 			return nil, fmt.Errorf("target %q: want provider:model", t)
 		}
-		var c bench.Client
+		var base, key string
 		switch prov {
-		case "openai":
-			base := os.Getenv("OPENAI_API_BASE")
-			if base == "" {
-				base = "https://api.openai.com/v1"
+		case "nim":
+			base, key = "https://integrate.api.nvidia.com/v1", os.Getenv("NVIDIA_API_KEY")
+			// Reuse OPENAI_API_KEY only when it is already a NIM key, so a
+			// real OpenAI key is never sent to another provider.
+			if key == "" && strings.Contains(os.Getenv("OPENAI_API_BASE"), "integrate.api.nvidia.com") {
+				key = os.Getenv("OPENAI_API_KEY")
 			}
-			c = &bench.OpenAI{BaseURL: strings.TrimRight(base, "/"), APIKey: os.Getenv("OPENAI_API_KEY"), HTTP: hc}
+		case "github":
+			base, key = "https://models.github.ai/inference", os.Getenv("GITHUB_MODELS_TOKEN")
+		case "gemini":
+			base, key = "https://generativelanguage.googleapis.com/v1beta/openai", os.Getenv("GEMINI_API_KEY")
+		case "openai":
+			base, key = os.Getenv("OPENAI_API_BASE"), os.Getenv("OPENAI_API_KEY")
+			if base == "" {
+				return nil, fmt.Errorf("target %q: set OPENAI_API_BASE (there is no default endpoint)", t)
+			}
 		case "anthropic":
-			base := os.Getenv("ANTHROPIC_BASE_URL")
+			base, key = os.Getenv("ANTHROPIC_BASE_URL"), os.Getenv("ANTHROPIC_API_KEY")
 			if base == "" {
 				base = "https://api.anthropic.com"
 			}
-			c = &bench.Anthropic{BaseURL: strings.TrimRight(base, "/"), APIKey: os.Getenv("ANTHROPIC_API_KEY"), HTTP: hc}
 		default:
 			return nil, fmt.Errorf("unknown provider %q", prov)
+		}
+		if err := bench.CheckEndpoint(base, allowPaid); err != nil {
+			return nil, fmt.Errorf("target %q: %w", t, err)
+		}
+		if key == "" {
+			return nil, fmt.Errorf("target %q: no API key in the environment", t)
+		}
+		base = strings.TrimRight(base, "/")
+		var c bench.Client = &bench.OpenAI{BaseURL: base, APIKey: key, HTTP: hc}
+		if prov == "anthropic" {
+			c = &bench.Anthropic{BaseURL: base, APIKey: key, HTTP: hc}
 		}
 		out = append(out, bench.Target{Provider: prov, Model: model, Client: c})
 	}
