@@ -261,9 +261,6 @@ func TestPrimerFor(t *testing.T) {
 	if (Codec{}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList+primerConst+primerPrefix+primerSplit {
 		t.Fatal("full primer must describe every extension")
 	}
-	if (Codec{RowKey: true, Mark: true}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList+primerConst+primerMark+primerSplit+primerKeyed {
-		t.Fatal("full primer must describe every extension")
-	}
 }
 
 // BenchmarkEncode measures Encode (both table layouts plus the verifying
@@ -328,17 +325,5 @@ func TestFactoringRoundTrip(t *testing.T) {
 	}
 	if consts < 100 || prefixes < 100 {
 		t.Fatalf("factored %d tables by constants and %d by prefix; want both often", consts, prefixes)
-	}
-}
-
-// NoFactor writes version 1's output: no "all rows:" or "starts with:" line.
-func TestNoFactor(t *testing.T) {
-	in := `[{"id":1,"admin":false,"url":"https://x.io/u/a"},{"id":2,"admin":false,"url":"https://x.io/u/b"},{"id":3,"admin":false,"url":"https://x.io/u/c"}]`
-	enc, err := Codec{NoFactor: true}.Encode([]byte(in), codec.Options{})
-	if want := "[3]{admin,id,url}:\n  false,1,\"https://x.io/u/a\"\n  false,2,\"https://x.io/u/b\"\n  false,3,\"https://x.io/u/c\""; err != nil || string(enc) != want {
-		t.Fatalf("NoFactor encode = %q, %v", enc, err)
-	}
-	if encode(t, in) == string(enc) {
-		t.Fatal("the default codec should factor this table")
 	}
 }

@@ -51,24 +51,10 @@ const (
 	primerConst  = ` A line "all rows: a=x" under a table header means every row also has field a with value x.`
 	primerPrefix = ` A line "starts with: a=p" under a table header means every text value of field a starts with p, which is left out of the rows: put p back in front.`
 	primerSplit  = ` A wide array may be split into tables part1, part2 and so on: they hold the same rows in the same order, and column # is the row number.`
-	primerMark   = ` A line "starts with: a=p" under a table header means that a value of field a written as ~x is p followed by x: put p back in front.`
-	primerKeyed  = ` A wide array may be split into tables part1, part2 and so on: they hold the same rows in the same order, and each starts with a column "#k" holding the row's field k, so a row can be found in any part by it.`
 )
 
 // Codec is the toonx codec. The zero value is ready to use.
-type Codec struct {
-	// NoFactor turns off the "all rows:" and "starts with:" lines, which
-	// gives version 1's output. The benchmark uses it to compare versions.
-	NoFactor bool
-	// NoSplit keeps wide tables whole, which gives version 2's output.
-	NoSplit bool
-	// RowKey starts every part of a split table with the row's key field,
-	// not the row number, and Mark writes a prefixed value's rest after a ~.
-	// Together they give version 4's output, which pilot 4 tested and did
-	// not adopt (Amendment 7).
-	RowKey bool
-	Mark   bool
-}
+type Codec struct{}
 
 func init() { codec.Register(Codec{}) }
 
@@ -76,18 +62,8 @@ func (Codec) Name() string    { return "toonx" }
 func (Codec) Version() string { return "3" }
 
 // Primer is TOON's primer with every extension described.
-func (c Codec) Primer() string {
-	p := toon.Codec{}.Primer() + primerAbsent + primerPaths + primerJSON + primerList + primerConst
-	if !c.Mark {
-		p += primerPrefix
-	} else {
-		p += primerMark
-	}
-	p += primerSplit
-	if c.RowKey {
-		p += primerKeyed
-	}
-	return p
+func (Codec) Primer() string {
+	return toon.Codec{}.Primer() + primerAbsent + primerPaths + primerJSON + primerList + primerConst + primerPrefix + primerSplit
 }
 
 // PrimerFor implements codec.DynamicPrimer: TOON's primer, plus only the
@@ -101,8 +77,8 @@ func (c Codec) PrimerFor(encoded [][]byte) string {
 func (c Codec) PrimerWith(base string, encoded [][]byte) string {
 	var f features
 	for _, b := range encoded {
-		if _, err := decode(b, &f, c.Mark); err != nil {
-			f = features{true, true, true, true, true, true, true, true}
+		if _, err := decode(b, &f); err != nil {
+			f = features{true, true, true, true, true, true, true}
 			break
 		}
 	}
@@ -111,8 +87,7 @@ func (c Codec) PrimerWith(base string, encoded [][]byte) string {
 		used bool
 		text string
 	}{{f.absent, primerAbsent}, {f.paths, primerPaths}, {f.json, primerJSON}, {f.list, primerList},
-		{f.consts, primerConst}, {f.prefix && !c.Mark, primerPrefix}, {f.prefix && c.Mark, primerMark},
-		{f.split, primerSplit}, {f.keyed, primerKeyed}} {
+		{f.consts, primerConst}, {f.prefix, primerPrefix}, {f.split, primerSplit}} {
 		if x.used {
 			p += x.text
 		}
@@ -158,10 +133,8 @@ func (c Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) 
 
 // EncodeValue implements codec.ValueEncoder.
 func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte, error) {
-	e := &encoder{noFactor: c.NoFactor, mark: c.Mark}
-	if !c.NoSplit {
-		v, _ = split(v, c.RowKey)
-	}
+	e := &encoder{}
+	v, _ = split(v)
 	switch t := v.(type) {
 	case map[string]any:
 		e.object(0, t)
@@ -177,9 +150,7 @@ func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte
 }
 
 type encoder struct {
-	buf      bytes.Buffer
-	noFactor bool
-	mark     bool // write prefixed values as ~rest
+	buf bytes.Buffer
 }
 
 func (e *encoder) line(depth int, parts ...string) {
@@ -225,7 +196,7 @@ func (e *encoder) array(depth int, key string, a []any) {
 		e.line(depth, key, "[", n, "]: ", strings.Join(cells, ","))
 		return
 	}
-	if t, ok := newTable(a, !e.noFactor, e.mark); ok {
+	if t, ok := newTable(a); ok {
 		e.line(depth, key, "[", n, "]{", t.header(), "}:")
 		for _, l := range t.extra() {
 			e.line(depth+1, l)
@@ -268,9 +239,9 @@ type assign struct {
 }
 
 // newTable lays a out as a table, flattened or not, with constant fields and
-// URL prefixes factored out or not (only if factorOK), whichever is shortest. ok is false when
+// URL prefixes factored out or not, whichever is shortest. ok is false when
 // a holds anything but non-empty objects.
-func newTable(a []any, factorOK, mark bool) (*table, bool) {
+func newTable(a []any) (*table, bool) {
 	rows := make([]map[string]any, len(a))
 	for i, x := range a {
 		m, ok := x.(map[string]any)
@@ -281,8 +252,8 @@ func newTable(a []any, factorOK, mark bool) (*table, bool) {
 	}
 	var best *table
 	for _, flatten := range []bool{false, true} {
-		for _, factor := range []bool{false, factorOK} {
-			if t := layout(rows, flatten, factor, mark); best == nil || t.size() < best.size() {
+		for _, factor := range []bool{false, true} {
+			if t := layout(rows, flatten, factor); best == nil || t.size() < best.size() {
 				best = t
 			}
 		}
@@ -290,7 +261,7 @@ func newTable(a []any, factorOK, mark bool) (*table, bool) {
 	return best, true
 }
 
-func layout(rows []map[string]any, flatten, factor, mark bool) *table {
+func layout(rows []map[string]any, flatten, factor bool) *table {
 	cells := make([]map[string]any, len(rows))
 	paths := map[string][]string{}
 	for i, r := range rows {
@@ -336,9 +307,6 @@ func layout(rows []map[string]any, flatten, factor, mark bool) *table {
 			}
 			if s, isStr := v.(string); isStr && prefix[id] != "" {
 				v = strings.TrimPrefix(s, prefix[id])
-				if mark {
-					v = "~" + v.(string)
-				}
 			}
 			vals[i] = cellValue(v)
 		}

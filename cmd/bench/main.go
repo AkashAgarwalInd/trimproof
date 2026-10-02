@@ -48,9 +48,9 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/internal/bench/wtq"
 )
 
-// payloadCodec is the codec whose gates choose the payload Q&A set: toonx
-// version 2, which chose the registered set.
-const payloadCodec = "toonx2"
+// payloadSet is the registered payload Q&A manifest: the run uses exactly
+// its payloads.
+const payloadSet = "bench/results/verify-2026-10/data/payload-qa/manifest.json"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -103,10 +103,15 @@ func main() {
 		ds = bench.WTQDatasets(items)
 	}
 	var payloadItems []bench.PayloadItem
+	var payloadLabel string
+	var registered map[string]string
 	if (*source == "payloads" || *source == "freeform") && cmd != "payloads" {
 		var err error
 		sets := map[string]string{"tuning": payloads.DefaultDir(), "held-out": payloads.HeldOutDir()}
-		if ds, payloadItems, err = bench.PayloadDatasets(sets, payloadCodec, *seed); err != nil {
+		if payloadLabel, registered, err = bench.ReadPayloadSet(payloadSet); err != nil {
+			log.Fatalf("payloads: %v (run from the repository root)", err)
+		}
+		if ds, payloadItems, err = bench.PayloadDatasets(sets, registered, *seed); err != nil {
 			log.Fatalf("payloads: %v (fetch them with `bench payloads -fetch` and `-fetch -held-out`)", err)
 		}
 		if *source == "freeform" {
@@ -125,7 +130,7 @@ func main() {
 			}
 		}
 		if payloadItems != nil {
-			if err := bench.WritePayloadManifest(path, payloadCodec, *seed, payloadItems); err != nil {
+			if err := bench.WritePayloadManifest(path, payloadLabel, *seed, payloadItems); err != nil {
 				log.Fatal(err)
 			}
 		}

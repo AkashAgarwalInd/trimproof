@@ -14,17 +14,15 @@ import (
 
 // Decode parses a toonx document and returns canonical JSON. It accepts
 // only the forms the encoder writes.
-func (c Codec) Decode(encoded []byte) ([]byte, error) {
-	return decode(encoded, &features{}, c.Mark)
+func (Codec) Decode(encoded []byte) ([]byte, error) {
+	return decode(encoded, &features{})
 }
 
 // features records which extensions to TOON a document uses.
-type features struct{ absent, paths, json, list, consts, prefix, split, keyed bool }
+type features struct{ absent, paths, json, list, consts, prefix, split bool }
 
-// decode parses encoded; with marked, a prefixed value's rest must start
-// with ~.
-func decode(encoded []byte, f *features, marked bool) ([]byte, error) {
-	d := &decoder{lines: strings.Split(string(encoded), "\n"), f: f, marked: marked}
+func decode(encoded []byte, f *features) ([]byte, error) {
+	d := &decoder{lines: strings.Split(string(encoded), "\n"), f: f}
 	var v any
 	var err error
 	if strings.HasPrefix(d.lines[0], "[") {
@@ -45,10 +43,9 @@ func decode(encoded []byte, f *features, marked bool) ([]byte, error) {
 }
 
 type decoder struct {
-	lines  []string
-	pos    int
-	f      *features
-	marked bool
+	lines []string
+	pos   int
+	f     *features
 }
 
 func (d *decoder) errf(format string, args ...any) error {
@@ -209,11 +206,6 @@ func (d *decoder) field(depth int, rest string) (any, error) {
 				s, ok := v.(string)
 				if !ok {
 					return nil, d.errf("non-string cell in a prefixed column")
-				}
-				if d.marked {
-					if s, ok = strings.CutPrefix(s, "~"); !ok {
-						return nil, d.errf("prefixed value without ~")
-					}
 				}
 				vals[j] = prefix[j] + s
 			}

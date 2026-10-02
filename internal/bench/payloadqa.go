@@ -41,14 +41,40 @@ type PayloadItem struct {
 	Questions []Question `json:"-"`
 }
 
+func payloadKey(set, api, name string) string { return set + "/" + api + "/" + name }
+
+// ReadPayloadSet reads a payload Q&A manifest (as WritePayloadManifest
+// writes it) and returns its codec label and its payloads' checksums by
+// set/api/name.
+func ReadPayloadSet(path string) (string, map[string]string, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return "", nil, err
+	}
+	var m struct {
+		Codec string        `json:"codec"`
+		Items []PayloadItem `json:"items"`
+	}
+	if err := json.Unmarshal(b, &m); err != nil {
+		return "", nil, fmt.Errorf("%s: %w", path, err)
+	}
+	sums := map[string]string{}
+	for _, it := range m.Items {
+		sums[payloadKey(it.Set, it.API, it.Name)] = it.SHA256
+	}
+	return m.Codec, sums, nil
+}
+
 // PayloadDatasets builds questions over real API responses (one dataset per
 // payload, from each directory's manifest in order). Each payload's largest
-// array of objects is its table; it is cut to fit the limits above, and the
-// payload is kept only if the gateway's default gates would encode it with
-// codecName. Questions and gold answers are computed from the data; replies
-// are scored with the WikiTableQuestions evaluator. The JSON arms send the
-// cut payload as canonical compact JSON.
-func PayloadDatasets(sets map[string]string, codecName string, seed uint64) ([]*Dataset, []PayloadItem, error) {
+// array of objects is its table; it is cut to fit the limits above. With
+// registered (from ReadPayloadSet), exactly the registered payloads are
+// kept, and each must have its registered checksum; with nil, a payload is
+// kept if the gateway's default gates would encode it with toonx. Questions
+// and gold answers are computed from the data; replies are scored with the
+// WikiTableQuestions evaluator. The JSON arms send the cut payload as
+// canonical compact JSON.
+func PayloadDatasets(sets map[string]string, registered map[string]string, seed uint64) ([]*Dataset, []PayloadItem, error) {
 	var ds []*Dataset
 	var items []PayloadItem
 	est := tokens.NewCalibrated(nil)
@@ -74,16 +100,26 @@ func PayloadDatasets(sets map[string]string, codecName string, seed uint64) ([]*
 			if err != nil {
 				return nil, nil, err
 			}
+			key := payloadKey(set, e.API, e.Name)
+			sum, isRegistered := registered[key]
+			if registered != nil && !isRegistered {
+				continue
+			}
+			if isRegistered && sum != e.SHA256 {
+				return nil, nil, fmt.Errorf("payload %s: stored body has sha256 %s, registered %s", key, e.SHA256, sum)
+			}
 			it, body, ok := payloadItem(raw, est)
 			if !ok {
 				continue
 			}
-			o, err := payloads.Evaluate(body, codecName, est)
-			if err != nil {
-				return nil, nil, err
-			}
-			if !o.Eligible {
-				continue
+			if registered == nil {
+				o, err := payloads.Evaluate(body, "toonx", est)
+				if err != nil {
+					return nil, nil, err
+				}
+				if !o.Eligible {
+					continue
+				}
 			}
 			it.Set, it.API, it.Name, it.URL, it.SHA256 = set, e.API, e.Name, e.URL, e.SHA256
 			r := rand.New(rand.NewPCG(seed, stream))
@@ -105,6 +141,9 @@ func PayloadDatasets(sets map[string]string, codecName string, seed uint64) ([]*
 			ds = append(ds, &Dataset{ID: id, Name: "payload", Rows: it.KeptRows, Tool: "http_get",
 				ToolArgs: fmt.Sprintf(`{"url":%q}`, e.URL), Raw: body, Questions: qs})
 		}
+	}
+	if registered != nil && len(items) != len(registered) {
+		return nil, nil, fmt.Errorf("found %d of the %d registered payloads", len(items), len(registered))
 	}
 	return ds, items, nil
 }

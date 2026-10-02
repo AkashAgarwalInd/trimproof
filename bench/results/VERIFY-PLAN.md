@@ -627,3 +627,8 @@ The coverage reports are regenerated for toonx 4:
 - **toonx 3 is chosen.** toonx 4 is not adopted.
 - **The codec's default is version 3 again,** byte for byte as in pilot 3. Version 4 remains available as the `toonx4` bench format.
 - **The full run's toonx arm uses toonx 3.**
+
+**One toonx (after pilot 4):**
+- **The codec has a single form, toonx 3.** The switches that gave versions 1, 2 and 4 are removed, and so are the bench formats `toonx1`, `toonx2`, `toonx3`, `toonx4`, `toonx-split` and `toonx-narrow`.
+- **Earlier records** (diag/, pilots 3 and 4, SPLIT-TOKENS.md, TOONX4-TOKENS.md) reproduce from commit `9dcf89c`.
+- **The payload Q&A set is now read from its registered manifest** instead of being re-chosen by toonx 2's gates. The datasets are byte for byte the same.

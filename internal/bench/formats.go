@@ -59,36 +59,6 @@ func Render(format string, d *Dataset) (string, string, error) {
 			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
 		}
 		return string(enc), toonx.Codec{}.PrimerWith(shortPrimer, [][]byte{enc}), nil
-	case "toonx1":
-		// toonx without the version 2-4 forms: version 1's bytes and primer.
-		c := toonx.Codec{NoFactor: true, NoSplit: true}
-		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})
-		if err != nil {
-			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
-		}
-		return string(enc), c.PrimerFor([][]byte{enc}), nil
-	case "toonx2", "toonx3", "toonx-split", "toonx4":
-		// toonx versions, byte for byte: version 2 has no split of wide
-		// tables; version 3 is the current toonx (pilot 3's toonx-split);
-		// version 4 (pilot 4's "toonx" arm) starts every part with the row's
-		// key field and writes prefixed values after a ~.
-		c := toonx.Codec{NoSplit: format == "toonx2", RowKey: format == "toonx4", Mark: format == "toonx4"}
-		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})
-		if err != nil {
-			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
-		}
-		return string(enc), c.PrimerFor([][]byte{enc}), nil
-	case "toonx-narrow":
-		// Offline comparison only: toonx 2 when toonx 3 splits nothing,
-		// otherwise compact JSON.
-		text, primer, err := Render("toonx2", d)
-		if err != nil {
-			return "", "", err
-		}
-		if split, _, err := Render("toonx3", d); err != nil || split != text {
-			return Render("json-compact", d)
-		}
-		return text, primer, nil
 	case "toon", "toonx", "tabular":
 		c, _ := codec.Get(format)
 		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})
