@@ -12,11 +12,13 @@
 //   - a field with the same value in every row is written once, on an
 //     "all rows: a=x" line under the header, instead of in each row;
 //   - in a column of URLs, a shared start is written once, on a
-//     "starts with: a=p" line, and left out of the column's strings;
+//     "starts with: a=p" line, and each string is written as ~ and its rest;
 //   - an array of objects with more than 8 varying columns is split into
-//     tables part1, part2, … of at most 8 columns, each starting with the
-//     row number "#". On wider tables models count commas to find a column,
-//     which costs them thousands of output tokens.
+//     tables part1, part2, … of at most 8 columns. Each starts with the
+//     row's key field k as column "#k" (the row number "#" when rows have
+//     no unique key), so a row is found in any part without a join. On wider
+//     tables models count commas to find a column, which costs them
+//     thousands of output tokens.
 //
 // The "all rows" and "starts with" lines apply only when they make the table
 // shorter. Neither line can be read as a row: an unquoted cell never holds a

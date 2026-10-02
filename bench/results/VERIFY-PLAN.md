@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
-**Amended six times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result), [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result) and [Amendment 6](#amendment-6-split-wide-tables-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
+**Amended seven times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result), [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result), [Amendment 6](#amendment-6-split-wide-tables-before-any-result) and [Amendment 7](#amendment-7-row-key-and-marked-prefixes-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
 
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
