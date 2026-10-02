@@ -1,0 +1,13 @@
+# binaries
+/gateway
+/bench
+*.test
+*.out
+
+# runtime output from cmd/gateway (keep bench/results/)
+/audit.jsonl
+/eval-pairs.jsonl
+/transitions.jsonl
+
+# go fuzz cache is outside the repo; keep testdata/fuzz regressions
+.DS_Store
