@@ -346,6 +346,8 @@ func (r *Report) WriteText(w io.Writer) error {
 				sort.Strings(gs)
 				fmt.Fprintf(w, "  gate rejections %s (data blocks)\n", strings.Join(gs, ", "))
 			}
+		} else {
+			fmt.Fprintln(w, "  audit           no entries yet (the audit log keeps a sample of requests, set by audit_sample_rate)")
 		}
 	}
 	return nil

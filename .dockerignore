@@ -1,5 +1,6 @@
 .git
 bin
 bench/results
-Idea.md
+*.md
+docs
 *.jsonl

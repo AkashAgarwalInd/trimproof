@@ -8,7 +8,14 @@ trimproof is a Go gateway for the Anthropic Messages and OpenAI-compatible Chat 
 
 > Format effects vary a lot by model and task. Published agentic benchmarks report anywhere from −36pp to +13pp accuracy for TOON. So trimproof never ships an optimization it has not measured on your traffic.
 
-Phase 0 benchmark: [`bench/results/REPORT.md`](bench/results/REPORT.md).
+**What we measured** on two open models (gpt-oss-20b and nemotron-3-super on NVIDIA NIM), summarized in the [write-up](docs/writeup.md):
+- TOON cut provider-billed input tokens by **23–26%** against compact JSON, with no accuracy change detected.
+- The models wrote **13–36% more output**, so net savings with output priced at 4× input were only **4–11%**.
+- A strict tabular format was neutral on one model and lost **8.7pp** on the other.
+
+Whether a format pays off depends on the model, the data and the task, so trimproof measures each route instead of assuming.
+
+Full results: [`bench/results/REPORT.md`](bench/results/REPORT.md).
 
 ## How it works
 
@@ -34,6 +41,12 @@ client ──► ingress (TLS, JWT) ──► trimproof ──► Anthropic / Op
 
    Failed encoded requests can retry once with canonical JSON. Provider errors never trigger that fallback.
 6. **Tier 2 audit.** A bounded queue that drops entries when full. Redaction walks the JSON tree by key. Encoded payloads are logged only as codec + version + SHA-256.
+
+## Install
+
+- **Binaries:** download `trimproof-gateway` and the `trimproof` CLI for Linux, macOS or Windows from [Releases](https://github.com/AkashAgarwalInd/trimproof/releases).
+- **From source** (Go 1.27+): `go install github.com/AkashAgarwalInd/trimproof/cmd/trimproof@latest` for the CLI. `go install …/cmd/gateway@latest` installs the gateway as `gateway`.
+- **Docker:** build the image from this repository, as below.
 
 ## Quick start
 
@@ -100,7 +113,11 @@ go run ./cmd/bench report -in bench/results/<file>.jsonl
 
 ## Status
 
-Pre-alpha. All phases of the spec have a first implementation with tests: core, gateway, Tier 1, shadow evaluation and promotion, audit and telemetry. Not yet built:
+Pre-alpha. Every component has a first implementation with tests: codecs, gateway, Tier 1, shadow evaluation and promotion, audit, telemetry and the report CLI.
+
+Tested end to end against NVIDIA NIM (OpenAI-compatible). Other OpenAI-compatible servers should work through `-openai-base`, but haven't been tested. The Anthropic adapter is covered by tests against a fake upstream only; it has not yet been run against the real API.
+
+Not yet built:
 - OpenTelemetry traces (only metrics exist);
 - OPA/Cerbos authorizer adapters (the interface exists);
 - incremental validation of streamed tool calls (validated streaming routes buffer the full response).
