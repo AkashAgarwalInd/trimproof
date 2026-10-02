@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/context-mesh/context-mesh/pkg/policy"
-	"github.com/context-mesh/context-mesh/pkg/server"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/server"
 )
 
 // Thresholds parameterize the promotion state machine (spec §8.4).

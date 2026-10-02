@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/context-mesh/context-mesh/pkg/eval"
-	"github.com/context-mesh/context-mesh/pkg/tokens"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/eval"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/tokens"
 )
 
 // TokenReport writes the offline token table: o200k_base counts per format,

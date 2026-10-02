@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/context-mesh/context-mesh/pkg/canonical"
-	"github.com/context-mesh/context-mesh/pkg/codec"
-	_ "github.com/context-mesh/context-mesh/pkg/codec/tabular"
-	_ "github.com/context-mesh/context-mesh/pkg/codec/toon"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/canonical"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
+	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/tabular"
+	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/toon"
 )
 
 // Formats in report order. json-compact is the baseline; json-pretty is

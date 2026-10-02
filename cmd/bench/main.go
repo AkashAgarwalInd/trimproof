@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/context-mesh/context-mesh/internal/bench"
+	"github.com/AkashAgarwalInd/context-mesh/internal/bench"
 )
 
 func main() {

@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/context-mesh/context-mesh/pkg/codec"
-	_ "github.com/context-mesh/context-mesh/pkg/codec/tabular"
-	_ "github.com/context-mesh/context-mesh/pkg/codec/toon"
-	"github.com/context-mesh/context-mesh/pkg/tokens"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
+	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/tabular"
+	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/toon"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/tokens"
 )
 
 func rows(n int) []byte {

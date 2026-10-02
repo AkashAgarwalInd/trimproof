@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/context-mesh/context-mesh/pkg/ir"
-	"github.com/context-mesh/context-mesh/pkg/provider"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/provider"
 )
 
 // Adapter implements provider.Adapter for /v1/chat/completions.

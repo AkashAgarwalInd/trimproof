@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/context-mesh/context-mesh/pkg/codec/tabular"
-	_ "github.com/context-mesh/context-mesh/pkg/codec/toon"
-	"github.com/context-mesh/context-mesh/pkg/policy"
+	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/tabular"
+	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/toon"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
 )
 
 var jwtKey = []byte("test-key")

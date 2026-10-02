@@ -5,8 +5,8 @@ package audit
 import (
 	"strings"
 
-	"github.com/context-mesh/context-mesh/pkg/canonical"
-	"github.com/context-mesh/context-mesh/pkg/provider"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/canonical"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/provider"
 )
 
 // Redacted replaces every redacted value, whatever its type.

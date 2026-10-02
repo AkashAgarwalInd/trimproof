@@ -7,9 +7,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
-	"github.com/context-mesh/context-mesh/pkg/eval"
-	"github.com/context-mesh/context-mesh/pkg/policy"
-	"github.com/context-mesh/context-mesh/pkg/server"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/eval"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/server"
 )
 
 // Metrics records OpenTelemetry metrics for every exchange (spec §9):
@@ -29,7 +29,7 @@ type Metrics struct {
 
 // NewMetrics creates instruments on the global meter.
 func NewMetrics() (*Metrics, error) {
-	m := otel.Meter("github.com/context-mesh/context-mesh")
+	m := otel.Meter("github.com/AkashAgarwalInd/context-mesh")
 	var err error
 	var ms Metrics
 	mk := func(name, desc string) metric.Int64Counter {

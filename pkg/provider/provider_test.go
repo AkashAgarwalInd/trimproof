@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/context-mesh/context-mesh/pkg/ir"
-	"github.com/context-mesh/context-mesh/pkg/provider"
-	"github.com/context-mesh/context-mesh/pkg/provider/anthropic"
-	"github.com/context-mesh/context-mesh/pkg/provider/openai"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/provider"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/provider/anthropic"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/provider/openai"
 )
 
 const anthropicReq = `{"model":"claude-x","max_tokens":100,"metadata":{"user_id":"u1"},

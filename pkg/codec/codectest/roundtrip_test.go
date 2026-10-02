@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/context-mesh/context-mesh/pkg/canonical"
-	"github.com/context-mesh/context-mesh/pkg/codec"
-	_ "github.com/context-mesh/context-mesh/pkg/codec/tabular"
-	_ "github.com/context-mesh/context-mesh/pkg/codec/toon"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/canonical"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
+	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/tabular"
+	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/toon"
 )
 
 var seeds = []string{

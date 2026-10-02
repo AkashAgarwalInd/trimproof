@@ -2,7 +2,7 @@
 // representation decision engine (spec §4.1, §5).
 package policy
 
-import "github.com/context-mesh/context-mesh/pkg/codec"
+import "github.com/AkashAgarwalInd/context-mesh/pkg/codec"
 
 // PromotionState is a route's position in the promotion state machine (§8.4).
 type PromotionState int

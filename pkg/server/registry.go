@@ -7,9 +7,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/context-mesh/context-mesh/pkg/codec"
-	"github.com/context-mesh/context-mesh/pkg/policy"
-	"github.com/context-mesh/context-mesh/pkg/validator"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
+	"github.com/AkashAgarwalInd/context-mesh/pkg/validator"
 )
 
 // Route is a resolved policy plus its compiled Tier 1 validator (nil when

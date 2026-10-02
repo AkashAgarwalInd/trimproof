@@ -1,4 +1,4 @@
-module github.com/context-mesh/context-mesh
+module github.com/AkashAgarwalInd/context-mesh
 
 go 1.27.1
 
