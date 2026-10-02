@@ -85,6 +85,7 @@ func main() {
 	fetch := fs.Bool("fetch", false, "download the public API payloads first (payloads)")
 	heldOut := fs.Bool("held-out", false, "use the held-out payload set (payloads)")
 	sample := fs.Int("sample", 0, "keep this many questions, drawn with -seed and spread over kinds (run, dump-data; 0 = all)")
+	only := fs.String("only", "", "comma-separated question IDs to keep (run, dump-data)")
 	judge := fs.String("judge", "", "provider:model that grades free-form answers (judge)")
 	judged := fs.String("judged", "", "judge JSONL (judge: output; freeform-report: input)")
 	arms := fs.String("arms", "json-compact,json-compact-2,toonx", "formats graded together (judge)")
@@ -113,7 +114,7 @@ func main() {
 	if *source != "synthetic" && *source != "wtq" && *source != "payloads" && *source != "freeform" {
 		log.Fatalf("unknown -source %q", *source)
 	}
-	ds = bench.SampleQuestions(ds, *sample, *seed)
+	ds = bench.OnlyQuestions(bench.SampleQuestions(ds, *sample, *seed), split(*only))
 	// manifest records which WTQ items or payloads a run or dump used.
 	manifest := func(path string) {
 		if items != nil {

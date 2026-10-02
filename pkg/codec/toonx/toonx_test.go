@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand/v2"
+	"strings"
 	"testing"
 
 	"github.com/AkashAgarwalInd/trimproof/pkg/canonical"
@@ -41,6 +42,16 @@ func TestGolden(t *testing.T) {
 		{`[{"n":88.0,"big":9007199254740993,"e":1e400}]`, "[1]{big,e,n}:\n  9007199254740993,1e400,88.0"},
 		// Mixed arrays are lists with JSON items.
 		{`{"x":[1,{"a":1},[2]],"y":[],"z":{}}`, "x[3]:\n  - 1\n  - {\"a\":1}\n  - [2]\ny[0]:\nz: {}"},
+		// A field with one value in every row is written once.
+		{`[{"id":1,"admin":false,"u":{"t":"User"}},{"id":2,"admin":false,"u":{"t":"User"}},{"id":3,"admin":false,"u":{"t":"User"}}]`,
+			"[3]{id}:\n  all rows: admin=false,u.t=User\n  1\n  2\n  3"},
+		// A shared URL start is written once, cut at a '/'; null stays null.
+		{`[{"id":1,"url":"https://api.github.com/users/ann"},{"id":2,"url":"https://api.github.com/users/bo"},{"id":3,"url":null},{"id":4,"url":"https://api.github.com/users/"}]`,
+			"[4]{id,url}:\n  starts with: url=\"https://api.github.com/users/\"\n  1,ann\n  2,bo\n  3,null\n  4,\"\""},
+		// Fewer than 3 rows, or no gain: nothing is factored.
+		{`[{"a":"same","id":1},{"a":"same","id":2}]`, "[2]{a,id}:\n  same,1\n  same,2"},
+		{`[{"u":"https://a.io/x","v":"http://x"},{"u":"https://b.io/x","v":"http://y"},{"u":"https://c.io/x","v":"http://z"}]`,
+			"[3]{u,v}:\n  \"https://a.io/x\",\"http://x\"\n  \"https://b.io/x\",\"http://y\"\n  \"https://c.io/x\",\"http://z\""},
 	} {
 		if got := encode(t, c.in); got != c.want {
 			t.Errorf("Encode(%s) =\n%s\nwant\n%s", c.in, got, c.want)
@@ -48,8 +59,9 @@ func TestGolden(t *testing.T) {
 	}
 }
 
-// On a flat array of uniform objects toonx writes exactly what TOON writes,
-// so results measured with TOON on such data carry over.
+// On a flat array of uniform objects with no constant field (and no URLs,
+// which the generator never makes) toonx writes exactly what TOON writes, so
+// results measured with TOON on such data carry over.
 func TestFlatTablesMatchTOON(t *testing.T) {
 	r := rand.New(rand.NewPCG(1, 2))
 	strs := []string{"a", "b c", "x,y", "", " pad", "-1", "true", "07", "null", "日本", "q\"t", "a:b", "[x]", "line\nbreak"}
@@ -74,6 +86,9 @@ func TestFlatTablesMatchTOON(t *testing.T) {
 			in = append(in, row)
 		}
 		js, _ := canonical.Marshal(in)
+		if hasConstant(in) {
+			continue
+		}
 		want, err := toongo.Marshal(in)
 		if err != nil {
 			t.Fatal(err)
@@ -82,6 +97,27 @@ func TestFlatTablesMatchTOON(t *testing.T) {
 			t.Fatalf("%s\ntoonx:\n%s\ntoon:\n%s", js, got, want)
 		}
 	}
+}
+
+// hasConstant reports whether rows has minFactorRows rows and a field with
+// the same value in all of them.
+func hasConstant(rows []any) bool {
+	if len(rows) < minFactorRows {
+		return false
+	}
+	for k, v := range rows[0].(map[string]any) {
+		want, _ := canonical.Marshal(v)
+		same := true
+		for _, r := range rows[1:] {
+			if b, _ := canonical.Marshal(r.(map[string]any)[k]); string(b) != string(want) {
+				same = false
+			}
+		}
+		if same {
+			return true
+		}
+	}
+	return false
 }
 
 func canonicalNumber(s string) any {
@@ -110,23 +146,30 @@ func TestEligibility(t *testing.T) {
 func TestDecodeRejects(t *testing.T) {
 	for _, in := range []string{
 		"",
-		"a: 1\na: 2",            // duplicate key
-		"[2]{a}:\n  1",          // too few rows
-		"[1]{a,a}:\n  1,2",      // duplicate column
-		"[1]{a,a.b}:\n  1,2",    // value and path under it
-		"[1]{a}:\n  1,2",        // arity
-		"[1]{a}:\n  ",           // empty row
-		"a: \"x\"",              // needless quotes
-		"a: 1,2",                // unquoted comma
-		"a: -x",                 // unquoted dash
-		"[1]{a}:\n  {\"b\": 1}", // non-canonical JSON cell
-		"[2]: 1,",               // empty primitive element
-		"[1]: [1]",              // container in primitive array
-		"a:\nb: 1",              // empty nested object
-		"a[1]:\n  1",            // list item without dash
-		"a: 1\n  b: 2",          // stray indentation
-		"[01]: 1",               // bad length
-		"[1]{\"a\"}:\n  1",      // needlessly quoted column
+		"a: 1\na: 2",                    // duplicate key
+		"[2]{a}:\n  1",                  // too few rows
+		"[1]{a,a}:\n  1,2",              // duplicate column
+		"[1]{a,a.b}:\n  1,2",            // value and path under it
+		"[1]{a}:\n  1,2",                // arity
+		"[1]{a}:\n  ",                   // empty row
+		"a: \"x\"",                      // needless quotes
+		"a: 1,2",                        // unquoted comma
+		"a: -x",                         // unquoted dash
+		"[1]{a}:\n  {\"b\": 1}",         // non-canonical JSON cell
+		"[2]: 1,",                       // empty primitive element
+		"[1]: [1]",                      // container in primitive array
+		"a:\nb: 1",                      // empty nested object
+		"a[1]:\n  1",                    // list item without dash
+		"a: 1\n  b: 2",                  // stray indentation
+		"[01]: 1",                       // bad length
+		"[1]{\"a\"}:\n  1",              // needlessly quoted column
+		"[1]{a}:\n  all rows: a=1\n  2", // constant and column conflict
+		"[1]{a}:\n  all rows: b\n  2",   // no '='
+		"[1]{a}:\n  all rows: b=\n  2",  // empty value
+		"[1]{a}:\n  starts with: b=\"http://x/\"\n  y",   // prefix of no column
+		"[1]{a}:\n  starts with: a=1\n  2",               // prefix not a string
+		"[1]{a}:\n  starts with: a=\"h/\"\n  1",          // number in a prefixed column
+		"[1]{a}:\n  starts with: a=\"h/\",a=\"g/\"\n  x", // prefix given twice
 	} {
 		if out, err := (Codec{}).Decode([]byte(in)); err == nil {
 			t.Errorf("Decode(%q) accepted: %s", in, out)
@@ -204,11 +247,15 @@ func TestPrimerFor(t *testing.T) {
 	if got != base+primerAbsent+primerPaths+primerJSON {
 		t.Fatalf("primer:\n%s\nfor\n%s", got, nested)
 	}
+	factored := encode(t, `[{"a":"constant","u":"https://example.com/users/1"},{"a":"constant","u":"https://example.com/users/2"},{"a":"constant","u":"https://example.com/users/3"}]`)
+	if got := (Codec{}).PrimerFor([][]byte{[]byte(factored)}); got != base+primerConst+primerPrefix {
+		t.Fatalf("factored primer:\n%s\nfor\n%s", got, factored)
+	}
 	list := encode(t, `{"x":[1,[2]]}`)
 	if got := (Codec{}).PrimerFor([][]byte{[]byte(list)}); got != base+primerJSON+primerList {
 		t.Fatalf("list primer:\n%s", got)
 	}
-	if (Codec{}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList {
+	if (Codec{}).Primer() != base+primerAbsent+primerPaths+primerJSON+primerList+primerConst+primerPrefix {
 		t.Fatal("full primer must describe every extension")
 	}
 }
@@ -233,5 +280,47 @@ func BenchmarkEncode(b *testing.B) {
 			b.Fatal(err)
 		}
 		_ = Codec{}.PrimerFor([][]byte{enc})
+	}
+}
+
+// Random tables with constant fields and URL columns must round-trip, and
+// both factorings must occur.
+func TestFactoringRoundTrip(t *testing.T) {
+	r := rand.New(rand.NewPCG(5, 6))
+	urls := []string{"https://api.x.io/u/", "https://api.x.io/u/1", "https://api.x.io/u/a,b", "https://api.x.io/u/x:y",
+		"https://api.x.io/u/null", "https://api.x.io/u/-q", "https://api.x.io/u/07", "https://api.x.io/u/ s", "https://api.x.io/v/2"}
+	vals := []any{nil, false, "User", "a,b", "", canonicalNumber("3"), []any{}, map[string]any{}}
+	consts, prefixes := 0, 0
+	for trial := 0; trial < 2000; trial++ {
+		c := vals[r.IntN(len(vals))]
+		var rows []any
+		for range 1 + r.IntN(8) {
+			row := map[string]any{"id": canonicalNumber(fmt.Sprint(r.IntN(100)))}
+			if r.IntN(8) > 0 {
+				row["c"] = c
+			}
+			switch r.IntN(5) {
+			case 0:
+			case 1:
+				row["url"] = nil
+			default:
+				row["url"] = urls[r.IntN(len(urls))]
+			}
+			if r.IntN(2) == 0 {
+				row["u"] = map[string]any{"c": c, "html": urls[r.IntN(len(urls))]}
+			}
+			rows = append(rows, row)
+		}
+		js, _ := canonical.Marshal(map[string]any{"items": rows})
+		enc := encode(t, string(js))
+		if strings.Contains(enc, "\n  all rows: ") {
+			consts++
+		}
+		if strings.Contains(enc, "\n  starts with: ") {
+			prefixes++
+		}
+	}
+	if consts < 100 || prefixes < 100 {
+		t.Fatalf("factored %d tables by constants and %d by prefix; want both often", consts, prefixes)
 	}
 }

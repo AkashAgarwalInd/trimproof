@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
-**Amended three times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result) and [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call). Where they differ, the later text applies. The original text below is unchanged.
+**Amended four times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call) and [Amendment 4](#amendment-4-toonx-2-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
 
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
@@ -379,3 +379,80 @@ go run ./cmd/bench run -targets nim:openai/gpt-oss-20b,nim:nvidia/nemotron-3-sup
 go run ./cmd/bench judge -source freeform -seed 3000 -in bench/results/verify-2026-10/freeform.jsonl -judge nim:JUDGE -max-tokens 8192 -max-calls 78 -judged bench/results/verify-2026-10/freeform-judged.jsonl
 go run ./cmd/bench freeform-report -in bench/results/verify-2026-10/freeform.jsonl -judged bench/results/verify-2026-10/freeform-judged.jsonl
 ```
+
+## Amendment 4: toonx 2 (before any result)
+
+**Date:** 2026-10-02. This is committed before the pilot it describes and before any registered run.
+
+### What changes
+
+toonx becomes version 2, with two more lossless forms. Each applies only to tables of at least 3 rows, and only when it makes the table shorter:
+- **Constant fields.** A field with the same value in every row is written once, on an `all rows: a=x` line under the header, instead of in each row.
+- **URL prefixes.** In a column of strings that share an `http(s)://` start, the start (cut after its last `/`) is written once, on a `starts with: a=p` line, and left out of the column's strings. Dates, names and other text are never factored.
+
+Every encode is still decoded and compared with the original, byte for byte. Each form adds one primer sentence, sent only when a request uses it:
+
+> A line "all rows: a=x" under a table header means every row also has field a with value x.
+>
+> A line "starts with: a=p" under a table header means every text value of field a starts with p, which is left out of the rows: put p back in front.
+
+### Why
+
+The pilot (Amendment 2) measured 20.7% fewer input tokens for toonx over 21 pairs, below the 30–40% hoped for. Its payloads were mostly API objects that repeat the same values and URL starts in every row. In the GitHub example, 13 `*_url` columns share prefixes, and `site_admin` and `user_view_type` are constant.
+
+### Measured offline (no model calls), toonx 1 → toonx 2
+
+| data | toonx 1 | toonx 2 |
+|---|---:|---:|
+| tuning payloads (40): token-weighted net savings, all payloads | 15.4% | 34.4% |
+| tuning payloads: encoded by the default gates | 23 / 40 | 30 / 40 |
+| held-out payloads (19): token-weighted net savings, all payloads | 21.4% | 35.8% |
+| held-out payloads: encoded by the default gates | 8 / 19 | 11 / 19 |
+| payload Q&A, the same 26 cut payloads, primer included | 24.9% | 39.4% |
+| synthetic, 40 tables | 26.1% | 26.1% (same bytes) |
+| WikiTableQuestions, 100 tables | 34.3% | 34.4% (8 tables factored) |
+
+- **Tuning:** the forms were designed while looking at the tuning payloads. The held-out set, fetched before this change, shows a similar gain.
+- **Records:** [PAYLOADS.md](verify-2026-10/PAYLOADS.md) and [PAYLOADS-HELDOUT.md](verify-2026-10/PAYLOADS-HELDOUT.md) are regenerated with toonx 2. The toonx 1 versions stay in git history.
+
+### Effect on the registered sets
+
+- **Synthetic:** no change; toonx 2 sends the same bytes as TOON on all 40 tables.
+- **WikiTableQuestions:** 8 of the 100 tables are now factored. Questions are unchanged.
+- **Payload Q&A:** the default gates now encode 36 cut payloads instead of 26, so the set grows from 104 to 139 questions (seed 1000).
+  - The 26 earlier payloads keep exactly the same questions.
+  - The 10 new payloads get questions by the same rules: github `torvalds-events`, `go-issues`, `rust-closed-issues`, `linux-commits` and `node-tags`; `rickandmorty`; `itunes`; coingecko `exchanges`; `pokeapi`; `federalregister`.
+  - Calls: 139 × 3 formats × 5 models = 2,085 (was 1,560).
+  - The manifest in `data/payload-qa/` is regenerated.
+- **Free-form check (Amendment 3):** it now has 36 tasks; the kinds are assigned in turn after the same seeded shuffle.
+  - Calls: 36 × 3 arms × 3 models = 324 answers, plus 108 judge calls.
+  - It had made 20 answer calls with toonx 1 when it was stopped for this change. Those records are kept in [freeform-stopped.jsonl](verify-2026-10/freeform-stopped.jsonl) and enter no result; the check restarts from zero.
+  - The judge smoke check (2 calls, kimi-k3 passed) stands; it is recorded in [judge-smoke.jsonl](verify-2026-10/judge-smoke.jsonl).
+
+### Pilot 2: accuracy on the new forms
+
+**Questions:** 6 payload Q&A questions drawn with seed 2004. They were chosen before any call because they touch the new forms. None appears in the registered set or in pilot 1.
+
+| question | what it tests |
+|---|---|
+| `payload-github-react-contributors-q2` | rebuild a URL from its prefix (`followers_url`) |
+| `payload-tvmaze-shows-q1` | rebuild a nested URL from its prefix (`_links.self.href`) |
+| `payload-dockerhub-library-repos-q4` | read a field from the `all rows` line (`namespace`) |
+| `payload-github-rust-closed-issues-q1` | read a constant nested URL (`milestone.creator.repos_url`) |
+| `payload-gitlab-projects-q3` | count rows in a factored table |
+| `payload-github-vscode-releases-q3` | largest value in a factored table |
+
+**Run:** `json-compact` against `toonx` on gpt-oss-20b, nemotron-3-super and glm-5.3-flash: 36 calls.
+
+**Decision rule, fixed now:**
+- **toonx 2 is kept** if, over the 18 pairs, toonx answers correctly at most 1 time fewer than JSON.
+- **Otherwise:** for each form, if toonx misses where JSON is right on 2 or more of that form's pairs, the form is removed before the full run. The URL form's pairs are the first two questions; the constants form's are the third and fourth. Questions five and six count against both.
+- The outcome is written up in [PILOT.md](verify-2026-10/PILOT.md) before the full run.
+
+```sh
+go run ./cmd/bench run -targets nim:openai/gpt-oss-20b,nim:nvidia/nemotron-3-super-120b-a12b,nim:z-ai/glm-5.3-flash \
+  -source payloads -seed 2004 -only payload-github-react-contributors-q2,payload-tvmaze-shows-q1,payload-dockerhub-library-repos-q4,payload-github-rust-closed-issues-q1,payload-gitlab-projects-q3,payload-github-vscode-releases-q3 \
+  -formats json-compact,toonx -max-calls 36 -out bench/results/verify-2026-10/pilot2.jsonl
+```
+
+The full-run commands are unchanged except for these call caps: payload Q&A `-max-calls 417` per model, and free-form answers `-max-calls 324` with judge `-max-calls 108`.

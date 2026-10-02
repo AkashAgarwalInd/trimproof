@@ -281,6 +281,28 @@ func SampleQuestions(ds []*Dataset, n int, seed uint64) []*Dataset {
 	return out
 }
 
+// OnlyQuestions keeps the questions whose IDs are listed, dropping datasets
+// left without questions; an empty list keeps all.
+func OnlyQuestions(ds []*Dataset, ids []string) []*Dataset {
+	if len(ids) == 0 {
+		return ds
+	}
+	var out []*Dataset
+	for _, d := range ds {
+		c := *d
+		c.Questions = nil
+		for _, q := range d.Questions {
+			if slices.Contains(ids, q.ID) {
+				c.Questions = append(c.Questions, q)
+			}
+		}
+		if len(c.Questions) > 0 {
+			out = append(out, &c)
+		}
+	}
+	return out
+}
+
 // LimitQuestions keeps the first n questions across datasets, in order;
 // n <= 0 keeps all.
 func LimitQuestions(ds []*Dataset, n int) []*Dataset {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -18,7 +19,7 @@ func (Codec) Decode(encoded []byte) ([]byte, error) {
 }
 
 // features records which extensions to TOON a document uses.
-type features struct{ absent, paths, json, list bool }
+type features struct{ absent, paths, json, list, consts, prefix bool }
 
 func decode(encoded []byte, f *features) ([]byte, error) {
 	d := &decoder{lines: strings.Split(string(encoded), "\n"), f: f}
@@ -155,6 +156,35 @@ func (d *decoder) field(depth int, rest string) (any, error) {
 		for _, c := range cols {
 			d.f.paths = d.f.paths || len(c) > 1
 		}
+		var consts []assignVal
+		prefix := make([]string, len(cols))
+		if line, ok := d.at(depth + 1); ok && strings.HasPrefix(line, "all rows: ") {
+			if consts, err = assignments(line[len("all rows: "):]); err != nil {
+				return nil, d.errf("%v", err)
+			}
+			d.f.consts = true
+			d.pos++
+		}
+		if line, ok := d.at(depth + 1); ok && strings.HasPrefix(line, "starts with: ") {
+			ps, err := assignments(line[len("starts with: "):])
+			if err != nil {
+				return nil, d.errf("%v", err)
+			}
+			for _, a := range ps {
+				i := slices.IndexFunc(cols, func(c []string) bool { return slices.Equal(c, a.path) })
+				p, isStr := a.val.(string)
+				if i < 0 || !isStr || p == "" || prefix[i] != "" {
+					return nil, d.errf("bad prefix")
+				}
+				prefix[i] = p
+			}
+			d.f.prefix = true
+			d.pos++
+		}
+		all := slices.Clone(cols)
+		for _, a := range consts {
+			all = append(all, a.path)
+		}
 		out := make([]any, n)
 		for i := range out {
 			line, ok := d.at(depth + 1)
@@ -165,10 +195,21 @@ func (d *decoder) field(depth int, rest string) (any, error) {
 			if err != nil {
 				return nil, d.errf("%v", err)
 			}
-			for _, v := range vals {
+			for j, v := range vals {
 				d.note(v)
+				if prefix[j] == "" || v == absent || v == nil {
+					continue
+				}
+				s, ok := v.(string)
+				if !ok {
+					return nil, d.errf("non-string cell in a prefixed column")
+				}
+				vals[j] = prefix[j] + s
 			}
-			if out[i], err = row(cols, vals); err != nil {
+			for _, a := range consts {
+				vals = append(vals, a.val)
+			}
+			if out[i], err = row(all, vals); err != nil {
 				return nil, d.errf("%v", err)
 			}
 			d.pos++
@@ -241,29 +282,53 @@ func quotedLen(s string) (int, error) {
 func header(s string) ([][]string, error) {
 	var cols [][]string
 	seen := map[string]bool{}
-	var path []string
 	for i := 0; ; {
+		path, next, err := columnPathAt(s, i)
+		if err != nil {
+			return nil, err
+		}
+		id := strings.Join(path, "\x00")
+		if seen[id] {
+			return nil, errors.New("duplicate column")
+		}
+		seen[id] = true
+		cols, i = append(cols, path), next
+		if i == len(s) {
+			return cols, nil
+		}
+		if s[i] != ',' {
+			return nil, errors.New("malformed header")
+		}
+		i++
+	}
+}
+
+// columnPathAt parses one column path at s[i:] and returns it with the
+// index after it.
+func columnPathAt(s string, i int) ([]string, int, error) {
+	var path []string
+	for {
 		var seg string
 		if i < len(s) && s[i] == '"' {
 			n, err := quotedLen(s[i:])
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 			if err := json.Unmarshal([]byte(s[i:i+n]), &seg); err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 			if bareKey(seg, false) {
-				return nil, errors.New("needlessly quoted column")
+				return nil, 0, errors.New("needlessly quoted column")
 			}
 			i += n
 		} else {
 			j := i
-			for j < len(s) && s[j] != '.' && s[j] != ',' {
+			for j < len(s) && s[j] != '.' && s[j] != ',' && s[j] != '=' {
 				j++
 			}
 			seg = s[i:j]
 			if !bareKey(seg, false) {
-				return nil, fmt.Errorf("malformed column %q", seg)
+				return nil, 0, fmt.Errorf("malformed column %q", seg)
 			}
 			i = j
 		}
@@ -272,19 +337,43 @@ func header(s string) ([][]string, error) {
 			i++
 			continue
 		}
-		id := strings.Join(path, "\x00")
-		if seen[id] {
-			return nil, errors.New("duplicate column")
+		return path, i, nil
+	}
+}
+
+// assignVal is one "path=value" item of an "all rows:" or "starts with:"
+// line.
+type assignVal struct {
+	path []string
+	val  any
+}
+
+// assignments parses comma-separated path=value items.
+func assignments(s string) ([]assignVal, error) {
+	var out []assignVal
+	for i := 0; ; {
+		path, next, err := columnPathAt(s, i)
+		if err != nil {
+			return nil, err
 		}
-		seen[id] = true
-		cols, path = append(cols, path), nil
-		if i == len(s) {
-			return cols, nil
+		if next == len(s) || s[next] != '=' {
+			return nil, errors.New("expected '='")
 		}
-		if s[i] != ',' {
-			return nil, errors.New("malformed header")
+		v, next, err := cell(s, next+1)
+		if err != nil {
+			return nil, err
 		}
-		i++
+		if v == absent {
+			return nil, errors.New("empty value")
+		}
+		out = append(out, assignVal{path, v})
+		if next == len(s) {
+			return out, nil
+		}
+		if s[next] != ',' {
+			return nil, errors.New("expected ','")
+		}
+		i = next + 1
 	}
 }
 

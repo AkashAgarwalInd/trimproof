@@ -70,3 +70,14 @@ func TestSampleQuestions(t *testing.T) {
 		}
 	}
 }
+
+func TestOnlyQuestions(t *testing.T) {
+	ds := Generate([]string{"orders", "logs"}, []int{30}, 1000)
+	got := OnlyQuestions(ds, []string{ds[1].Questions[0].ID})
+	if len(got) != 1 || len(got[0].Questions) != 1 || got[0].Questions[0].ID != ds[1].Questions[0].ID || len(ds[1].Questions) < 2 {
+		t.Fatalf("OnlyQuestions kept %+v", got)
+	}
+	if len(OnlyQuestions(ds, nil)) != len(ds) {
+		t.Fatal("an empty list must keep all")
+	}
+}

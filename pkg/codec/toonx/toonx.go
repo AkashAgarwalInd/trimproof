@@ -1,6 +1,6 @@
-// Package toonx is TOON with three extensions that let real API responses
-// become tables, where plain TOON falls back to a list form that is often
-// larger than compact JSON:
+// Package toonx is TOON with extensions that let real API responses become
+// tables, where plain TOON falls back to a list form that is often larger
+// than compact JSON:
 //
 //   - every array of objects is a table, also when rows have different keys:
 //     an empty cell means the key is absent (an empty string is "");
@@ -8,9 +8,17 @@
 //     {"user":{"id":1}} becomes column user.id; a key that itself contains a
 //     dot is quoted, so a bare dotted column is always a path;
 //   - a table cell or list item that holds an array or an empty object is
-//     written as compact JSON, starting with [ or {.
+//     written as compact JSON, starting with [ or {;
+//   - a field with the same value in every row is written once, on an
+//     "all rows: a=x" line under the header, instead of in each row;
+//   - in a column of URLs, a shared start is written once, on a
+//     "starts with: a=p" line, and left out of the column's strings.
 //
-// On a flat array of uniform objects the output is the same as TOON's. The
+// The last two apply only when they make the table shorter. Neither line can
+// be read as a row: an unquoted cell never holds a colon.
+//
+// On a flat array of uniform objects with no constant field and no URL
+// column the output is the same as TOON's. The
 // encoder and decoder are trimproof's own; every Encode decodes its output
 // again and fails with codec.ErrIneligible unless the round trip is exact,
 // so number literals and strings are kept byte for byte.
@@ -35,6 +43,8 @@ const (
 	primerPaths  = ` A field named a.b is field b of the nested object a.`
 	primerJSON   = ` A value starting with [ or { is JSON.`
 	primerList   = ` "key[N]:" followed by "- " lines is a list of N items.`
+	primerConst  = ` A line "all rows: a=x" under a table header means every row also has field a with value x.`
+	primerPrefix = ` A line "starts with: a=p" under a table header means every text value of field a starts with p, which is left out of the rows: put p back in front.`
 )
 
 // Codec is the toonx codec. The zero value is ready to use.
@@ -43,11 +53,11 @@ type Codec struct{}
 func init() { codec.Register(Codec{}) }
 
 func (Codec) Name() string    { return "toonx" }
-func (Codec) Version() string { return "1" }
+func (Codec) Version() string { return "2" }
 
 // Primer is TOON's primer with every extension described.
 func (Codec) Primer() string {
-	return toon.Codec{}.Primer() + primerAbsent + primerPaths + primerJSON + primerList
+	return toon.Codec{}.Primer() + primerAbsent + primerPaths + primerJSON + primerList + primerConst + primerPrefix
 }
 
 // PrimerFor implements codec.DynamicPrimer: TOON's primer, plus only the
@@ -62,7 +72,7 @@ func (c Codec) PrimerWith(base string, encoded [][]byte) string {
 	var f features
 	for _, b := range encoded {
 		if _, err := decode(b, &f); err != nil {
-			f = features{true, true, true, true}
+			f = features{true, true, true, true, true, true}
 			break
 		}
 	}
@@ -70,7 +80,8 @@ func (c Codec) PrimerWith(base string, encoded [][]byte) string {
 	for _, x := range []struct {
 		used bool
 		text string
-	}{{f.absent, primerAbsent}, {f.paths, primerPaths}, {f.json, primerJSON}, {f.list, primerList}} {
+	}{{f.absent, primerAbsent}, {f.paths, primerPaths}, {f.json, primerJSON}, {f.list, primerList},
+		{f.consts, primerConst}, {f.prefix, primerPrefix}} {
 		if x.used {
 			p += x.text
 		}
@@ -178,6 +189,9 @@ func (e *encoder) array(depth int, key string, a []any) {
 	}
 	if t, ok := newTable(a); ok {
 		e.line(depth, key, "[", n, "]{", t.header(), "}:")
+		for _, l := range t.extra() {
+			e.line(depth+1, l)
+		}
 		for _, row := range t.rows {
 			e.line(depth+1, row)
 		}
@@ -199,15 +213,25 @@ func primitives(a []any) bool {
 	return true
 }
 
-// table is an array of objects as a header of column paths and one line of
-// cells per row.
+// table is an array of objects as a header of column paths, the fields
+// every row shares, the URL prefixes of columns, and one line of cells per
+// row.
 type table struct {
-	cols [][]string
-	rows []string
+	cols     [][]string
+	consts   []assign // fields with one value in every row, not in cols
+	prefixes []assign // shared starts of columns' strings
+	rows     []string
 }
 
-// newTable lays a out as a table, flattened or not, whichever is shorter.
-// ok is false when a holds anything but non-empty objects.
+// assign is one "path=value" item of an "all rows:" or "starts with:" line.
+type assign struct {
+	path []string
+	val  string // the cell as written
+}
+
+// newTable lays a out as a table, flattened or not, with constant fields and
+// URL prefixes factored out or not, whichever is shortest. ok is false when
+// a holds anything but non-empty objects.
 func newTable(a []any) (*table, bool) {
 	rows := make([]map[string]any, len(a))
 	for i, x := range a {
@@ -217,14 +241,18 @@ func newTable(a []any) (*table, bool) {
 		}
 		rows[i] = m
 	}
-	plain, flat := layout(rows, false), layout(rows, true)
-	if flat.size() < plain.size() {
-		return flat, true
+	var best *table
+	for _, flatten := range []bool{false, true} {
+		for _, factor := range []bool{false, true} {
+			if t := layout(rows, flatten, factor); best == nil || t.size() < best.size() {
+				best = t
+			}
+		}
 	}
-	return plain, true
+	return best, true
 }
 
-func layout(rows []map[string]any, flatten bool) *table {
+func layout(rows []map[string]any, flatten, factor bool) *table {
 	cells := make([]map[string]any, len(rows))
 	paths := map[string][]string{}
 	for i, r := range rows {
@@ -236,20 +264,111 @@ func layout(rows []map[string]any, flatten bool) *table {
 		ids = append(ids, id)
 	}
 	slices.Sort(ids)
-	t := &table{cols: make([][]string, len(ids))}
-	for i, id := range ids {
-		t.cols[i] = paths[id]
+	t := &table{}
+	prefix := map[string]string{}
+	if factor {
+		var kept []string
+		for _, id := range ids {
+			if v, ok := constant(cells, id); ok {
+				t.consts = append(t.consts, assign{paths[id], cellValue(v)})
+				continue
+			}
+			kept = append(kept, id)
+		}
+		if len(kept) == 0 { // a table needs a column; keep the last
+			t.consts, kept = t.consts[:len(t.consts)-1], ids[len(ids)-1:]
+		}
+		ids = kept
+		for _, id := range ids {
+			if p := urlPrefix(cells, id); p != "" {
+				prefix[id] = p
+				t.prefixes = append(t.prefixes, assign{paths[id], primitive(p)})
+			}
+		}
+	}
+	for _, id := range ids {
+		t.cols = append(t.cols, paths[id])
 	}
 	for _, c := range cells {
 		vals := make([]string, len(ids))
 		for i, id := range ids {
-			if v, ok := c[id]; ok {
-				vals[i] = cellValue(v)
+			v, ok := c[id]
+			if !ok {
+				continue
 			}
+			if s, isStr := v.(string); isStr && prefix[id] != "" {
+				v = strings.TrimPrefix(s, prefix[id])
+			}
+			vals[i] = cellValue(v)
 		}
 		t.rows = append(t.rows, strings.Join(vals, ","))
 	}
 	return t
+}
+
+// minFactorRows is the fewest rows a table needs before constant fields
+// or URL prefixes are factored out.
+const minFactorRows = 3
+
+// constant returns the value of column id when every row has it and it is
+// the same in all of them.
+func constant(cells []map[string]any, id string) (any, bool) {
+	first, ok := cells[0][id]
+	if !ok || len(cells) < minFactorRows {
+		return nil, false
+	}
+	want, _ := canonical.Marshal(first)
+	for _, c := range cells[1:] {
+		v, ok := c[id]
+		if !ok {
+			return nil, false
+		}
+		if b, _ := canonical.Marshal(v); string(b) != string(want) {
+			return nil, false
+		}
+	}
+	return first, true
+}
+
+// urlPrefix returns the start shared by every string of column id, cut
+// after its last '/', when the table has minFactorRows rows, the column
+// holds only strings, null or absent cells, at least two strings, and the
+// start is an http(s) URL with a path beyond the scheme. Otherwise it
+// returns "".
+func urlPrefix(cells []map[string]any, id string) string {
+	if len(cells) < minFactorRows {
+		return ""
+	}
+	var strs []string
+	for _, c := range cells {
+		switch v := c[id].(type) {
+		case string:
+			strs = append(strs, v)
+		case nil:
+		default:
+			return ""
+		}
+	}
+	if len(strs) < 2 {
+		return ""
+	}
+	p := strs[0]
+	for _, s := range strs[1:] {
+		n := 0
+		for n < len(p) && n < len(s) && p[n] == s[n] {
+			n++
+		}
+		p = p[:n]
+	}
+	scheme := strings.Index(p, "://")
+	if !strings.HasPrefix(p, "http") || scheme < 0 {
+		return ""
+	}
+	cut := strings.LastIndexByte(p, '/') + 1
+	if cut <= scheme+3 {
+		return ""
+	}
+	return p[:cut]
 }
 
 // collect adds m's leaves to out under their path IDs. With flatten, a
@@ -267,20 +386,46 @@ func collect(prefix []string, m map[string]any, flatten bool, out map[string]any
 	}
 }
 
+func columnPath(p []string) string {
+	segs := make([]string, len(p))
+	for j, s := range p {
+		segs[j] = columnKey(s)
+	}
+	return strings.Join(segs, ".")
+}
+
 func (t *table) header() string {
 	cols := make([]string, len(t.cols))
 	for i, p := range t.cols {
-		segs := make([]string, len(p))
-		for j, s := range p {
-			segs[j] = columnKey(s)
-		}
-		cols[i] = strings.Join(segs, ".")
+		cols[i] = columnPath(p)
 	}
 	return strings.Join(cols, ",")
 }
 
+// extra returns the "all rows:" and "starts with:" lines, if any.
+func (t *table) extra() []string {
+	var out []string
+	for _, x := range []struct {
+		label string
+		as    []assign
+	}{{"all rows: ", t.consts}, {"starts with: ", t.prefixes}} {
+		if len(x.as) == 0 {
+			continue
+		}
+		items := make([]string, len(x.as))
+		for i, a := range x.as {
+			items[i] = columnPath(a.path) + "=" + a.val
+		}
+		out = append(out, x.label+strings.Join(items, ","))
+	}
+	return out
+}
+
 func (t *table) size() int {
 	n := len(t.header())
+	for _, l := range t.extra() {
+		n += len(l) + 1
+	}
 	for _, r := range t.rows {
 		n += len(r) + 1
 	}
