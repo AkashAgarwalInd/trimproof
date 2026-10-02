@@ -6,8 +6,8 @@ package tokens
 import (
 	"strings"
 	"sync"
+	"unicode/utf8"
 
-	tiktoken "github.com/pkoukk/tiktoken-go"
 	loader "github.com/pkoukk/tiktoken-go-loader"
 )
 
@@ -18,16 +18,19 @@ type Estimator interface {
 
 // BPE counts tokens with OpenAI's o200k_base vocabulary (embedded; no
 // download). It is exact for current OpenAI models and serves as the base
-// count for other providers before calibration.
+// count for other providers before calibration. Special-token strings are
+// counted as ordinary text.
 type BPE struct {
-	once sync.Once
-	enc  *tiktoken.Tiktoken
-	err  error
+	once  sync.Once
+	ranks map[string]int
+	err   error
 }
 
+const o200kFile = "https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken"
+
 func (b *BPE) init() {
-	tiktoken.SetBpeLoader(loader.NewOfflineLoader())
-	b.enc, b.err = tiktoken.GetEncoding("o200k_base")
+	// The offline loader serves the embedded vocabulary by its URL.
+	b.ranks, b.err = loader.NewOfflineLoader().LoadTiktokenBpe(o200kFile)
 }
 
 // Count returns the raw o200k_base token count.
@@ -36,7 +39,11 @@ func (b *BPE) Count(text string) int {
 	if b.err != nil {
 		return Heuristic(text)
 	}
-	return len(b.enc.Encode(text, nil, nil))
+	if !utf8.ValidString(text) {
+		// tiktoken decodes to runes first: each invalid byte becomes U+FFFD.
+		text = string([]rune(text))
+	}
+	return countO200k(text, b.ranks)
 }
 
 // Heuristic is the fallback estimate: about 4 bytes per token for English

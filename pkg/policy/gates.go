@@ -124,7 +124,11 @@ func Decide(p RoutePolicy, blocks [][]byte, est tokens.Estimator, model string) 
 			continue
 		}
 		// Encode is authoritative for eligibility.
-		b.Encoded, err = c.Encode(b.Canonical, opts)
+		if ve, ok := c.(codec.ValueEncoder); ok {
+			b.Encoded, err = ve.EncodeValue(v, b.Canonical, opts)
+		} else {
+			b.Encoded, err = c.Encode(b.Canonical, opts)
+		}
 		if errors.Is(err, codec.ErrIneligible) {
 			b.FailedGate, b.Reason = GateStructural, err.Error()
 			continue

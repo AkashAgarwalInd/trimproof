@@ -102,6 +102,15 @@ func (c Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) 
 	if err := c.Check(v, opts); err != nil {
 		return nil, err
 	}
+	want, err := canonical.Marshal(v) // canonicalJSON need not be canonical here
+	if err != nil {
+		return nil, err
+	}
+	return c.EncodeValue(v, want, opts)
+}
+
+// EncodeValue implements codec.ValueEncoder.
+func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte, error) {
 	enc, err := toongo.Marshal(v)
 	if err != nil {
 		return nil, fmt.Errorf("%w: toon-go: %v", codec.ErrIneligible, err)
@@ -109,12 +118,8 @@ func (c Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) 
 	// Verify the round trip. toon-go is pre-1.0 and has emitted documents its
 	// own decoder rejects (an object list item whose first field is nested),
 	// so the codec contract is enforced here rather than trusted.
-	want, err := canonical.Marshal(v)
-	if err != nil {
-		return nil, err
-	}
 	got, err := c.Decode(enc)
-	if err != nil || string(got) != string(want) {
+	if err != nil || string(got) != string(canonicalJSON) {
 		return nil, fmt.Errorf("%w: toon-go round trip failed", codec.ErrIneligible)
 	}
 	return enc, nil

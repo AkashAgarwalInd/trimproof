@@ -119,6 +119,9 @@ type Auditor struct {
 	dropped atomic.Int64
 	written atomic.Int64
 	wg      sync.WaitGroup
+
+	mu     sync.RWMutex // guards closed against Observe racing Close
+	closed bool
 }
 
 // New starts the worker pool.
@@ -157,6 +160,12 @@ func (a *Auditor) Observe(_ context.Context, x *server.Exchange) {
 	if !always && a.cfg.Rand() >= x.Route.Policy.AuditSampleRate {
 		return
 	}
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	if a.closed {
+		a.dropped.Add(1)
+		return
+	}
 	select {
 	case a.queue <- x:
 	default:
@@ -164,9 +173,17 @@ func (a *Auditor) Observe(_ context.Context, x *server.Exchange) {
 	}
 }
 
-// Close drains the queue and stops workers.
+// Close drains the queue and stops workers. Exchanges observed afterwards
+// (requests still finishing after a shutdown deadline) are dropped.
 func (a *Auditor) Close() {
+	a.mu.Lock()
+	if a.closed {
+		a.mu.Unlock()
+		return
+	}
+	a.closed = true
 	close(a.queue)
+	a.mu.Unlock()
 	a.wg.Wait()
 }
 

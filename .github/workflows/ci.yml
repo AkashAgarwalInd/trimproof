@@ -24,6 +24,7 @@ jobs:
         run: |
           go test ./pkg/codec/codectest -run '^$' -fuzz '^FuzzRoundTrip$' -fuzztime 30s
           go test ./pkg/canonical -run '^$' -fuzz '^FuzzIdempotent$' -fuzztime 30s
+          go test ./pkg/tokens -run '^$' -fuzz '^FuzzO200k$' -fuzztime 30s
       - name: govulncheck
         run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 

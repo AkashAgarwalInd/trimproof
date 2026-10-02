@@ -7,10 +7,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -25,8 +27,13 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/validator"
 )
 
-// MaxBodyBytes bounds request bodies read by the gateway.
-const MaxBodyBytes = 32 << 20
+// Defaults for Config limits.
+const (
+	MaxBodyBytes             = 32 << 20 // request bodies
+	DefaultMaxResponseBytes  = 64 << 20 // buffered (non-streamed) upstream responses
+	DefaultUpstreamTimeout   = 10 * time.Minute
+	DefaultStreamIdleTimeout = 2 * time.Minute
+)
 
 // Exchange is what observers (shadow evaluator, audit) see after a request
 // has been served. Observers must not block.
@@ -65,9 +72,23 @@ type Config struct {
 	// anonymous requests are served on the "*" tenant and fail Tier 1 authz.
 	RequireIdentity bool
 	Estimator       tokens.Estimator
-	HTTP            *http.Client
-	Observers       []Observer
-	Log             *slog.Logger
+	// HTTP is the upstream client. It should have no overall Timeout: the
+	// limits below are applied per request so streams are not cut off.
+	HTTP      *http.Client
+	Observers []Observer
+	Log       *slog.Logger
+
+	// MaxBodyBytes bounds request bodies (default MaxBodyBytes).
+	MaxBodyBytes int64
+	// MaxResponseBytes bounds upstream responses the gateway buffers
+	// (default DefaultMaxResponseBytes). Streamed responses are not buffered.
+	MaxResponseBytes int64
+	// UpstreamTimeout bounds a buffered upstream call, and the wait for
+	// response headers on a streamed one (default DefaultUpstreamTimeout).
+	UpstreamTimeout time.Duration
+	// StreamIdleTimeout bounds the gap between chunks of a streamed
+	// response (default DefaultStreamIdleTimeout).
+	StreamIdleTimeout time.Duration
 }
 
 // Server is the gateway handler.
@@ -79,7 +100,19 @@ type Server struct {
 // New builds a Server.
 func New(cfg Config) *Server {
 	if cfg.HTTP == nil {
-		cfg.HTTP = &http.Client{Timeout: 10 * time.Minute}
+		cfg.HTTP = NewUpstreamClient()
+	}
+	if cfg.MaxBodyBytes <= 0 {
+		cfg.MaxBodyBytes = MaxBodyBytes
+	}
+	if cfg.MaxResponseBytes <= 0 {
+		cfg.MaxResponseBytes = DefaultMaxResponseBytes
+	}
+	if cfg.UpstreamTimeout <= 0 {
+		cfg.UpstreamTimeout = DefaultUpstreamTimeout
+	}
+	if cfg.StreamIdleTimeout <= 0 {
+		cfg.StreamIdleTimeout = DefaultStreamIdleTimeout
 	}
 	if cfg.Estimator == nil {
 		cfg.Estimator = tokens.NewCalibrated(nil)
@@ -107,7 +140,54 @@ func New(cfg Config) *Server {
 	return s
 }
 
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) { s.mux.ServeHTTP(w, r) }
+// NewUpstreamClient returns an HTTP client with connection-level timeouts
+// and no overall timeout; request-level limits come from Config.
+func NewUpstreamClient() *http.Client {
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.TLSHandshakeTimeout = 10 * time.Second
+	t.MaxIdleConnsPerHost = 64
+	t.IdleConnTimeout = 90 * time.Second
+	return &http.Client{Transport: t}
+}
+
+// ServeHTTP recovers handler panics: the client gets a 500 (when nothing
+// has been written yet) and the process keeps serving.
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	tw := &trackingWriter{ResponseWriter: w}
+	defer func() {
+		v := recover()
+		if v == nil {
+			return
+		}
+		if v == http.ErrAbortHandler {
+			panic(v)
+		}
+		s.cfg.Log.Error("panic serving request", "method", r.Method, "path", r.URL.Path, "panic", fmt.Sprint(v), "stack", string(debug.Stack()))
+		if !tw.wrote {
+			writeError(tw, http.StatusInternalServerError, "internal_error", "internal gateway error", nil)
+		}
+	}()
+	s.mux.ServeHTTP(tw, r)
+}
+
+// trackingWriter records whether a response has started.
+type trackingWriter struct {
+	http.ResponseWriter
+	wrote bool
+}
+
+func (t *trackingWriter) WriteHeader(code int) { t.wrote = true; t.ResponseWriter.WriteHeader(code) }
+func (t *trackingWriter) Write(b []byte) (int, error) {
+	t.wrote = true
+	return t.ResponseWriter.Write(b)
+}
+func (t *trackingWriter) Flush() {
+	t.wrote = true
+	if f, ok := t.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+func (t *trackingWriter) Unwrap() http.ResponseWriter { return t.ResponseWriter }
 
 // Registry exposes the policy registry (used by the promotion engine).
 func (s *Server) Registry() *Registry { return s.cfg.Registry }
@@ -121,10 +201,9 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 		}
 	}()
 
-	body, err := io.ReadAll(io.LimitReader(r.Body, MaxBodyBytes+1))
-	if err != nil || len(body) > MaxBodyBytes {
-		writeError(w, http.StatusRequestEntityTooLarge, "request_too_large", "request body exceeds limit", nil)
-		x.Status = http.StatusRequestEntityTooLarge
+	body, status := s.readBody(w, r)
+	if status != 0 {
+		x.Status = status
 		return
 	}
 	sec, idErr := Identify(r, s.cfg.IdentityMode, s.cfg.IdentityKey, time.Now())
@@ -190,8 +269,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 	status, hdr, respBody, err := s.roundTrip(r.Context(), upstream, x.Header, sendBody)
 	x.SentBody = sendBody
 	if err != nil {
-		writeError(w, http.StatusBadGateway, "upstream_error", err.Error(), nil)
-		x.Status = http.StatusBadGateway
+		x.Status = upstreamError(w, err)
 		return
 	}
 	// Provider errors pass through untouched and never trigger a
@@ -213,8 +291,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 		status, hdr, respBody, err = s.roundTrip(r.Context(), upstream, x.Header, body)
 		x.SentBody = body
 		if err != nil {
-			writeError(w, http.StatusBadGateway, "upstream_error", err.Error(), nil)
-			x.Status = http.StatusBadGateway
+			x.Status = upstreamError(w, err)
 			return
 		}
 		if status != http.StatusOK {
@@ -317,7 +394,31 @@ func (s *Server) newRequest(ctx context.Context, method, url string, hdr http.He
 	return req, nil
 }
 
+// readBody reads a request body up to the configured limit. On failure it
+// writes the error response and returns its status; 0 means success.
+func (s *Server) readBody(w http.ResponseWriter, r *http.Request) ([]byte, int) {
+	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, s.cfg.MaxBodyBytes))
+	var tooLarge *http.MaxBytesError
+	switch {
+	case errors.As(err, &tooLarge):
+		writeError(w, http.StatusRequestEntityTooLarge, "request_too_large",
+			fmt.Sprintf("request body exceeds %d bytes", s.cfg.MaxBodyBytes), nil)
+		return nil, http.StatusRequestEntityTooLarge
+	case err != nil:
+		writeError(w, http.StatusBadRequest, "bad_request", "reading request body: "+err.Error(), nil)
+		return nil, http.StatusBadRequest
+	}
+	return body, 0
+}
+
+// errResponseTooLarge reports an upstream response over MaxResponseBytes.
+var errResponseTooLarge = errors.New("upstream response exceeds size limit")
+
+// roundTrip makes a buffered upstream call bounded by UpstreamTimeout and
+// MaxResponseBytes.
 func (s *Server) roundTrip(ctx context.Context, url string, hdr http.Header, body []byte) (int, http.Header, []byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.cfg.UpstreamTimeout)
+	defer cancel()
 	req, err := s.newRequest(ctx, http.MethodPost, url, hdr, body)
 	if err != nil {
 		return 0, nil, nil, err
@@ -327,15 +428,28 @@ func (s *Server) roundTrip(ctx context.Context, url string, hdr http.Header, bod
 		return 0, nil, nil, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
+	data, err := io.ReadAll(io.LimitReader(resp.Body, s.cfg.MaxResponseBytes+1))
+	if err == nil && int64(len(data)) > s.cfg.MaxResponseBytes {
+		err = errResponseTooLarge
+	}
 	return resp.StatusCode, resp.Header, data, err
+}
+
+// upstreamError writes the gateway's answer to a failed upstream call and
+// returns its status: 504 on timeout, 502 otherwise.
+func upstreamError(w http.ResponseWriter, err error) int {
+	if errors.Is(err, context.DeadlineExceeded) {
+		writeError(w, http.StatusGatewayTimeout, "upstream_timeout", err.Error(), nil)
+		return http.StatusGatewayTimeout
+	}
+	writeError(w, http.StatusBadGateway, "upstream_error", err.Error(), nil)
+	return http.StatusBadGateway
 }
 
 func (s *Server) forwardRaw(w http.ResponseWriter, ctx context.Context, url string, hdr http.Header, body []byte) int {
 	status, h, data, err := s.roundTrip(ctx, url, hdr, body)
 	if err != nil {
-		writeError(w, http.StatusBadGateway, "upstream_error", err.Error(), nil)
-		return http.StatusBadGateway
+		return upstreamError(w, err)
 	}
 	writeUpstream(w, status, h, data)
 	return status
@@ -343,17 +457,32 @@ func (s *Server) forwardRaw(w http.ResponseWriter, ctx context.Context, url stri
 
 // forwardStream relays an SSE response chunk by chunk.
 func (s *Server) forwardStream(w http.ResponseWriter, ctx context.Context, url string, hdr http.Header, body []byte) int {
-	req, err := s.newRequest(ctx, http.MethodPost, url, hdr, body)
+	return s.relay(w, ctx, http.MethodPost, url, hdr, body)
+}
+
+// relay forwards a request and copies the response as it arrives, flushing
+// after each chunk. The wait for response headers is bounded by
+// UpstreamTimeout and each gap between chunks by StreamIdleTimeout, so a
+// stalled upstream cannot hold the connection forever.
+func (s *Server) relay(w http.ResponseWriter, ctx context.Context, method, url string, hdr http.Header, body []byte) int {
+	ctx, cancel := context.WithCancelCause(ctx)
+	defer cancel(nil)
+	timer := time.AfterFunc(s.cfg.UpstreamTimeout, func() { cancel(context.DeadlineExceeded) })
+	defer timer.Stop()
+	req, err := s.newRequest(ctx, method, url, hdr, body)
 	if err != nil {
 		writeError(w, http.StatusBadGateway, "upstream_error", err.Error(), nil)
 		return http.StatusBadGateway
 	}
 	resp, err := s.cfg.HTTP.Do(req)
 	if err != nil {
-		writeError(w, http.StatusBadGateway, "upstream_error", err.Error(), nil)
-		return http.StatusBadGateway
+		if c := context.Cause(ctx); c != nil {
+			err = c
+		}
+		return upstreamError(w, err)
 	}
 	defer resp.Body.Close()
+	timer.Reset(s.cfg.StreamIdleTimeout)
 	copyHeaders(w.Header(), resp.Header)
 	w.WriteHeader(resp.StatusCode)
 	fl, _ := w.(http.Flusher)
@@ -361,6 +490,7 @@ func (s *Server) forwardStream(w http.ResponseWriter, ctx context.Context, url s
 	for {
 		n, err := resp.Body.Read(buf)
 		if n > 0 {
+			timer.Reset(s.cfg.StreamIdleTimeout)
 			if _, werr := w.Write(buf[:n]); werr != nil {
 				break
 			}
@@ -369,6 +499,9 @@ func (s *Server) forwardStream(w http.ResponseWriter, ctx context.Context, url s
 			}
 		}
 		if err != nil {
+			if err != io.EOF {
+				s.cfg.Log.Warn("upstream stream ended early", "url", url, "err", err, "cause", context.Cause(ctx))
+			}
 			break
 		}
 	}
@@ -377,28 +510,14 @@ func (s *Server) forwardStream(w http.ResponseWriter, ctx context.Context, url s
 
 // proxy forwards non-intercepted provider endpoints unchanged.
 func (s *Server) proxy(w http.ResponseWriter, r *http.Request, url string) {
-	body, err := io.ReadAll(io.LimitReader(r.Body, MaxBodyBytes))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "bad_request", err.Error(), nil)
+	body, status := s.readBody(w, r)
+	if status != 0 {
 		return
 	}
 	if r.URL.RawQuery != "" {
 		url += "?" + r.URL.RawQuery
 	}
-	req, err := s.newRequest(r.Context(), r.Method, url, upstreamHeaders(r.Header), body)
-	if err != nil {
-		writeError(w, http.StatusBadGateway, "upstream_error", err.Error(), nil)
-		return
-	}
-	resp, err := s.cfg.HTTP.Do(req)
-	if err != nil {
-		writeError(w, http.StatusBadGateway, "upstream_error", err.Error(), nil)
-		return
-	}
-	defer resp.Body.Close()
-	copyHeaders(w.Header(), resp.Header)
-	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body)
+	s.relay(w, r.Context(), r.Method, url, upstreamHeaders(r.Header), body)
 }
 
 func copyHeaders(dst, src http.Header) {

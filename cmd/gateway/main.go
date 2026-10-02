@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -50,6 +51,10 @@ func main() {
 	auditFile := flag.String("audit-file", "audit.jsonl", "audit log (JSONL); empty disables")
 	transitionsFile := flag.String("transitions-file", "transitions.jsonl", "promotion transitions (JSONL)")
 	evalRPS := flag.Float64("eval-rps", 1, "per-provider evaluation request rate")
+	maxBody := flag.Int64("max-body-bytes", server.MaxBodyBytes, "maximum request body size")
+	upstreamTimeout := flag.Duration("upstream-timeout", server.DefaultUpstreamTimeout, "limit for a buffered upstream call, and for the first byte of a streamed one")
+	streamIdle := flag.Duration("stream-idle-timeout", server.DefaultStreamIdleTimeout, "maximum gap between chunks of a streamed response")
+	shutdownTimeout := flag.Duration("shutdown-timeout", 30*time.Second, "how long to wait for in-flight requests on SIGTERM")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
 	if *showVersion {
@@ -63,14 +68,14 @@ func main() {
 	defer stop()
 
 	// OpenTelemetry metrics via OTLP/HTTP when OTEL_EXPORTER_OTLP_ENDPOINT is set.
+	var mp *sdkmetric.MeterProvider
 	if os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" {
 		exp, err := otlpmetrichttp.New(ctx)
 		if err != nil {
 			fatal(log, "otlp exporter", err)
 		}
-		mp := sdkmetric.NewMeterProvider(sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exp)))
+		mp = sdkmetric.NewMeterProvider(sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exp)))
 		otel.SetMeterProvider(mp)
-		defer mp.Shutdown(context.Background())
 	}
 
 	reg, err := server.LoadRegistry(*policies)
@@ -90,27 +95,27 @@ func main() {
 	if err != nil {
 		fatal(log, "pair store", err)
 	}
-	defer store.Close()
-	transitions := openAppend(log, *transitionsFile)
-	defer transitions.Close()
+	transitions := &appendLog{f: openAppend(log, *transitionsFile)}
 	prom := &eval.Promoter{Registry: reg, Store: store, T: eval.DefaultThresholds(), OnTransition: func(tr eval.Transition) {
 		metrics.Transition(tr)
 		b, _ := json.Marshal(tr)
-		transitions.Write(append(b, '\n'))
+		if err := transitions.Write(append(b, '\n')); err != nil {
+			log.Error("write transition", "err", err)
+		}
 		log.Info("route state changed", "route", tr.TenantID+"/"+tr.RouteID, "from", tr.From.String(), "to", tr.To.String(), "reason", tr.Reason)
 	}}
 	ev := eval.NewEvaluator(eval.Config{Store: store, Promoter: prom, RPS: *evalRPS, Log: log})
-	go ev.Run(ctx)
+	evalDone := make(chan struct{})
+	go func() { ev.Run(ctx); close(evalDone) }()
 
 	observers := []server.Observer{metrics, prom, ev}
+	var aud *audit.Auditor
+	var sink *audit.JSONLSink
 	if *auditFile != "" {
-		sink, err := audit.NewJSONLFile(*auditFile)
-		if err != nil {
+		if sink, err = audit.NewJSONLFile(*auditFile); err != nil {
 			fatal(log, "audit file", err)
 		}
-		defer sink.Close()
-		aud := audit.New(audit.Config{Sinks: []audit.Sink{sink}, Log: log})
-		defer aud.Close()
+		aud = audit.New(audit.Config{Sinks: []audit.Sink{sink}, Log: log})
 		observers = append(observers, aud)
 	}
 
@@ -118,18 +123,72 @@ func main() {
 		Registry: reg, AnthropicBase: *anthropicBase, OpenAIBase: *openaiBase,
 		IdentityMode: server.IdentityMode(*identityMode), IdentityKey: []byte(os.Getenv(*identityKeyEnv)),
 		RequireIdentity: *requireIdentity, Estimator: tokens.NewCalibrated(nil), Observers: observers, Log: log,
+		MaxBodyBytes: *maxBody, UpstreamTimeout: *upstreamTimeout, StreamIdleTimeout: *streamIdle,
 	})
-	srv := &http.Server{Addr: *listen, Handler: gw, ReadHeaderTimeout: 10 * time.Second}
-	go func() {
-		<-ctx.Done()
-		shutdown, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		srv.Shutdown(shutdown)
-	}()
+	// No WriteTimeout: streamed responses are bounded by the gateway's
+	// upstream and idle timeouts instead.
+	srv := &http.Server{Addr: *listen, Handler: gw, ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout: 2 * time.Minute, IdleTimeout: 2 * time.Minute}
+	serveErr := make(chan error, 1)
+	go func() { serveErr <- srv.ListenAndServe() }()
 	log.Info("trimproof gateway listening", "addr", *listen, "version", version, "policies", *policies)
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		fatal(log, "serve", err)
+
+	exit := 0
+	select {
+	case err := <-serveErr:
+		log.Error("serve", "err", err)
+		stop()
+		exit = 1
+	case <-ctx.Done():
+		log.Info("shutting down", "timeout", shutdownTimeout.String())
+		sctx, cancel := context.WithTimeout(context.Background(), *shutdownTimeout)
+		if err := srv.Shutdown(sctx); err != nil {
+			log.Warn("in-flight requests did not finish; closing connections", "err", err)
+			srv.Close()
+		}
+		cancel()
 	}
+
+	// Stop in dependency order: nothing below may run before its writers
+	// have stopped. The evaluator (its ctx is already done) finishes its
+	// workers; audit drains its queue; then the files are flushed.
+	<-evalDone
+	if aud != nil {
+		aud.Close()
+		sink.Close()
+	}
+	store.Close()
+	transitions.Close()
+	if mp != nil {
+		mp.Shutdown(context.Background())
+	}
+	log.Info("stopped", "eval_dropped", ev.Dropped())
+	os.Exit(exit)
+}
+
+// appendLog is a JSONL file that tolerates writes after Close (a request
+// still running past the shutdown deadline can trigger a transition).
+type appendLog struct {
+	mu sync.Mutex
+	f  *os.File
+}
+
+func (l *appendLog) Write(b []byte) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.f == nil {
+		return os.ErrClosed
+	}
+	_, err := l.f.Write(b)
+	return err
+}
+
+func (l *appendLog) Close() error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	f := l.f
+	l.f = nil
+	return f.Close()
 }
 
 func envOr(k, def string) string {

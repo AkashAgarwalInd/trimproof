@@ -121,3 +121,14 @@ func TestDropOnFull(t *testing.T) {
 	close(bs.ch)
 	a.Close()
 }
+
+func TestObserveAfterClose(t *testing.T) {
+	sink := &memSink{}
+	a := New(Config{Sinks: []Sink{sink}})
+	a.Close()
+	a.Observe(context.Background(), exchange(t, "original")) // must not panic
+	a.Close()                                                // idempotent
+	if a.Dropped() != 1 || len(sink.es) != 0 {
+		t.Fatalf("dropped %d, written %d", a.Dropped(), len(sink.es))
+	}
+}

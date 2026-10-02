@@ -118,7 +118,8 @@ func (e *Evaluator) Observe(_ context.Context, x *server.Exchange) {
 	}
 }
 
-// Run starts workers and blocks until ctx is done.
+// Run starts workers and blocks until ctx is done and in-flight pairs have
+// finished. Pairs cut short by ctx are discarded, not stored.
 func (e *Evaluator) Run(ctx context.Context) {
 	var wg sync.WaitGroup
 	for i := 0; i < e.cfg.Workers; i++ {
@@ -152,6 +153,9 @@ func (e *Evaluator) Drain(ctx context.Context) {
 
 func (e *Evaluator) process(ctx context.Context, x *server.Exchange) {
 	p, err := e.RunPair(ctx, x, e.cfg.Rand() < e.cfg.ControlFraction)
+	if ctx.Err() != nil {
+		return // shutting down: an aborted arm says nothing about the codec
+	}
 	if err != nil {
 		e.cfg.Log.Warn("shadow pair failed", "err", err)
 		return

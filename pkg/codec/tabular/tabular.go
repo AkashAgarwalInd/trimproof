@@ -31,11 +31,16 @@ func (Codec) Check(v any, opts codec.Options) error {
 	return err
 }
 
-func (Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) {
+func (c Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) {
 	v, err := canonical.Parse(canonicalJSON)
 	if err != nil {
 		return nil, err
 	}
+	return c.EncodeValue(v, canonicalJSON, opts)
+}
+
+// EncodeValue implements codec.ValueEncoder.
+func (Codec) EncodeValue(v any, _ []byte, opts codec.Options) ([]byte, error) {
 	t, err := codec.AsTable(v, opts.Mode, true)
 	if err != nil {
 		return nil, err

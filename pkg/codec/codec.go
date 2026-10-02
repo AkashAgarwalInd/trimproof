@@ -51,6 +51,14 @@ type Codec interface {
 	Primer() string
 }
 
+// ValueEncoder is an optional fast path for callers that have already
+// parsed canonicalJSON into v (with canonical.Parse) and passed v through
+// Check: it encodes without repeating that work. Results and errors are the
+// same as Encode(canonicalJSON, opts).
+type ValueEncoder interface {
+	EncodeValue(v any, canonicalJSON []byte, opts Options) ([]byte, error)
+}
+
 // ErrIneligible wraps all Gate 1 rejections.
 var ErrIneligible = errors.New("ineligible")
 

@@ -59,6 +59,13 @@ func checkRoundTrip(t testing.TB, c codec.Codec, input []byte) bool {
 		return false
 	}
 	enc, err := c.Encode(want, opts)
+	if ve, ok := c.(codec.ValueEncoder); ok {
+		// The fast path the gates use must agree with Encode exactly.
+		enc2, err2 := ve.EncodeValue(v, want, opts)
+		if string(enc2) != string(enc) || (err == nil) != (err2 == nil) {
+			t.Fatalf("%s: EncodeValue differs from Encode (%v vs %v)\n%s\n%s", c.Name(), err2, err, enc2, enc)
+		}
+	}
 	if errors.Is(err, codec.ErrIneligible) {
 		return false // Encode is authoritative; Check is a pre-filter.
 	}
