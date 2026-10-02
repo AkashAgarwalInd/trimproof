@@ -34,9 +34,9 @@ client ──► ingress (TLS, JWT) ──► context-mesh ──► Anthropic /
 ## Quick start
 
 ```bash
-go build -o gateway ./cmd/gateway
+go build -o bin/gateway ./cmd/gateway
 export CM_IDENTITY_KEY=...            # HS256 key shared with your ingress
-./gateway -policies examples/policies.json -listen :8080
+bin/gateway -policies examples/policies.json -listen :8080
 ```
 
 Point SDKs at the gateway:

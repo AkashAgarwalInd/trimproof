@@ -1,6 +1,5 @@
-# binaries
-/gateway
-/bench
+# binaries (go build -o bin/...)
+/bin/
 *.test
 *.out
 
