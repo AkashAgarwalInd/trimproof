@@ -1,4 +1,4 @@
-// Package audit implements Tier 2 (spec §9): an observational, bounded,
+// Package audit implements Tier 2: an observational, bounded,
 // drop-on-full audit pipeline with key-based redaction.
 package audit
 

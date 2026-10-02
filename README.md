@@ -6,7 +6,7 @@ trimproof is a Go gateway for the Anthropic Messages and OpenAI-compatible Chat 
 
 > Format effects vary a lot by model and task. Published agentic benchmarks report anywhere from −36pp to +13pp accuracy for TOON. So trimproof never ships an optimization it has not measured on your traffic.
 
-Full specification: [`Idea.md`](Idea.md). Phase 0 benchmark: [`bench/results/REPORT.md`](bench/results/REPORT.md).
+Phase 0 benchmark: [`bench/results/REPORT.md`](bench/results/REPORT.md).
 
 ## How it works
 

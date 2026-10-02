@@ -1,4 +1,4 @@
-// Package tabular implements the strict lossless tabular codec (spec §6): a
+// Package tabular implements the strict lossless tabular codec: a
 // header line of sorted column names followed by one compact JSON array per
 // row. Values are primitives with their exact canonical text.
 package tabular

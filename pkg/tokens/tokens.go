@@ -1,4 +1,4 @@
-// Package tokens provides local token estimators for the gates (spec §5).
+// Package tokens provides local token estimators for the gates.
 // Estimates never make network calls. Per-model correction factors are
 // learned from provider-reported usage so gates drift toward real counts.
 package tokens

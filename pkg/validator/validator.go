@@ -1,4 +1,4 @@
-// Package validator implements Tier 1 synchronous validation (spec §7):
+// Package validator implements Tier 1 synchronous validation:
 // Schema → Rules → Authorization over every tool call and structured
 // output in a response. It is default-deny and all-or-nothing.
 package validator
@@ -16,8 +16,8 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
-// SecurityContext is the caller identity, taken only from trusted ingress
-// (spec invariant 8), never from the request body.
+// SecurityContext is the caller identity, taken only from trusted ingress,
+// never from the request body.
 type SecurityContext struct {
 	Subject  string
 	TenantID string
@@ -94,7 +94,7 @@ type Validator struct {
 }
 
 // New compiles all schemas up front so request-time validation does no
-// compilation (spec §7.1).
+// compilation.
 func New(cfg Config) (*Validator, error) {
 	v := &Validator{tools: map[string]*jsonschema.Schema{}, rules: cfg.Rules, authz: cfg.Authorizer}
 	if v.authz == nil {

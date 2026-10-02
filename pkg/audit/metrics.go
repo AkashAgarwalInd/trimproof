@@ -12,7 +12,7 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/server"
 )
 
-// Metrics records OpenTelemetry metrics for every exchange (spec §9):
+// Metrics records OpenTelemetry metrics for every exchange:
 // requests, gate rejections, estimated savings, Tier 1 outcomes, fallbacks
 // and promotion transitions. It uses the global MeterProvider, which is a
 // no-op until the binary installs an exporter.

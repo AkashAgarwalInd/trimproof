@@ -25,7 +25,7 @@ func TestCanonicalize(t *testing.T) {
 	}
 }
 
-// Spec §13: numbers keep their exact text, compared as raw bytes.
+// Numbers keep their exact text, compared as raw bytes.
 func TestNumberTextPreserved(t *testing.T) {
 	for _, n := range []string{
 		"9007199254740993", "-0", "88.0", "1e400", "0.1000",

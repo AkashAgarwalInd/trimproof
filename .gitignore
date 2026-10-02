@@ -10,3 +10,6 @@
 
 # go fuzz cache is outside the repo; keep testdata/fuzz regressions
 .DS_Store
+
+# private design spec, kept local only
+/Idea.md

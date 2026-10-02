@@ -43,7 +43,7 @@ type Entry struct {
 	Status        int       `json:"status"`
 	LatencyMS     int64     `json:"latency_ms"`
 
-	// What was actually sent upstream on the final attempt (spec §9).
+	// What was actually sent upstream on the final attempt.
 	Sent         string      `json:"sent"` // original | encoded
 	FellBack     bool        `json:"fell_back,omitempty"`
 	Codec        string      `json:"codec,omitempty"`
@@ -112,7 +112,7 @@ type Config struct {
 }
 
 // Auditor is a server.Observer. It never blocks or alters traffic: when the
-// queue is full the entry is dropped and counted (spec invariant 9).
+// queue is full the entry is dropped and counted.
 type Auditor struct {
 	cfg     Config
 	queue   chan *server.Exchange

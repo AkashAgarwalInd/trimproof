@@ -10,7 +10,7 @@ import (
 )
 
 // StreamAssembler rebuilds a complete response from a buffered SSE stream,
-// so routes with Tier 1 validation can validate before releasing (§1.3).
+// so routes with Tier 1 validation can validate before releasing.
 type StreamAssembler interface {
 	AssembleStream(req *ir.Request, sse []byte) (*ir.Response, error)
 }

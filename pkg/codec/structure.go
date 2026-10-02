@@ -41,7 +41,7 @@ type Table struct {
 	Rows    []map[string]any
 }
 
-// AsTable applies the shared part of Gate 1 (spec §5): v must be a non-empty
+// AsTable applies the shared part of Gate 1: v must be a non-empty
 // array of non-empty objects with non-empty keys. Under Strict every row has the same key set.
 // Under Union the columns are the union of all keys. With primitivesOnly,
 // nested containers are rejected. Columns must be kind-consistent; null is

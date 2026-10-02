@@ -31,7 +31,7 @@ func (Codec) Version() string { return "toon-go@863710a7626b" }
 func (Codec) Primer() string  { return primer }
 
 // Lossless is false under Union: toon-go would encode missing keys
-// differently from nulls, but Union tables are still declared lossy by spec.
+// differently from nulls, but Union tables are still declared lossy.
 func (Codec) Lossless(mode codec.SchemaMode) bool { return mode == codec.Strict }
 
 // Check applies Gate 1 for TOON: an array of uniform objects (nesting allowed)

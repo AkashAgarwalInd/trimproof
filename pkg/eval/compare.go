@@ -1,5 +1,5 @@
 // Package eval implements shadow paired evaluation and the per-route
-// promotion state machine (spec §8), the product's differentiator.
+// promotion state machine, the product's differentiator.
 package eval
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
-// Agreement holds the per-pair metrics (spec §8.2).
+// Agreement holds the per-pair metrics.
 type Agreement struct {
 	// Agree is the primary binary metric used for promotion: same tool
 	// calls (name + canonical args) and the same structured output or

@@ -44,8 +44,8 @@ type jwtClaims struct {
 
 var errNoIdentity = errors.New("no identity")
 
-// Identify builds the SecurityContext from trusted ingress data only
-// (spec invariant 8). Identity fields inside the request body are never read.
+// Identify builds the SecurityContext from trusted ingress data only.
+// Identity fields inside the request body are never read.
 func Identify(r *http.Request, mode IdentityMode, key []byte, now time.Time) (validator.SecurityContext, error) {
 	switch mode {
 	case IdentityTrustedHeaders:

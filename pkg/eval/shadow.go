@@ -34,8 +34,8 @@ type Config struct {
 	ControlFraction float64
 	QueueSize       int
 	Workers         int
-	// Per-provider budget for evaluation traffic, separate from production
-	// (spec §8.1): requests per second, burst, and max in-flight requests.
+	// Per-provider budget for evaluation traffic, separate from production:
+	// requests per second, burst, and max in-flight requests.
 	RPS         float64
 	Burst       int
 	MaxInFlight int

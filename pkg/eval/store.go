@@ -18,7 +18,7 @@ const (
 	Control   PairKind = "CONTROL"   // JSON arm vs a second JSON arm
 )
 
-// EvaluationPair is one paired observation (spec §8.3).
+// EvaluationPair is one paired observation.
 type EvaluationPair struct {
 	ID           string    `json:"id"`
 	Time         time.Time `json:"time"`

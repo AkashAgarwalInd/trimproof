@@ -12,7 +12,7 @@ go run ./cmd/bench report -in bench/results/phase0-2026-10-02.jsonl
 
 ## Verdict: GO for TOON as the default codec
 
-The spec's go criterion (§12) is a ≥20% input-token reduction with accuracy within noise. TOON meets it on both models that have usable sample sizes.
+The go criterion is a ≥20% input-token reduction with accuracy within noise. TOON meets it on both models that have usable sample sizes.
 
 | model | TOON input tokens vs compact JSON | Δ accuracy | noise floor (JSON vs JSON) | verdict |
 |---|---:|---:|---:|---|
@@ -37,7 +37,7 @@ The spec's go criterion (§12) is a ≥20% input-token reduction with accuracy w
 
 - The nemotron tabular drop is not statistically significant at n=46, but it is 4× the model's noise floor.
 - The same format is neutral on gpt-oss.
-- This is exactly the case for trimproof's core design. Whether a format is safe depends on the model and the route. It cannot be decided once, globally, so non-default codecs are enabled only through per-route shadow evaluation and promotion (§8).
+- This is exactly the case for trimproof's core design. Whether a format is safe depends on the model and the route. It cannot be decided once, globally, so non-default codecs are enabled only through per-route shadow evaluation and promotion.
 - CSV is not offered as a gateway codec, because it cannot preserve JSON types losslessly. It is benchmarked only as a lower bound on tokens.
 
 ## What this benchmark proves, and what it does not
@@ -67,7 +67,7 @@ The spec's go criterion (§12) is a ≥20% input-token reduction with accuracy w
   - lookups are 100% in all formats.
   - Future benchmarks should weight aggregation-style questions more heavily.
 
-## Effect on the promotion defaults (spec §14)
+## Effect on the promotion defaults
 
 Keep `NMin=200`, `NControlMin=50`, `ε=0.02` and `α=0.05`:
 - The measured JSON-vs-JSON flip rate of 2–6.5% confirms that the noise floor must be measured per route, not assumed.

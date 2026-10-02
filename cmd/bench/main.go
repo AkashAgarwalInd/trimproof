@@ -1,4 +1,4 @@
-// Command bench runs the Phase 0 kill-or-go benchmark (spec §12).
+// Command bench runs the Phase 0 kill-or-go benchmark.
 //
 //	bench tokens                       offline o200k token table (no network)
 //	bench run -targets openai:MODEL    live calls; appends to -out JSONL (resumable)

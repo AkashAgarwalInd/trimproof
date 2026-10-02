@@ -59,7 +59,7 @@ func pct(base, x int) string {
 	return fmt.Sprintf("%+.1f%%", 100*float64(x-base)/float64(base))
 }
 
-// GoCriteria are the Phase 0 thresholds (spec §12).
+// GoCriteria are the Phase 0 thresholds.
 type GoCriteria struct {
 	MinReduction float64 // e.g. 0.20 on the data-heavy prompt
 	Alpha        float64 // McNemar significance level

@@ -46,7 +46,7 @@ type Decision struct {
 	NetSavings   float64 // (JSON − Enc − Primer) / JSON
 	// ApplyToProduction is true when the route is ENABLED or MANUAL.
 	// ShadowOnly is true when the route is in SHADOW: the transform is used
-	// only on the shadow arm (spec §5 Gate 2).
+	// only on the shadow arm.
 	ApplyToProduction bool
 	ShadowOnly        bool
 }

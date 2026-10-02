@@ -1,4 +1,4 @@
-// Package canonical implements trimproof's canonical JSON form (spec §2.1):
+// Package canonical implements trimproof's canonical JSON form:
 // compact output, object keys sorted by byte order at every depth, numbers kept
 // as their exact source text, and no HTML escaping.
 //

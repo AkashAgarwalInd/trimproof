@@ -1,4 +1,4 @@
-// Package codectest holds cross-codec contract tests (spec §6, §13).
+// Package codectest holds cross-codec contract tests.
 package codectest
 
 import (
@@ -115,7 +115,7 @@ func TestEligibility(t *testing.T) {
 	}
 }
 
-// Spec §13: byte-exact numeric golden test through the tabular codec.
+// Byte-exact numeric golden test through the tabular codec.
 func TestTabularNumericGolden(t *testing.T) {
 	tab, _ := codec.Get("tabular")
 	in := `[{"a":9007199254740993,"b":-0,"c":88.0,"d":1e400,"e":0.1000,"f":123456789012345678901234567890}]`

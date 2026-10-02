@@ -1,10 +1,10 @@
 // Package policy holds per-route policy types and the four-gate
-// representation decision engine (spec §4.1, §5).
+// representation decision engine.
 package policy
 
 import "github.com/AkashAgarwalInd/trimproof/pkg/codec"
 
-// PromotionState is a route's position in the promotion state machine (§8.4).
+// PromotionState is a route's position in the promotion state machine.
 type PromotionState int
 
 const (
@@ -27,7 +27,7 @@ func (s PromotionState) String() string {
 }
 
 // LossyOptimizationPolicy opts a route into lossy transforms. All fields
-// default to false (spec invariant 3).
+// default to false.
 type LossyOptimizationPolicy struct {
 	AllowUnion bool
 }

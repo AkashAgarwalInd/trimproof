@@ -9,7 +9,7 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
-// ScopeAuthorizer is the built-in authorizer (spec §7.3):
+// ScopeAuthorizer is the built-in authorizer:
 //   - the caller needs scope "action:<tool>" (or "action:*");
 //   - every tenant-bearing argument, at any depth, must equal the caller's
 //     TenantID;

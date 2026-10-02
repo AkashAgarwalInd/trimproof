@@ -14,8 +14,8 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/server"
 )
 
-// Thresholds parameterize the promotion state machine (spec §8.4).
-// Defaults should be revisited with Phase 0 data (spec §14).
+// Thresholds parameterize the promotion state machine.
+// The defaults are supported by Phase 0 data (bench/results/REPORT.md).
 type Thresholds struct {
 	NMin        int     // minimum valid treatment pairs before promotion
 	NControlMin int     // minimum valid control pairs (noise floor estimate)
@@ -197,8 +197,7 @@ func (p *Promoter) transition(tenant, route string, from, to policy.PromotionSta
 
 // Observe implements server.Observer: it tracks first-attempt Tier 1
 // failures of transformed requests against the route's canonical-JSON
-// baseline and demotes an ENABLED route at once on a significant excess
-// (spec §8.4, demotion signals).
+// baseline and demotes an ENABLED route at once on a significant excess.
 func (p *Promoter) Observe(_ context.Context, x *server.Exchange) {
 	if x.Route == nil || x.Tier1 == nil || x.Decision == nil {
 		return

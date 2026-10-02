@@ -1,5 +1,5 @@
 // Package provider defines the adapter interface between provider wire
-// formats and the IR (spec §4).
+// formats and the IR.
 package provider
 
 import (

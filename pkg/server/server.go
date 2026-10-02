@@ -1,4 +1,4 @@
-// Package server is the trimproof HTTP gateway (spec §3): routing,
+// Package server is the trimproof HTTP gateway: routing,
 // identity, policy lookup, representation gates, upstream forwarding and
 // Tier 1 validation.
 package server
@@ -156,7 +156,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 		req.Mark(loc)
 	}
 
-	// Gates (spec §5).
+	// Gates.
 	blocks := req.DataBlocks()
 	payloads := make([][]byte, len(blocks))
 	for i, b := range blocks {
@@ -195,7 +195,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 		return
 	}
 	// Provider errors pass through untouched and never trigger a
-	// representation fallback (spec invariant 12).
+	// representation fallback.
 	if status != http.StatusOK || x.Route.Validator == nil {
 		if status == http.StatusOK && !req.Stream {
 			x.Response, _ = ad.ParseResponse(req, respBody)
@@ -205,7 +205,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 		return
 	}
 
-	// Tier 1 (spec §7).
+	// Tier 1.
 	resp, res := s.validate(r.Context(), ad, req, respBody, x.Route.Validator, sec)
 	if !res.OK && x.Sent == "encoded" && pol.AllowFallbackRetry {
 		x.FellBack, x.Sent = true, "original"

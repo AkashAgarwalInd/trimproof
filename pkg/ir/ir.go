@@ -1,4 +1,4 @@
-// Package ir is the provider-neutral request/response model (spec §4).
+// Package ir is the provider-neutral request/response model.
 //
 // Adapters parse wire requests into IR for analysis only. Rendering patches
 // the original wire body in place, so fields the IR does not model survive,

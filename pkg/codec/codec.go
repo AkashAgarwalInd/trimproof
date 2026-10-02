@@ -1,4 +1,4 @@
-// Package codec defines the pluggable representation interface (spec §4, §6)
+// Package codec defines the pluggable representation interface
 // and the structural eligibility rules shared by all codecs (Gate 1).
 package codec
 

@@ -1,4 +1,4 @@
-// Package bench implements the Phase 0 kill-or-go benchmark (spec §12):
+// Package bench implements the Phase 0 kill-or-go benchmark:
 // synthetic but realistic tool-result tables with programmatically known
 // answers, rendered in several formats and sent to real models.
 package bench
