@@ -159,7 +159,7 @@ func main() {
 			// The gateway forwards the target's own key to its upstream.
 			key := ts[0].Client.(*bench.OpenAI).APIKey
 			cfg.Gateway = &bench.OpenAI{BaseURL: strings.TrimRight(*viaGateway, "/"), APIKey: key,
-				HTTP: &http.Client{Timeout: 6 * time.Minute}, Header: map[string]string{"X-Trimproof-Route": *route}}
+				HTTP: &http.Client{Timeout: bench.CallTimeout + time.Minute}, Header: map[string]string{"X-Trimproof-Route": *route}}
 		}
 		manifest(strings.TrimSuffix(*out, ".jsonl") + ".manifest.json")
 		if err := bench.Run(ctx, cfg); err != nil {
@@ -257,7 +257,7 @@ func main() {
 			*n = 300
 		}
 		c := &bench.OpenAI{BaseURL: strings.TrimRight(*gateway, "/"), APIKey: os.Getenv("OPENAI_API_KEY"),
-			HTTP: &http.Client{Timeout: 6 * time.Minute}, Header: map[string]string{"X-Trimproof-Route": *route}}
+			HTTP: &http.Client{Timeout: bench.CallTimeout + time.Minute}, Header: map[string]string{"X-Trimproof-Route": *route}}
 		st := bench.Drive(ctx, bench.DriveConfig{Client: c, Model: *model, Datasets: ds, N: *n, RPM: *rpm,
 			MaxTokens: *maxTok, UntilEncoded: *untilEncoded})
 		fmt.Printf("sent %d, failed %d, correct %d, served encoded %d\n", st.Sent, st.Failed, st.Correct, st.Encoded)
@@ -267,7 +267,7 @@ func main() {
 }
 
 func parseTargets(s string, allowPaid bool) ([]bench.Target, error) {
-	hc := &http.Client{Timeout: 6 * time.Minute}
+	hc := &http.Client{Timeout: bench.CallTimeout + time.Minute}
 	var out []bench.Target
 	for _, t := range split(s) {
 		prov, model, ok := strings.Cut(t, ":")

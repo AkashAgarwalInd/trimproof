@@ -241,7 +241,7 @@ func Judge(ctx context.Context, cfg JudgeConfig) error {
 			var err error
 			for attempt := 0; attempt < 3; attempt++ {
 				var res *Result
-				cctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+				cctx, cancel := context.WithTimeout(ctx, CallTimeout)
 				res, err = cfg.Client.Do(cctx, Call{Model: cfg.Model, System: judgePrompt, Question: prompt,
 					Tool: d.Tool, ToolArgs: d.ToolArgs, ToolResult: compactJSON(d), MaxTokens: cfg.MaxTokens})
 				cancel()

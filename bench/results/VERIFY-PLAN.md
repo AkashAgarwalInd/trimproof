@@ -487,3 +487,5 @@ The rule cannot tell "the forms hurt" from "nemotron runs out of output tokens o
 - **Otherwise** max_tokens stays 4,096, and toonx's extra output on nemotron is reported as a finding.
 
 Records go to `verify-2026-10/diag/`, one file per repeat and limit.
+
+**Outcome** ([PILOT.md](verify-2026-10/PILOT.md#pilot-2-and-its-diagnostic-2026-10-02)): toonx 1 failed as often as toonx 2 at 4,096 (8 and 9 of 9 cut off), and both answered 9 of 9 at 16,384. So **toonx 2 is kept**, and **every full-run command uses `-max-tokens 16384`**. The per-call timeout in the harness is now 12 minutes.

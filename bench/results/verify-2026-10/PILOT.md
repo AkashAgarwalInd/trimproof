@@ -51,3 +51,43 @@ With 5 questions per arm, none of these numbers support a claim.
 - **Smoke checks today:** 30 calls.
 - **Pilot:** 53 records. The empty nemotron reply may have been retried up to twice under the registered retry rule.
 - **Earlier smoke check:** 20 calls, disclosed in Amendment 1.
+
+# Pilot 2 and its diagnostic, 2026-10-02
+
+Pre-registered in [Amendment 4](../VERIFY-PLAN.md#amendment-4-toonx-2-before-any-result) and [Amendment 5](../VERIFY-PLAN.md#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result). These runs check the run itself; they are not results.
+
+## Pilot 2: toonx 2 on its new forms ([pilot2.jsonl](pilot2.jsonl))
+
+| model | JSON correct | toonx 2 correct | input saved | input + output saved |
+|---|---:|---:|---:|---:|
+| gpt-oss-20b | 5/6 | 5/6 | 38.8% | 33.7% |
+| nemotron-3-super | 6/6 | 4/6 | 35.8% | 19.5% |
+| glm-5.3-flash | 6/6 | 6/6 | 38.4% | 35.9% |
+| **all** | **17/18** | **15/18** | **37.6%** | **29.0%** |
+
+- **Lookups that needed a new form:** every model answered correctly, 12 of 12. That covers rebuilding a URL from its prefix and reading a field from the `all rows` line.
+- **Both toonx misses:** nemotron used all 4,096 output tokens and gave no answer, on a count and on a "largest value" question.
+- **Amendment 4's rule fired:** toonx was 2 short of JSON, against an allowed 1.
+
+## Diagnostic: nemotron-3-super, 3 failing questions × 3 repeats ([diag/](diag/))
+
+| output limit | format | correct | cut off at the limit | mean output tokens |
+|---:|---|---:|---:|---:|
+| 4,096 | json-compact | 9/9 | 0 | 738 |
+| 4,096 | toonx 1 (`toonx1`) | 1/9 | 8 | 4,072 |
+| 4,096 | toonx 2 | 0/9 | 9 | 4,096 |
+| 16,384 | toonx 1 (`toonx1`) | 9/9 | 0 | 10,341 |
+| 16,384 | toonx 2 | 9/9 | 0 | 10,486 |
+
+**Outcome under Amendment 5's fixed reading:**
+- **The forms are not the cause.** toonx 1 failed as often as toonx 2: 1 more failure for toonx 2, against a threshold of 3. **toonx 2 is kept.** The write-up must say that pilot 2's rule fired and why it was set aside.
+- **The output limit is the cause.** At 16,384 both versions answered 9 of 9. **The full run uses max_tokens 16,384 for every model and arm.**
+
+**Notes:**
+- **Timeouts:** 3 calls at 16,384 hit the harness's 5-minute per-call timeout and were retried once by the normal resume. All 3 succeeded. As a harness fix, the per-call timeout is now 12 minutes.
+- **Finding to report:** on these count and largest-value questions nemotron writes about 14× more output tokens on toonx (about 10,400) than on JSON (738). Its answers are right when it has room. Over both pilots, the other models write 2–4× more output on toonx lookups (about +250 tokens each) and about the same on counts.
+- **Manifests:** the two runs per output file overwrote each other's `.manifest.json`, so those files are not kept. The question IDs are listed in Amendment 5.
+
+**Calls:**
+- Pilot 2: 36 calls.
+- Diagnostic: 45 calls plus 3 retries.

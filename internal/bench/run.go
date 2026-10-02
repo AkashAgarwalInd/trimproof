@@ -48,6 +48,10 @@ func (r Record) key() string {
 	return r.Provider + "|" + r.Model + "|" + r.QuestionID + "|" + r.Format
 }
 
+// CallTimeout bounds one model call. At 16,384 output tokens a reasoning
+// model can think for more than 5 minutes.
+const CallTimeout = 12 * time.Minute
+
 // Target is a provider/model pair to benchmark.
 type Target struct {
 	Provider string
@@ -170,7 +174,7 @@ func Run(ctx context.Context, cfg RunConfig) error {
 				// Some serving stacks intermittently return empty content;
 				// retry so a transport artifact is not scored as a format effect.
 				for attempt := 0; attempt < 3; attempt++ {
-					cctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+					cctx, cancel := context.WithTimeout(ctx, CallTimeout)
 					res, err = client.Do(cctx, Call{
 						Model: j.t.Model, System: systemFor(j.q), Primer: primer, Question: j.q.Text,
 						Tool: j.d.Tool, ToolArgs: j.d.ToolArgs, ToolResult: text, MaxTokens: cfg.MaxTokens,
