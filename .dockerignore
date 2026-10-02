@@ -1,0 +1,5 @@
+.git
+bin
+bench/results
+Idea.md
+*.jsonl

@@ -1,0 +1,41 @@
+{
+  "model": "openai/gpt-oss-20b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Which customer has the largest single refunded order? Answer with the customer name only."
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_1",
+          "type": "function",
+          "function": {
+            "name": "list_orders",
+            "arguments": "{}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_1",
+      "content": "[{\"order_id\": 1000, \"customer\": \"Acme Corp\", \"status\": \"pending\", \"amount\": \"164.50\", \"region\": \"ap-south-1\"}, {\"order_id\": 1001, \"customer\": \"Globex\", \"status\": \"paid\", \"amount\": \"84.68\", \"region\": \"eu-west-1\"}, {\"order_id\": 1002, \"customer\": \"Initech\", \"status\": \"pending\", \"amount\": \"606.07\", \"region\": \"ap-south-1\"}, {\"order_id\": 1003, \"customer\": \"Umbrella\", \"status\": \"paid\", \"amount\": \"48.11\", \"region\": \"us-east-1\"}, {\"order_id\": 1004, \"customer\": \"Stark Holdings\", \"status\": \"pending\", \"amount\": \"81.30\", \"region\": \"eu-west-1\"}, {\"order_id\": 1005, \"customer\": \"Wayne Enterprises\", \"status\": \"refunded\", \"amount\": \"444.07\", \"region\": \"ap-south-1\"}, {\"order_id\": 1006, \"customer\": \"Hooli\", \"status\": \"paid\", \"amount\": \"238.80\", \"region\": \"ap-south-1\"}, {\"order_id\": 1007, \"customer\": \"Soylent\", \"status\": \"refunded\", \"amount\": \"73.73\", \"region\": \"ap-south-1\"}, {\"order_id\": 1008, \"customer\": \"Acme Corp\", \"status\": \"pending\", \"amount\": \"60.28\", \"region\": \"eu-west-1\"}, {\"order_id\": 1009, \"customer\": \"Globex\", \"status\": \"refunded\", \"amount\": \"889.17\", \"region\": \"us-east-1\"}, {\"order_id\": 1010, \"customer\": \"Initech\", \"status\": \"pending\", \"amount\": \"157.69\", \"region\": \"eu-west-1\"}, {\"order_id\": 1011, \"customer\": \"Umbrella\", \"status\": \"refunded\", \"amount\": \"325.71\", \"region\": \"ap-south-1\"}, {\"order_id\": 1012, \"customer\": \"Stark Holdings\", \"status\": \"paid\", \"amount\": \"115.74\", \"region\": \"ap-south-1\"}, {\"order_id\": 1013, \"customer\": \"Wayne Enterprises\", \"status\": \"refunded\", \"amount\": \"202.47\", \"region\": \"eu-west-1\"}, {\"order_id\": 1014, \"customer\": \"Hooli\", \"status\": \"refunded\", \"amount\": \"739.08\", \"region\": \"ap-south-1\"}, {\"order_id\": 1015, \"customer\": \"Soylent\", \"status\": \"paid\", \"amount\": \"643.26\", \"region\": \"us-east-1\"}, {\"order_id\": 1016, \"customer\": \"Acme Corp\", \"status\": \"refunded\", \"amount\": \"554.54\", \"region\": \"us-east-1\"}, {\"order_id\": 1017, \"customer\": \"Globex\", \"status\": \"pending\", \"amount\": \"609.58\", \"region\": \"us-east-1\"}, {\"order_id\": 1018, \"customer\": \"Initech\", \"status\": \"pending\", \"amount\": \"264.23\", \"region\": \"ap-south-1\"}, {\"order_id\": 1019, \"customer\": \"Umbrella\", \"status\": \"paid\", \"amount\": \"93.73\", \"region\": \"us-east-1\"}, {\"order_id\": 1020, \"customer\": \"Stark Holdings\", \"status\": \"refunded\", \"amount\": \"516.43\", \"region\": \"ap-south-1\"}, {\"order_id\": 1021, \"customer\": \"Wayne Enterprises\", \"status\": \"pending\", \"amount\": \"304.77\", \"region\": \"eu-west-1\"}, {\"order_id\": 1022, \"customer\": \"Hooli\", \"status\": \"paid\", \"amount\": \"534.53\", \"region\": \"eu-west-1\"}, {\"order_id\": 1023, \"customer\": \"Soylent\", \"status\": \"pending\", \"amount\": \"165.62\", \"region\": \"us-east-1\"}, {\"order_id\": 1024, \"customer\": \"Acme Corp\", \"status\": \"paid\", \"amount\": \"694.09\", \"region\": \"ap-south-1\"}, {\"order_id\": 1025, \"customer\": \"Globex\", \"status\": \"refunded\", \"amount\": \"818.40\", \"region\": \"us-east-1\"}, {\"order_id\": 1026, \"customer\": \"Initech\", \"status\": \"refunded\", \"amount\": \"368.76\", \"region\": \"us-east-1\"}, {\"order_id\": 1027, \"customer\": \"Umbrella\", \"status\": \"refunded\", \"amount\": \"826.58\", \"region\": \"eu-west-1\"}, {\"order_id\": 1028, \"customer\": \"Stark Holdings\", \"status\": \"paid\", \"amount\": \"286.60\", \"region\": \"ap-south-1\"}, {\"order_id\": 1029, \"customer\": \"Wayne Enterprises\", \"status\": \"refunded\", \"amount\": \"76.07\", \"region\": \"ap-south-1\"}, {\"order_id\": 1030, \"customer\": \"Hooli\", \"status\": \"refunded\", \"amount\": \"327.82\", \"region\": \"ap-south-1\"}, {\"order_id\": 1031, \"customer\": \"Soylent\", \"status\": \"refunded\", \"amount\": \"851.57\", \"region\": \"us-east-1\"}, {\"order_id\": 1032, \"customer\": \"Acme Corp\", \"status\": \"refunded\", \"amount\": \"405.85\", \"region\": \"us-east-1\"}, {\"order_id\": 1033, \"customer\": \"Globex\", \"status\": \"paid\", \"amount\": \"482.45\", \"region\": \"eu-west-1\"}, {\"order_id\": 1034, \"customer\": \"Initech\", \"status\": \"refunded\", \"amount\": \"129.63\", \"region\": \"eu-west-1\"}, {\"order_id\": 1035, \"customer\": \"Umbrella\", \"status\": \"paid\", \"amount\": \"796.36\", \"region\": \"eu-west-1\"}, {\"order_id\": 1036, \"customer\": \"Stark Holdings\", \"status\": \"refunded\", \"amount\": \"263.50\", \"region\": \"us-east-1\"}, {\"order_id\": 1037, \"customer\": \"Wayne Enterprises\", \"status\": \"pending\", \"amount\": \"92.21\", \"region\": \"us-east-1\"}, {\"order_id\": 1038, \"customer\": \"Hooli\", \"status\": \"pending\", \"amount\": \"572.35\", \"region\": \"eu-west-1\"}, {\"order_id\": 1039, \"customer\": \"Soylent\", \"status\": \"pending\", \"amount\": \"894.70\", \"region\": \"us-east-1\"}]"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "list_orders",
+        "description": "List recent orders",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    }
+  ]
+}

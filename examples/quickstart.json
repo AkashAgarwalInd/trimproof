@@ -1,0 +1,11 @@
+{
+  "routes": [
+    {
+      "tenant_id": "*",
+      "route_id": "demo",
+      "version": "quickstart.1",
+      "codec": "toon",
+      "state": "ENABLED"
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # trimproof
 
+[![ci](https://github.com/AkashAgarwalInd/trimproof/actions/workflows/ci.yml/badge.svg)](https://github.com/AkashAgarwalInd/trimproof/actions/workflows/ci.yml)
+
 **The measured, lossless context optimizer for LLM traffic.**
 
 trimproof is a Go gateway for the Anthropic Messages and OpenAI-compatible Chat Completions APIs. It re-encodes tabular tool results (DB rows, logs, search hits) into token-efficient formats such as [TOON](https://github.com/toon-format/toon) or a strict tabular codec. It switches a route over only after **shadow evaluation on that route's own traffic** shows answers stay as good as with JSON, compared against the model's own noise floor.
@@ -33,23 +35,50 @@ client ──► ingress (TLS, JWT) ──► trimproof ──► Anthropic / Op
 
 ## Quick start
 
+Build and run the gateway with the demo policy. The `demo` route is `ENABLED` with the `toon` codec, and identity is not required, so this works without any ingress:
+
 ```bash
 go build -o bin/gateway ./cmd/gateway
-export TP_IDENTITY_KEY=...            # HS256 key shared with your ingress
-bin/gateway -policies examples/policies.json -listen :8080
+bin/gateway -policies examples/quickstart.json -require-identity=false
 ```
+
+Or run it with Docker:
+
+```bash
+docker build -t trimproof .
+docker run -p 8080:8080 trimproof -require-identity=false
+```
+
+Send a request through it, once on the `demo` route and once on a route that doesn't exist, which passes through unchanged. The example request asks a question about 40 orders that arrive as a tool result:
+
+```bash
+for route in demo none; do
+  curl -s -D - -o /dev/null http://localhost:8080/openai/v1/chat/completions \
+    -H "Authorization: Bearer $OPENAI_API_KEY" -H 'Content-Type: application/json' \
+    -H "X-Trimproof-Route: $route" -d @examples/openai-request.json | grep -i x-trimproof
+done
+```
+
+On NVIDIA NIM `openai/gpt-oss-20b`:
+- the `demo` route reported 1067 prompt tokens instead of 1723 (−38%);
+- both answers were the same and correct.
+
+To use another provider, set `-openai-base` (default `$OPENAI_API_BASE` or `https://api.openai.com/v1`) and change `model` in the request.
+
+### Using it from an SDK
 
 Point SDKs at the gateway:
 - Anthropic: `base_url = http://localhost:8080/anthropic`
 - OpenAI-compatible: `base_url = http://localhost:8080/openai/v1`
 
-Send these headers:
-- `X-Trimproof-Route: <route>`;
-- `X-TP-Identity: <JWT>`, minted by trusted ingress, with claims `tenant_id`, `scope`, `exp`.
+Send `X-Trimproof-Route: <route>` on every request. Provider API keys pass through from the client. Responses carry `X-Trimproof-Representation` (`json` or `toon; est_savings=…`).
 
-Provider API keys pass through from the client. Responses carry `X-Trimproof-Representation` (`json` or `toon; est_savings=…`).
+### In production
 
-Set `OTEL_EXPORTER_OTLP_ENDPOINT` to export metrics: requests, gate rejections, estimated tokens saved, Tier 1 results, fallbacks and promotion transitions.
+- **Identity:** run behind trusted ingress that mints `X-TP-Identity`, an HS256 JWT with claims `tenant_id`, `scope` and `exp`, signed with `TP_IDENTITY_KEY`. Alternatively use `-identity-mode trusted-headers`.
+- **Policies:** start new routes in `SHADOW` (see [`examples/policies.json`](examples/policies.json)). The gateway promotes a route on its own once there is enough evidence.
+- **State:** promotion state, evaluation pairs and audit logs are JSONL files in the working directory (`/data` in the container). Keep them on a volume.
+- **Metrics:** set `OTEL_EXPORTER_OTLP_ENDPOINT` to export metrics: requests, gate rejections, estimated tokens saved, Tier 1 results, fallbacks and promotion transitions.
 
 ## Benchmark (Phase 0)
 

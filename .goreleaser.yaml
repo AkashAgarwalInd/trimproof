@@ -1,0 +1,36 @@
+version: 2
+
+project_name: trimproof
+
+builds:
+  - id: gateway
+    main: ./cmd/gateway
+    binary: trimproof-gateway
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: [-s -w -X main.version={{.Version}}]
+  - id: bench
+    main: ./cmd/bench
+    binary: trimproof-bench
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: [-s -w]
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files: [LICENSE, README.md, examples/*]
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude: ['^docs:', '^test:']

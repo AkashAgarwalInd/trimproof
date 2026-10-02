@@ -15,6 +15,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -34,6 +35,9 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/tokens"
 )
 
+// version is set at build time with -ldflags "-X main.version=...".
+var version = "dev"
+
 func main() {
 	listen := flag.String("listen", ":8080", "listen address")
 	policies := flag.String("policies", "policies.json", "route policy file")
@@ -46,7 +50,12 @@ func main() {
 	auditFile := flag.String("audit-file", "audit.jsonl", "audit log (JSONL); empty disables")
 	transitionsFile := flag.String("transitions-file", "transitions.jsonl", "promotion transitions (JSONL)")
 	evalRPS := flag.Float64("eval-rps", 1, "per-provider evaluation request rate")
+	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
+	if *showVersion {
+		fmt.Println("trimproof-gateway", version)
+		return
+	}
 
 	log := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 	slog.SetDefault(log)
@@ -117,7 +126,7 @@ func main() {
 		defer cancel()
 		srv.Shutdown(shutdown)
 	}()
-	log.Info("trimproof gateway listening", "addr", *listen, "policies", *policies)
+	log.Info("trimproof gateway listening", "addr", *listen, "version", version, "policies", *policies)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fatal(log, "serve", err)
 	}
