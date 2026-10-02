@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/eval"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/tokens"
+	"github.com/AkashAgarwalInd/trimproof/pkg/eval"
+	"github.com/AkashAgarwalInd/trimproof/pkg/tokens"
 )
 
 // TokenReport writes the offline token table: o200k_base counts per format,

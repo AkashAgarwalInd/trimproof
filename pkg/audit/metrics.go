@@ -7,9 +7,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/eval"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/server"
+	"github.com/AkashAgarwalInd/trimproof/pkg/eval"
+	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
+	"github.com/AkashAgarwalInd/trimproof/pkg/server"
 )
 
 // Metrics records OpenTelemetry metrics for every exchange (spec §9):
@@ -29,7 +29,7 @@ type Metrics struct {
 
 // NewMetrics creates instruments on the global meter.
 func NewMetrics() (*Metrics, error) {
-	m := otel.Meter("github.com/AkashAgarwalInd/context-mesh")
+	m := otel.Meter("github.com/AkashAgarwalInd/trimproof")
 	var err error
 	var ms Metrics
 	mk := func(name, desc string) metric.Int64Counter {
@@ -40,17 +40,17 @@ func NewMetrics() (*Metrics, error) {
 		c, err = m.Int64Counter(name, metric.WithDescription(desc))
 		return c
 	}
-	ms.requests = mk("cm.requests", "Requests handled, by route, representation and status")
-	ms.gateRejects = mk("cm.gate.rejections", "Data blocks rejected, by gate")
-	ms.savedTokens = mk("cm.tokens.saved.estimated", "Estimated input tokens saved by encoding (net of primer)")
-	ms.tier1 = mk("cm.tier1.results", "Tier 1 outcomes, by result and step")
-	ms.fallbacks = mk("cm.fallbacks", "Canonical JSON retries after Tier 1 failure of an encoded request")
-	ms.transitions = mk("cm.promotion.transitions", "Route promotion state transitions")
-	ms.inputTokens = mk("cm.tokens.input", "Provider-reported input tokens, by representation")
+	ms.requests = mk("tp.requests", "Requests handled, by route, representation and status")
+	ms.gateRejects = mk("tp.gate.rejections", "Data blocks rejected, by gate")
+	ms.savedTokens = mk("tp.tokens.saved.estimated", "Estimated input tokens saved by encoding (net of primer)")
+	ms.tier1 = mk("tp.tier1.results", "Tier 1 outcomes, by result and step")
+	ms.fallbacks = mk("tp.fallbacks", "Canonical JSON retries after Tier 1 failure of an encoded request")
+	ms.transitions = mk("tp.promotion.transitions", "Route promotion state transitions")
+	ms.inputTokens = mk("tp.tokens.input", "Provider-reported input tokens, by representation")
 	if err != nil {
 		return nil, err
 	}
-	ms.latency, err = m.Float64Histogram("cm.request.duration", metric.WithUnit("s"))
+	ms.latency, err = m.Float64Histogram("tp.request.duration", metric.WithUnit("s"))
 	return &ms, err
 }
 

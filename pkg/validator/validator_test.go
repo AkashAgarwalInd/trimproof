@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
 const refundSchema = `{"type":"object","required":["order_id","amount","tenant_id"],

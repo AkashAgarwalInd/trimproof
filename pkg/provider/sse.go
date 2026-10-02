@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"sort"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
 // StreamAssembler rebuilds a complete response from a buffered SSE stream,

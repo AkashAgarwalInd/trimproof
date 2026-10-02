@@ -1,4 +1,4 @@
-// Package toon wraps github.com/toon-format/toon-go as a context-mesh codec.
+// Package toon wraps github.com/toon-format/toon-go as a trimproof codec.
 //
 // toon-go routes every number through float64, which silently changes
 // 9007199254740993, turns 1e400 into null and rewrites 88.0 as 88. To keep
@@ -14,8 +14,8 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/canonical"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
+	"github.com/AkashAgarwalInd/trimproof/pkg/canonical"
+	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
 	toongo "github.com/toon-format/toon-go"
 )
 

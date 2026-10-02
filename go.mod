@@ -1,4 +1,4 @@
-module github.com/AkashAgarwalInd/context-mesh
+module github.com/AkashAgarwalInd/trimproof
 
 go 1.27.1
 

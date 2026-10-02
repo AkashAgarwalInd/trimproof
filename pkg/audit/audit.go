@@ -14,11 +14,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/server"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/validator"
+	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
+	"github.com/AkashAgarwalInd/trimproof/pkg/server"
+	"github.com/AkashAgarwalInd/trimproof/pkg/validator"
 )
 
 // BlockGate summarizes the gate outcome for one data block.

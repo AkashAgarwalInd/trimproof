@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AkashAgarwalInd/context-mesh/internal/bench"
+	"github.com/AkashAgarwalInd/trimproof/internal/bench"
 )
 
 func main() {
@@ -71,7 +71,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("# context-mesh Phase 0 benchmark")
+		fmt.Println("# trimproof Phase 0 benchmark")
 		fmt.Println()
 		if err := bench.TokenReport(os.Stdout, ds); err != nil {
 			log.Fatal(err)

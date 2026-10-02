@@ -18,11 +18,11 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/time/rate"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/provider"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/server"
+	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
+	"github.com/AkashAgarwalInd/trimproof/pkg/provider"
+	"github.com/AkashAgarwalInd/trimproof/pkg/server"
 )
 
 // Config configures the shadow evaluator.

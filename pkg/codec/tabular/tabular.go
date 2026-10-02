@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/canonical"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
+	"github.com/AkashAgarwalInd/trimproof/pkg/canonical"
+	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
 )
 
 const primer = `Some tool results are encoded as tables to save space. A table's first line is a JSON array of column names; each following line is a JSON array of one row's values in the same column order. A null value means the field is null.`

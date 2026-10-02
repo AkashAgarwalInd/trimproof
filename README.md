@@ -1,22 +1,22 @@
-# context-mesh
+# trimproof
 
 **The measured, lossless context optimizer for LLM traffic.**
 
-context-mesh is a Go gateway for the Anthropic Messages and OpenAI-compatible Chat Completions APIs. It re-encodes tabular tool results (DB rows, logs, search hits) into token-efficient formats such as [TOON](https://github.com/toon-format/toon) or a strict tabular codec. It switches a route over only after **shadow evaluation on that route's own traffic** shows answers stay as good as with JSON, compared against the model's own noise floor.
+trimproof is a Go gateway for the Anthropic Messages and OpenAI-compatible Chat Completions APIs. It re-encodes tabular tool results (DB rows, logs, search hits) into token-efficient formats such as [TOON](https://github.com/toon-format/toon) or a strict tabular codec. It switches a route over only after **shadow evaluation on that route's own traffic** shows answers stay as good as with JSON, compared against the model's own noise floor.
 
-> Format effects vary a lot by model and task. Published agentic benchmarks report anywhere from −36pp to +13pp accuracy for TOON. So context-mesh never ships an optimization it has not measured on your traffic.
+> Format effects vary a lot by model and task. Published agentic benchmarks report anywhere from −36pp to +13pp accuracy for TOON. So trimproof never ships an optimization it has not measured on your traffic.
 
 Full specification: [`Idea.md`](Idea.md). Phase 0 benchmark: [`bench/results/REPORT.md`](bench/results/REPORT.md).
 
 ## How it works
 
 ```
-client ──► ingress (TLS, JWT) ──► context-mesh ──► Anthropic / OpenAI-compatible upstream
+client ──► ingress (TLS, JWT) ──► trimproof ──► Anthropic / OpenAI-compatible upstream
                                    │ parse → 4 gates → encode → forward → Tier 1 validate
                                    └─► observers: shadow evaluator · promotion · audit · OTel
 ```
 
-1. **Data-only, request-side transforms.** Only `tool_result` / `role:tool` content (and blocks the client marks with `X-Context-Mesh-Data`) that parse as uniform JSON arrays are eligible. System prompts, tool definitions, assistant turns and tool-call arguments are never touched. Ineligible requests are forwarded **byte-identical**.
+1. **Data-only, request-side transforms.** Only `tool_result` / `role:tool` content (and blocks the client marks with `X-Trimproof-Data`) that parse as uniform JSON arrays are eligible. System prompts, tool definitions, assistant turns and tool-call arguments are never touched. Ineligible requests are forwarded **byte-identical**.
 2. **Four gates:** structural → opt-in → minimum size → net savings. Net savings are measured against *compact canonical* JSON, and the format primer's token cost is included.
 3. **Lossless by construction.** Every codec satisfies `Decode(Encode(x)) == canonical(x)` byte for byte, enforced by fuzz tests. Numbers keep their exact text (`9007199254740993`, `88.0`, `1e400`). toon-go silently loses such numbers, so the `toon` codec admits only payloads that survive its round trip and verifies every encoding.
 4. **Promotion state machine per route:** `OFF → SHADOW → ENABLED` (plus `MANUAL`).
@@ -35,7 +35,7 @@ client ──► ingress (TLS, JWT) ──► context-mesh ──► Anthropic /
 
 ```bash
 go build -o bin/gateway ./cmd/gateway
-export CM_IDENTITY_KEY=...            # HS256 key shared with your ingress
+export TP_IDENTITY_KEY=...            # HS256 key shared with your ingress
 bin/gateway -policies examples/policies.json -listen :8080
 ```
 
@@ -44,10 +44,10 @@ Point SDKs at the gateway:
 - OpenAI-compatible: `base_url = http://localhost:8080/openai/v1`
 
 Send these headers:
-- `X-Context-Mesh-Route: <route>`;
-- `X-CM-Identity: <JWT>`, minted by trusted ingress, with claims `tenant_id`, `scope`, `exp`.
+- `X-Trimproof-Route: <route>`;
+- `X-TP-Identity: <JWT>`, minted by trusted ingress, with claims `tenant_id`, `scope`, `exp`.
 
-Provider API keys pass through from the client. Responses carry `X-Context-Mesh-Representation` (`json` or `toon; est_savings=…`).
+Provider API keys pass through from the client. Responses carry `X-Trimproof-Representation` (`json` or `toon; est_savings=…`).
 
 Set `OTEL_EXPORTER_OTLP_ENDPOINT` to export metrics: requests, gate rejections, estimated tokens saved, Tier 1 results, fallbacks and promotion transitions.
 

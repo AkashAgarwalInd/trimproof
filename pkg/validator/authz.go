@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
 // ScopeAuthorizer is the built-in authorizer (spec §7.3):

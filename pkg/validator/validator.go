@@ -13,7 +13,7 @@ import (
 
 	"github.com/santhosh-tekuri/jsonschema/v6"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
 // SecurityContext is the caller identity, taken only from trusted ingress
@@ -123,7 +123,7 @@ func compile(name string, raw []byte) (*jsonschema.Schema, error) {
 		return nil, err
 	}
 	c := jsonschema.NewCompiler()
-	url := "mem://context-mesh/" + name + ".json"
+	url := "mem://trimproof/" + name + ".json"
 	if err := c.AddResource(url, doc); err != nil {
 		return nil, err
 	}

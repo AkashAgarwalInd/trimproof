@@ -14,11 +14,11 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/tabular"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/server"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/validator"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
+	"github.com/AkashAgarwalInd/trimproof/pkg/server"
+	"github.com/AkashAgarwalInd/trimproof/pkg/validator"
 )
 
 func resp(text string, calls ...ir.ToolCall) *ir.Response {
@@ -195,8 +195,8 @@ func TestLifecycle(t *testing.T) {
 
 	// 1. SHADOW: production stays JSON; pairs accumulate; route promotes.
 	for i := 0; i < 40 && state() == policy.Shadow; i++ {
-		if r := send(); r.Header.Get("X-Context-Mesh-Representation") != "json" {
-			t.Fatalf("SHADOW served %q", r.Header.Get("X-Context-Mesh-Representation"))
+		if r := send(); r.Header.Get("X-Trimproof-Representation") != "json" {
+			t.Fatalf("SHADOW served %q", r.Header.Get("X-Trimproof-Representation"))
 		}
 		ev.Drain(context.Background())
 	}
@@ -209,8 +209,8 @@ func TestLifecycle(t *testing.T) {
 	}
 
 	// 2. ENABLED: production is encoded.
-	if r := send(); !strings.HasPrefix(r.Header.Get("X-Context-Mesh-Representation"), "tabular") {
-		t.Fatalf("ENABLED served %q", r.Header.Get("X-Context-Mesh-Representation"))
+	if r := send(); !strings.HasPrefix(r.Header.Get("X-Trimproof-Representation"), "tabular") {
+		t.Fatalf("ENABLED served %q", r.Header.Get("X-Trimproof-Representation"))
 	}
 	ev.Drain(context.Background())
 

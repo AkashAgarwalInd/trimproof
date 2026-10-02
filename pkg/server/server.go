@@ -1,4 +1,4 @@
-// Package server is the context-mesh HTTP gateway (spec §3): routing,
+// Package server is the trimproof HTTP gateway (spec §3): routing,
 // identity, policy lookup, representation gates, upstream forwarding and
 // Tier 1 validation.
 package server
@@ -15,14 +15,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/provider"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/provider/anthropic"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/provider/openai"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/tokens"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/validator"
+	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
+	"github.com/AkashAgarwalInd/trimproof/pkg/provider"
+	"github.com/AkashAgarwalInd/trimproof/pkg/provider/anthropic"
+	"github.com/AkashAgarwalInd/trimproof/pkg/provider/openai"
+	"github.com/AkashAgarwalInd/trimproof/pkg/tokens"
+	"github.com/AkashAgarwalInd/trimproof/pkg/validator"
 )
 
 // MaxBodyBytes bounds request bodies read by the gateway.
@@ -178,7 +178,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 			sendBody, x.Sent = enc, "encoded"
 		}
 	}
-	w.Header().Set("X-Context-Mesh-Representation", representation(x.Sent, d))
+	w.Header().Set("X-Trimproof-Representation", representation(x.Sent, d))
 
 	// Streaming without Tier 1: pass through as it arrives.
 	if req.Stream && x.Route.Validator == nil {
@@ -209,7 +209,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 	resp, res := s.validate(r.Context(), ad, req, respBody, x.Route.Validator, sec)
 	if !res.OK && x.Sent == "encoded" && pol.AllowFallbackRetry {
 		x.FellBack, x.Sent = true, "original"
-		w.Header().Set("X-Context-Mesh-Representation", "json (fallback)")
+		w.Header().Set("X-Trimproof-Representation", "json (fallback)")
 		status, hdr, respBody, err = s.roundTrip(r.Context(), upstream, x.Header, body)
 		x.SentBody = body
 		if err != nil {
@@ -227,7 +227,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, ad provider.Adap
 	x.Response, x.Tier1 = resp, &res
 	if !res.OK {
 		x.Status = http.StatusUnprocessableEntity
-		writeError(w, http.StatusUnprocessableEntity, "context_mesh_validation_failed",
+		writeError(w, http.StatusUnprocessableEntity, "trimproof_validation_failed",
 			"the model response failed Tier 1 validation", res.Violations)
 		return
 	}
@@ -288,13 +288,13 @@ func representation(sent string, d *policy.Decision) string {
 }
 
 // upstreamHeaders copies client headers for forwarding, dropping hop-by-hop
-// headers and all context-mesh control/identity headers.
+// headers and all trimproof control/identity headers.
 func upstreamHeaders(in http.Header) http.Header {
 	out := http.Header{}
 	for k, vs := range in {
 		ck := http.CanonicalHeaderKey(k)
 		switch {
-		case strings.HasPrefix(ck, "X-Cm-"), strings.HasPrefix(ck, "X-Context-Mesh-"):
+		case strings.HasPrefix(ck, "X-Tp-"), strings.HasPrefix(ck, "X-Trimproof-"):
 			continue
 		}
 		switch ck {

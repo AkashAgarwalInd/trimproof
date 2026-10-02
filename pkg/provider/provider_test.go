@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/provider"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/provider/anthropic"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/provider/openai"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/provider"
+	"github.com/AkashAgarwalInd/trimproof/pkg/provider/anthropic"
+	"github.com/AkashAgarwalInd/trimproof/pkg/provider/openai"
 )
 
 const anthropicReq = `{"model":"claude-x","max_tokens":100,"metadata":{"user_id":"u1"},

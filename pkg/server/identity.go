@@ -10,26 +10,26 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/validator"
+	"github.com/AkashAgarwalInd/trimproof/pkg/validator"
 )
 
 // Identity headers. They are always stripped before forwarding upstream.
 const (
-	HeaderIdentity = "X-CM-Identity" // HS256 JWT minted by trusted ingress
-	HeaderTenant   = "X-CM-Tenant"   // trusted-headers mode only
-	HeaderSubject  = "X-CM-Subject"
-	HeaderScopes   = "X-CM-Scopes" // space-separated
-	HeaderRoute    = "X-Context-Mesh-Route"
-	HeaderData     = "X-Context-Mesh-Data" // marked data blocks: "msg[:part],..."
+	HeaderIdentity = "X-TP-Identity" // HS256 JWT minted by trusted ingress
+	HeaderTenant   = "X-TP-Tenant"   // trusted-headers mode only
+	HeaderSubject  = "X-TP-Subject"
+	HeaderScopes   = "X-TP-Scopes" // space-separated
+	HeaderRoute    = "X-Trimproof-Route"
+	HeaderData     = "X-Trimproof-Data" // marked data blocks: "msg[:part],..."
 )
 
 // IdentityMode selects how the SecurityContext is established.
 type IdentityMode string
 
 const (
-	// IdentityJWT verifies an HS256 JWT in X-CM-Identity. Recommended.
+	// IdentityJWT verifies an HS256 JWT in X-TP-Identity. Recommended.
 	IdentityJWT IdentityMode = "jwt-hs256"
-	// IdentityTrustedHeaders reads X-CM-* headers as-is. Only safe when the
+	// IdentityTrustedHeaders reads X-TP-* headers as-is. Only safe when the
 	// ingress in front of the gateway strips client-supplied copies.
 	IdentityTrustedHeaders IdentityMode = "trusted-headers"
 )

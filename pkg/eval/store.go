@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
 // PairKind distinguishes treatment pairs from control (noise-floor) pairs.

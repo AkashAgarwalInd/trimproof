@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/tabular"
-	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/toon"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toon"
+	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
 )
 
 var jwtKey = []byte("test-key")
@@ -143,8 +143,8 @@ func TestEligibleToolResultIsTransformed(t *testing.T) {
 	if !strings.Contains(sent, "table's first line") {
 		t.Fatal("primer missing")
 	}
-	if !strings.HasPrefix(resp.Header.Get("X-Context-Mesh-Representation"), "tabular") {
-		t.Fatalf("representation header %q", resp.Header.Get("X-Context-Mesh-Representation"))
+	if !strings.HasPrefix(resp.Header.Get("X-Trimproof-Representation"), "tabular") {
+		t.Fatalf("representation header %q", resp.Header.Get("X-Trimproof-Representation"))
 	}
 	h := up.headers[0]
 	if h.Get(HeaderIdentity) != "" || h.Get(HeaderRoute) != "" || h.Get("X-Api-Key") != "client-key" {
@@ -213,8 +213,8 @@ func TestFallbackRetryOnTier1Failure(t *testing.T) {
 	if x := rec.xs[0]; !x.FellBack || x.Sent != "original" || x.Tier1 == nil || !x.Tier1.OK {
 		t.Fatalf("exchange %+v", x)
 	}
-	if resp.Header.Get("X-Context-Mesh-Representation") != "json (fallback)" {
-		t.Fatalf("header %q", resp.Header.Get("X-Context-Mesh-Representation"))
+	if resp.Header.Get("X-Trimproof-Representation") != "json (fallback)" {
+		t.Fatalf("header %q", resp.Header.Get("X-Trimproof-Representation"))
 	}
 }
 

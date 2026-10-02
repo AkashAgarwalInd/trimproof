@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/tabular"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/policy"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/provider/anthropic"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/server"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/validator"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/policy"
+	"github.com/AkashAgarwalInd/trimproof/pkg/provider/anthropic"
+	"github.com/AkashAgarwalInd/trimproof/pkg/server"
+	"github.com/AkashAgarwalInd/trimproof/pkg/validator"
 )
 
 func TestRedactByKeyAllTypes(t *testing.T) {

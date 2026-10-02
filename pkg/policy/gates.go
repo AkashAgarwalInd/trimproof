@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/canonical"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/codec"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/tokens"
+	"github.com/AkashAgarwalInd/trimproof/pkg/canonical"
+	"github.com/AkashAgarwalInd/trimproof/pkg/codec"
+	"github.com/AkashAgarwalInd/trimproof/pkg/tokens"
 )
 
 // Gate identifies which of the four ordered gates rejected a block.

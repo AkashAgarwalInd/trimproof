@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/canonical"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/ir"
+	"github.com/AkashAgarwalInd/trimproof/pkg/canonical"
+	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
 // Agreement holds the per-pair metrics (spec §8.2).

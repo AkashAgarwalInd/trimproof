@@ -1,4 +1,4 @@
-// Command gateway runs the context-mesh LLM gateway.
+// Command gateway runs the trimproof LLM gateway.
 //
 //	gateway -policies policies.json -listen :8080
 //
@@ -7,7 +7,7 @@
 //	Anthropic: http://gateway:8080/anthropic   (POST /v1/messages is intercepted)
 //	OpenAI:    http://gateway:8080/openai/v1   (POST /chat/completions is intercepted)
 //
-// and send X-Context-Mesh-Route plus identity (X-CM-Identity JWT) from
+// and send X-Trimproof-Route plus identity (X-TP-Identity JWT) from
 // trusted ingress. Provider API keys pass through from the client.
 package main
 
@@ -26,12 +26,12 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 
-	"github.com/AkashAgarwalInd/context-mesh/pkg/audit"
-	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/tabular"
-	_ "github.com/AkashAgarwalInd/context-mesh/pkg/codec/toon"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/eval"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/server"
-	"github.com/AkashAgarwalInd/context-mesh/pkg/tokens"
+	"github.com/AkashAgarwalInd/trimproof/pkg/audit"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/tabular"
+	_ "github.com/AkashAgarwalInd/trimproof/pkg/codec/toon"
+	"github.com/AkashAgarwalInd/trimproof/pkg/eval"
+	"github.com/AkashAgarwalInd/trimproof/pkg/server"
+	"github.com/AkashAgarwalInd/trimproof/pkg/tokens"
 )
 
 func main() {
@@ -40,7 +40,7 @@ func main() {
 	anthropicBase := flag.String("anthropic-base", "https://api.anthropic.com", "Anthropic API base URL")
 	openaiBase := flag.String("openai-base", envOr("OPENAI_API_BASE", "https://api.openai.com/v1"), "OpenAI-compatible base URL (including /v1)")
 	identityMode := flag.String("identity-mode", string(server.IdentityJWT), "jwt-hs256 | trusted-headers")
-	identityKeyEnv := flag.String("identity-key-env", "CM_IDENTITY_KEY", "env var holding the HS256 identity key")
+	identityKeyEnv := flag.String("identity-key-env", "TP_IDENTITY_KEY", "env var holding the HS256 identity key")
 	requireIdentity := flag.Bool("require-identity", true, "reject requests without identity")
 	pairsFile := flag.String("pairs-file", "eval-pairs.jsonl", "shadow evaluation pairs (JSONL)")
 	auditFile := flag.String("audit-file", "audit.jsonl", "audit log (JSONL); empty disables")
@@ -117,7 +117,7 @@ func main() {
 		defer cancel()
 		srv.Shutdown(shutdown)
 	}()
-	log.Info("context-mesh gateway listening", "addr", *listen, "policies", *policies)
+	log.Info("trimproof gateway listening", "addr", *listen, "policies", *policies)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fatal(log, "serve", err)
 	}
