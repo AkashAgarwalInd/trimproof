@@ -3,6 +3,8 @@
 //	bench tokens                       offline o200k token table (no network)
 //	bench run -targets openai:MODEL    live calls; appends to -out JSONL (resumable)
 //	bench report -in results.jsonl     markdown report with go/no-go verdicts
+//	bench drive -gateway URL -route R  production traffic through a gateway
+//	                                   (exercises shadow evaluation/promotion)
 //
 // Provider credentials come from the environment: OPENAI_API_KEY and
 // OPENAI_API_BASE (any OpenAI-compatible endpoint), ANTHROPIC_API_KEY and
@@ -42,6 +44,12 @@ func main() {
 	maxTok := fs.Int("max-tokens", 4096, "max output tokens (reasoning models need headroom)")
 	minRed := fs.Float64("min-reduction", 0.20, "go criterion: minimum input-token reduction")
 	alpha := fs.Float64("alpha", 0.05, "McNemar significance level")
+	gateway := fs.String("gateway", "http://localhost:8080/openai/v1", "gateway OpenAI base URL (drive)")
+	route := fs.String("route", "", "X-Trimproof-Route value (drive)")
+	model := fs.String("model", "openai/gpt-oss-20b", "model (drive)")
+	n := fs.Int("n", 300, "maximum requests (drive)")
+	untilEncoded := fs.Int("until-encoded", 0, "stop after this many encoded responses (drive)")
+	seeds := fs.Int("seeds", 1, "number of data seeds starting at -seed (drive)")
 	_ = fs.Parse(args)
 
 	ds := bench.Generate(split(*datasets), ints(*sizes), *seed)
@@ -77,6 +85,17 @@ func main() {
 			log.Fatal(err)
 		}
 		bench.LiveReport(os.Stdout, recs, bench.GoCriteria{MinReduction: *minRed, Alpha: *alpha})
+	case "drive":
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer stop()
+		for i := 1; i < *seeds; i++ {
+			ds = append(ds, bench.Generate(split(*datasets), ints(*sizes), *seed+uint64(i))...)
+		}
+		c := &bench.OpenAI{BaseURL: strings.TrimRight(*gateway, "/"), APIKey: os.Getenv("OPENAI_API_KEY"),
+			HTTP: &http.Client{Timeout: 6 * time.Minute}, Header: map[string]string{"X-Trimproof-Route": *route}}
+		st := bench.Drive(ctx, bench.DriveConfig{Client: c, Model: *model, Datasets: ds, N: *n, RPM: *rpm,
+			MaxTokens: *maxTok, UntilEncoded: *untilEncoded})
+		fmt.Printf("sent %d, failed %d, correct %d, served encoded %d\n", st.Sent, st.Failed, st.Correct, st.Encoded)
 	default:
 		log.Fatalf("unknown command %q", cmd)
 	}

@@ -32,6 +32,9 @@ type Result struct {
 	InputTokens  int
 	OutputTokens int
 	Latency      time.Duration
+	// Representation is the gateway's X-Trimproof-Representation response
+	// header, when the call went through a trimproof gateway.
+	Representation string
 }
 
 // Client sends a Call to one provider API.
@@ -50,6 +53,7 @@ func system(c Call) string {
 type OpenAI struct {
 	BaseURL, APIKey string
 	HTTP            *http.Client
+	Header          map[string]string // extra request headers (e.g. X-Trimproof-Route)
 }
 
 func (o *OpenAI) Do(ctx context.Context, c Call) (*Result, error) {
@@ -84,14 +88,20 @@ func (o *OpenAI) Do(ctx context.Context, c Call) (*Result, error) {
 			CompletionTokens int `json:"completion_tokens"`
 		} `json:"usage"`
 	}
+	hdr := map[string]string{"Authorization": "Bearer " + o.APIKey}
+	for k, v := range o.Header {
+		hdr[k] = v
+	}
+	var respHdr http.Header
 	start := time.Now()
-	if err := post(ctx, o.HTTP, o.BaseURL+"/chat/completions", map[string]string{"Authorization": "Bearer " + o.APIKey}, body, &resp); err != nil {
+	if err := post(ctx, o.HTTP, o.BaseURL+"/chat/completions", hdr, body, &resp, &respHdr); err != nil {
 		return nil, err
 	}
 	if len(resp.Choices) == 0 {
 		return nil, errors.New("openai: no choices")
 	}
-	return &Result{Text: resp.Choices[0].Message.Content, InputTokens: resp.Usage.PromptTokens, OutputTokens: resp.Usage.CompletionTokens, Latency: time.Since(start)}, nil
+	return &Result{Text: resp.Choices[0].Message.Content, InputTokens: resp.Usage.PromptTokens, OutputTokens: resp.Usage.CompletionTokens,
+		Latency: time.Since(start), Representation: respHdr.Get("X-Trimproof-Representation")}, nil
 }
 
 // Anthropic speaks the Anthropic Messages API.
@@ -135,7 +145,7 @@ func (a *Anthropic) Do(ctx context.Context, c Call) (*Result, error) {
 	}
 	start := time.Now()
 	hdr := map[string]string{"x-api-key": a.APIKey, "anthropic-version": "2023-06-01"}
-	if err := post(ctx, a.HTTP, a.BaseURL+"/v1/messages", hdr, body, &resp); err != nil {
+	if err := post(ctx, a.HTTP, a.BaseURL+"/v1/messages", hdr, body, &resp, nil); err != nil {
 		return nil, err
 	}
 	var text string
@@ -156,15 +166,16 @@ type statusError struct {
 func (e *statusError) Error() string { return fmt.Sprintf("HTTP %d: %s", e.code, e.body) }
 
 // post sends JSON and decodes the reply, retrying 429/5xx with jittered
-// exponential backoff (honouring Retry-After).
-func post(ctx context.Context, hc *http.Client, url string, hdr map[string]string, body, out any) error {
+// exponential backoff (honouring Retry-After). respHdr, when non-nil,
+// receives the successful response's headers.
+func post(ctx context.Context, hc *http.Client, url string, hdr map[string]string, body, out any, respHdr *http.Header) error {
 	payload, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
 	backoff := 2 * time.Second
 	for attempt := 0; ; attempt++ {
-		err := once(ctx, hc, url, hdr, payload, out)
+		err := once(ctx, hc, url, hdr, payload, out, respHdr)
 		var se *statusError
 		if err == nil || attempt >= 6 || ctx.Err() != nil {
 			return err
@@ -185,7 +196,7 @@ func post(ctx context.Context, hc *http.Client, url string, hdr map[string]strin
 	}
 }
 
-func once(ctx context.Context, hc *http.Client, url string, hdr map[string]string, payload []byte, out any) error {
+func once(ctx context.Context, hc *http.Client, url string, hdr map[string]string, payload []byte, out any, respHdr *http.Header) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
 	if err != nil {
 		return err
@@ -209,6 +220,9 @@ func once(ctx context.Context, hc *http.Client, url string, hdr map[string]strin
 			se.wait = time.Duration(s) * time.Second
 		}
 		return se
+	}
+	if respHdr != nil {
+		*respHdr = resp.Header
 	}
 	return json.Unmarshal(data, out)
 }
