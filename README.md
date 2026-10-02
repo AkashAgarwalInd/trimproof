@@ -22,9 +22,11 @@ client ──► ingress (TLS, JWT) ──► trimproof ──► Anthropic / Op
 2. **Four gates:** structural → opt-in → minimum size → net savings. Net savings are measured against *compact canonical* JSON, and the format primer's token cost is included.
 3. **Lossless by construction.** Every codec satisfies `Decode(Encode(x)) == canonical(x)` byte for byte, enforced by fuzz tests. Numbers keep their exact text (`9007199254740993`, `88.0`, `1e400`). toon-go silently loses such numbers, so the `toon` codec admits only payloads that survive its round trip and verifies every encoding.
 4. **Promotion state machine per route:** `OFF → SHADOW → ENABLED` (plus `MANUAL`).
-   - In `SHADOW`, sampled requests run as JSON-vs-codec *treatment* pairs and JSON-vs-JSON *control* pairs, asynchronously and with their own rate budget.
-   - A route is promoted only when all of these hold: enough pairs; agreement within ε of the noise floor; no Tier 1 regression (exact McNemar); and measured savings (from provider `usage`) at or above the route's minimum.
+   - In `SHADOW`, each sampled request runs three arms: JSON, the codec, and JSON again, so every sample carries its own noise floor. Arms run asynchronously, with their own rate budget.
+   - Decisions come only at scheduled looks, through a paired non-inferiority test. A route is promoted when all of these hold: the lower confidence bound of (codec agreement − noise floor) is above −ε; there is no Tier 1 regression (exact McNemar); and the measured savings meet the route's minimum. Savings come from provider `usage`, with output tokens weighted by `output_price_ratio`.
+   - A route that is confidently worse is switched `OFF`, which stops its sampling cost.
    - It is demoted automatically on regression, including a production circuit breaker on Tier 1 failure rates.
+   - Simulated error rates are in [bench/results/PROMOTION.md](bench/results/PROMOTION.md).
 5. **Tier 1 validation (optional, per route).** It is default-deny and all-or-nothing across parallel tool calls:
    - JSON Schema per tool;
    - exact-decimal business rules;

@@ -97,6 +97,7 @@ type fileRoute struct {
 	State              string                     `json:"state"`
 	MinPayloadTokens   *int                       `json:"min_payload_tokens"`
 	MinNetSavings      *float64                   `json:"min_net_savings"`
+	OutputPriceRatio   *float64                   `json:"output_price_ratio"`
 	ShadowSampleRate   *float64                   `json:"shadow_sample_rate"`
 	AuditSampleRate    *float64                   `json:"audit_sample_rate"`
 	AllowFallbackRetry bool                       `json:"allow_fallback_retry"`
@@ -150,6 +151,10 @@ func LoadRegistry(path string) (*Registry, error) {
 		}
 		setIf(&p.MinPayloadTokens, fr.MinPayloadTokens)
 		setIf(&p.MinNetSavings, fr.MinNetSavings)
+		setIf(&p.OutputPriceRatio, fr.OutputPriceRatio)
+		if p.OutputPriceRatio < 0 {
+			return nil, fmt.Errorf("registry: route %q: negative output_price_ratio", fr.RouteID)
+		}
 		setIf(&p.ShadowSampleRate, fr.ShadowSampleRate)
 		setIf(&p.AuditSampleRate, fr.AuditSampleRate)
 		p.AllowFallbackRetry, p.Lossy.AllowUnion = fr.AllowFallbackRetry, fr.AllowUnion

@@ -8,6 +8,7 @@
       "state": "SHADOW",
       "min_payload_tokens": 200,
       "min_net_savings": 0.15,
+      "output_price_ratio": 4,
       "shadow_sample_rate": 0.05,
       "audit_sample_rate": 0.01,
       "allow_fallback_retry": true,

@@ -51,6 +51,7 @@ func main() {
 	auditFile := flag.String("audit-file", "audit.jsonl", "audit log (JSONL); empty disables")
 	transitionsFile := flag.String("transitions-file", "transitions.jsonl", "promotion transitions (JSONL)")
 	evalRPS := flag.Float64("eval-rps", 1, "per-provider evaluation request rate")
+	evalInFlight := flag.Int("eval-max-inflight", 6, "per-provider concurrent evaluation requests (each sample runs 3)")
 	maxBody := flag.Int64("max-body-bytes", server.MaxBodyBytes, "maximum request body size")
 	upstreamTimeout := flag.Duration("upstream-timeout", server.DefaultUpstreamTimeout, "limit for a buffered upstream call, and for the first byte of a streamed one")
 	streamIdle := flag.Duration("stream-idle-timeout", server.DefaultStreamIdleTimeout, "maximum gap between chunks of a streamed response")
@@ -82,10 +83,11 @@ func main() {
 	if err != nil {
 		fatal(log, "load policies", err)
 	}
-	if n, err := eval.ReplayTransitions(*transitionsFile, reg); err != nil {
+	restored, err := eval.ReplayTransitions(*transitionsFile, reg)
+	if err != nil {
 		fatal(log, "replay transitions", err)
-	} else if n > 0 {
-		log.Info("restored promotion state", "routes", n)
+	} else if len(restored) > 0 {
+		log.Info("restored promotion state", "routes", len(restored))
 	}
 	metrics, err := audit.NewMetrics()
 	if err != nil {
@@ -104,7 +106,8 @@ func main() {
 		}
 		log.Info("route state changed", "route", tr.TenantID+"/"+tr.RouteID, "from", tr.From.String(), "to", tr.To.String(), "reason", tr.Reason)
 	}}
-	ev := eval.NewEvaluator(eval.Config{Store: store, Promoter: prom, RPS: *evalRPS, Log: log})
+	prom.Resume(restored)
+	ev := eval.NewEvaluator(eval.Config{Store: store, Promoter: prom, RPS: *evalRPS, MaxInFlight: *evalInFlight, Log: log})
 	evalDone := make(chan struct{})
 	go func() { ev.Run(ctx); close(evalDone) }()
 

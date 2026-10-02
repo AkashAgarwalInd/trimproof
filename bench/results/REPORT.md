@@ -47,7 +47,7 @@ The go criterion is a ≥20% input-token reduction with accuracy within noise. T
 - The savings hold across two architecturally different models.
 
 **It does not prove:**
-- That accuracy is equivalent to within 2pp. With 46 paired questions per format per model, a difference of 2–5pp is undetectable: the noise floor alone is 2–6.5%. Detecting it needs hundreds of pairs per route, which is what the shadow evaluator collects (`NMin=200`).
+- That accuracy is equivalent to within 2pp. With 46 paired questions per format per model, a difference of 2–5pp is undetectable: the noise floor alone is 2–6.5%. Detecting it needs hundreds of samples per route, which is what the shadow evaluator collects (see [PROMOTION.md](PROMOTION.md)).
 - That the results generalize to Claude or GPT-4-class models. Only NVIDIA NIM-hosted open models were run, because no Anthropic key was available. A Claude run remains open (see Phase 7).
 - That the results generalize to real traffic. The datasets are synthetic and seeded (orders, logs, search, employees), and the questions are exact-answer lookup, count, argmax and sum.
 
@@ -69,7 +69,10 @@ The go criterion is a ≥20% input-token reduction with accuracy within noise. T
 
 ## Effect on the promotion defaults
 
-Keep `NMin=200`, `NControlMin=50`, `ε=0.02` and `α=0.05`:
 - The measured JSON-vs-JSON flip rate of 2–6.5% confirms that the noise floor must be measured per route, not assumed.
-- At n=46, a real −8.7pp signal could not reach significance, so 200 treatment pairs is a floor, not a generous margin.
-- ε is applied relative to the measured control agreement, not to absolute accuracy, so 0.02 stays appropriate.
+- At n=46, a real −8.7pp signal could not reach significance, so a route needs hundreds of samples.
+- These results led to the current rule, described in [PROMOTION.md](PROMOTION.md):
+  - each sample runs JSON, codec and JSON on the same request;
+  - a paired non-inferiority test with ε=0.02 is applied at scheduled looks;
+  - savings are cost-weighted to include output tokens.
+- Each Phase 0 question was answered in all three formats, so this file is also the data the design was simulated on.

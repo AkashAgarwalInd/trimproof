@@ -69,4 +69,8 @@ The current rule therefore:
 - **can hold a route that is actually fine**, as here;
 - **can promote by chance** when the point estimates happen to land the other way.
 
-Replacing the comparison with a non-inferiority test is an open design decision. One option is to require that the lower confidence bound of (treatment − control) agreement be above −ε. Its trade-off is that it needs considerably more pairs per route before any promotion.
+**Update:** this rule has since been replaced, so this run reflects the old rule.
+
+The replacement is a three-arm paired non-inferiority test, decided at scheduled looks. It also stops early for routes that are clearly worse, and weights savings by output-token cost. See [PROMOTION.md](PROMOTION.md).
+
+On this route's numbers, the 3.3pp gap is smaller than its uncertainty (about ±4pp), so the bounds straddle −ε. The new rule would therefore keep collecting rather than hold the route on a point estimate.

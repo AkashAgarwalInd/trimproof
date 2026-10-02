@@ -47,7 +47,11 @@ These are approximate per-request costs:
 | canonical parse, marshal and check | ~2.3 ms |
 | provider parse and re-render | ~3.4 ms |
 
-At 100 KB, a tool result is about 30k tokens. The provider's prefill alone for that many tokens takes seconds, and TOON removes about 25% of them. A ~13 ms gateway cost is therefore well under 1% of request latency, and the time saved upstream is larger than the time added.
+At 100 KB, a tool result is about 30k tokens, and model calls take seconds. A ~13 ms gateway cost is therefore under 1% of request latency. In a 20-step agent it adds roughly 30–260 ms to a task that runs for minutes.
+
+Fewer input tokens do not make calls faster end to end. In Phase 0 on NVIDIA NIM, TOON calls had a median latency about 10% higher than JSON calls. The models wrote more output tokens (gpt-oss +13%, nemotron +36%), and decoding dominates latency. NIM's queueing makes these latency figures noisy, but the extra output is real.
+
+Shadow samples therefore record each arm's latency and output tokens, and promotion weights output tokens by cost (see [PROMOTION.md](PROMOTION.md)).
 
 The original target of p99 < 5 ms at 100 KB is not met.
 

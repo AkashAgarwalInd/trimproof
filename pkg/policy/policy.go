@@ -41,6 +41,7 @@ type RoutePolicy struct {
 	State              PromotionState
 	MinPayloadTokens   int
 	MinNetSavings      float64 // fraction, vs compact canonical JSON incl. primer
+	OutputPriceRatio   float64 // output-token price / input-token price; weights output tokens in measured savings
 	ShadowSampleRate   float64
 	AuditSampleRate    float64
 	AllowFallbackRetry bool
@@ -53,11 +54,12 @@ type RoutePolicy struct {
 }
 
 // Defaults returns conservative defaults: no codec, OFF, 200-token minimum,
-// 15% minimum net savings.
+// 15% minimum net savings, output tokens priced at 4× input.
 func Defaults() RoutePolicy {
 	return RoutePolicy{
 		MinPayloadTokens: 200,
 		MinNetSavings:    0.15,
+		OutputPriceRatio: 4,
 		ShadowSampleRate: 0.05,
 		AuditSampleRate:  0.01,
 	}

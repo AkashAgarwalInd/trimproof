@@ -10,15 +10,21 @@ import (
 	"github.com/AkashAgarwalInd/trimproof/pkg/ir"
 )
 
-// PairKind distinguishes treatment pairs from control (noise-floor) pairs.
+// PairKind distinguishes sample layouts.
 type PairKind string
 
 const (
-	Treatment PairKind = "TREATMENT" // JSON arm vs codec arm
-	Control   PairKind = "CONTROL"   // JSON arm vs a second JSON arm
+	// Paired samples run three arms on the same request: A = JSON,
+	// B = codec, C = a second JSON arm. A vs C is the request's own noise
+	// floor, so the codec effect is measured within each request.
+	Paired PairKind = "PAIRED"
+	// Treatment (JSON vs codec) and Control (JSON vs JSON) are the earlier
+	// two-arm layout. They still load but are not used for promotion.
+	Treatment PairKind = "TREATMENT"
+	Control   PairKind = "CONTROL"
 )
 
-// EvaluationPair is one paired observation.
+// EvaluationPair is one evaluation sample.
 type EvaluationPair struct {
 	ID           string    `json:"id"`
 	Time         time.Time `json:"time"`
@@ -28,18 +34,29 @@ type EvaluationPair struct {
 	Model        string    `json:"model"`
 	Codec        string    `json:"codec"`
 	CodecVersion string    `json:"codec_version"`
-	Agreement    Agreement `json:"agreement"`
-	UsageA       ir.Usage  `json:"usage_a"`
-	UsageB       ir.Usage  `json:"usage_b"`
-	// Tier1A/B are nil when the route has no Tier 1 validator.
+	Agreement    Agreement `json:"agreement"` // A vs B
+	// ControlAgreement (A vs C) and AgreementCB (C vs B) are set on Paired
+	// samples.
+	ControlAgreement *Agreement `json:"control_agreement,omitempty"`
+	AgreementCB      *Agreement `json:"agreement_cb,omitempty"`
+	UsageA           ir.Usage   `json:"usage_a"`
+	UsageB           ir.Usage   `json:"usage_b"`
+	UsageC           ir.Usage   `json:"usage_c"`
+	// Arm latencies in milliseconds.
+	LatencyA int64 `json:"latency_a_ms,omitempty"`
+	LatencyB int64 `json:"latency_b_ms,omitempty"`
+	LatencyC int64 `json:"latency_c_ms,omitempty"`
+	// Tier1A/B/C are nil when the route has no Tier 1 validator.
 	Tier1A *bool  `json:"tier1_a,omitempty"`
 	Tier1B *bool  `json:"tier1_b,omitempty"`
+	Tier1C *bool  `json:"tier1_c,omitempty"`
 	ErrA   string `json:"err_a,omitempty"`
 	ErrB   string `json:"err_b,omitempty"`
+	ErrC   string `json:"err_c,omitempty"`
 }
 
-// Valid reports whether both arms produced a response.
-func (p EvaluationPair) Valid() bool { return p.ErrA == "" && p.ErrB == "" }
+// Valid reports whether every arm produced a response.
+func (p EvaluationPair) Valid() bool { return p.ErrA == "" && p.ErrB == "" && p.ErrC == "" }
 
 // Store persists pairs.
 type Store interface {

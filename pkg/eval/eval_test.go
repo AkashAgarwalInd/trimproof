@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -52,46 +54,171 @@ func TestComparator(t *testing.T) {
 	}
 }
 
-func pairs(kind PairKind, n, agree int, inA, inB int, t1 [][2]bool) []EvaluationPair {
-	var out []EvaluationPair
-	for i := 0; i < n; i++ {
-		p := EvaluationPair{Kind: kind, Agreement: Agreement{Agree: i < agree},
-			UsageA: ir.Usage{InputTokens: inA}, UsageB: ir.Usage{InputTokens: inB}}
-		if i < len(t1) {
-			a, b := t1[i][0], t1[i][1]
-			p.Tier1A, p.Tier1B = &a, &b
-		}
-		out = append(out, p)
+// sample builds a valid Paired sample. ab, cb: the codec arm agrees with
+// JSON arms A and C; ac: the JSON arms agree with each other.
+func sample(ab, cb, ac bool, inJSON, inCodec, outJSON, outCodec int) EvaluationPair {
+	ctl, agCB := Agreement{Agree: ac}, Agreement{Agree: cb}
+	return EvaluationPair{Kind: Paired, Agreement: Agreement{Agree: ab}, ControlAgreement: &ctl, AgreementCB: &agCB,
+		UsageA: ir.Usage{InputTokens: inJSON, OutputTokens: outJSON}, UsageC: ir.Usage{InputTokens: inJSON, OutputTokens: outJSON},
+		UsageB: ir.Usage{InputTokens: inCodec, OutputTokens: outCodec}}
+}
+
+// samples returns n samples where the first worse have the codec arm
+// disagreeing with both JSON arms and the rest all agree.
+func samples(n, worse int, inCodec, outCodec int) []EvaluationPair {
+	out := make([]EvaluationPair, n)
+	for i := range out {
+		ok := i >= worse
+		out[i] = sample(ok, ok, true, 1000, inCodec, 100, outCodec)
 	}
 	return out
 }
 
+func withTier1(ps []EvaluationPair, t1 [][2]bool) []EvaluationPair {
+	for i := range t1 {
+		a, b := t1[i][0], t1[i][1]
+		ps[i].Tier1A, ps[i].Tier1B = &a, &b
+	}
+	return ps
+}
+
+func TestComputeStats(t *testing.T) {
+	ps := []EvaluationPair{
+		sample(true, true, true, 1000, 700, 100, 130),
+		sample(false, true, true, 1000, 700, 100, 130),
+		sample(true, true, false, 1000, 700, 100, 130),
+		{Kind: Treatment, Agreement: Agreement{Agree: false}}, // legacy layout: ignored
+		{Kind: Paired, ErrC: "upstream HTTP 500"},             // invalid: ignored
+	}
+	ps[0].LatencyA, ps[0].LatencyB, ps[0].LatencyC = 1000, 1500, 1000
+	st := ComputeStats(ps, 0, 4)
+	if st.N != 3 {
+		t.Fatalf("N=%d", st.N)
+	}
+	// d per sample: 0, −0.5, +1.
+	if math.Abs(st.Diff-0.5/3) > 1e-12 || math.Abs(st.AgreeTreatment-2.5/3) > 1e-12 || math.Abs(st.AgreeControl-2.0/3) > 1e-12 {
+		t.Fatalf("agreement %+v", st)
+	}
+	if math.Abs(st.InputSavings-0.3) > 1e-12 || math.Abs(st.OutputChange-0.3) > 1e-12 {
+		t.Fatalf("savings %+v", st)
+	}
+	if want := 1 - (700+4*130)/(1000+4*100.0); math.Abs(st.MeasuredSavings-want) > 1e-12 {
+		t.Fatalf("measured savings %v, want %v", st.MeasuredSavings, want)
+	}
+	if st.LatencyRatio != 1.5 {
+		t.Fatalf("latency ratio %v", st.LatencyRatio)
+	}
+	if st := ComputeStats(samples(50, 0, 700, 100), 0, 4); st.SE != 1.0/50 {
+		t.Fatalf("all-agree SE should be floored at 1/n: %v", st.SE)
+	}
+	if st := ComputeStats(samples(50, 0, 700, 100), 20, 4); st.N != 20 {
+		t.Fatalf("window: N=%d", st.N)
+	}
+}
+
 func TestNextState(t *testing.T) {
-	th := Thresholds{NMin: 100, NControlMin: 20, Epsilon: 0.02, Alpha: 0.05, Window: 100}
-	ctrl := pairs(Control, 40, 36, 1000, 1000, nil) // noise floor: 90% agreement
+	th := Thresholds{NMin: 100, LookEvery: 50, Z: 2.5, Epsilon: 0.02, Alpha: 0.05, Window: 200, MaxSamples: 400}
 	cases := []struct {
-		name  string
-		treat []EvaluationPair
-		want  policy.PromotionState
-		why   string
+		name string
+		all  []EvaluationPair
+		want policy.PromotionState
+		why  string
 	}{
-		{"too few", pairs(Treatment, 50, 50, 1000, 700, nil), policy.Shadow, "collecting"},
-		{"good", pairs(Treatment, 100, 89, 1000, 700, nil), policy.Enabled, "promoted"},
-		{"below noise floor", pairs(Treatment, 100, 80, 1000, 700, nil), policy.Shadow, "noise floor"},
-		{"no savings", pairs(Treatment, 100, 95, 1000, 950, nil), policy.Shadow, "savings"},
-		{"tier1 regression", pairs(Treatment, 100, 95, 1000, 700, repeat([2]bool{true, false}, 12)), policy.Shadow, "McNemar"},
+		{"too few", samples(50, 0, 700, 100), policy.Shadow, "collecting"},
+		{"good", samples(200, 0, 700, 100), policy.Enabled, "promoted"},
+		{"straddles", samples(200, 2, 700, 100), policy.Shadow, "straddle"},
+		{"worse", samples(200, 40, 700, 100), policy.Off, "rejected"},
+		{"inconclusive", samples(400, 8, 700, 100), policy.Off, "inconclusive"},
+		{"no input savings", samples(200, 0, 950, 100), policy.Shadow, "measured savings"},
+		// 30% fewer input tokens, but the model writes 2.5× more: at 4×
+		// output pricing the codec costs more than JSON.
+		{"output eats savings", samples(200, 0, 700, 250), policy.Shadow, "measured savings"},
+		{"tier1 regression", withTier1(samples(200, 0, 700, 100), repeat([2]bool{true, false}, 12)), policy.Shadow, "McNemar"},
 	}
 	for _, c := range cases {
-		all := append(append([]EvaluationPair{}, ctrl...), c.treat...)
-		got, why := NextState(policy.Shadow, 0.15, ComputeStats(all, 0), ComputeStats(all, th.Window), th)
+		got, why := NextState(policy.Shadow, 0.15, ComputeStats(c.all, 0, 4), ComputeStats(c.all, th.Window, 4), th)
 		if got != c.want || !strings.Contains(why, c.why) {
 			t.Errorf("%s: got %v (%s)", c.name, got, why)
 		}
 	}
-	// ENABLED demotes on rolling regression.
-	all := append(append([]EvaluationPair{}, ctrl...), pairs(Treatment, 100, 70, 1000, 700, nil)...)
-	if got, _ := NextState(policy.Enabled, 0.15, ComputeStats(all, 0), ComputeStats(all, th.Window), th); got != policy.Shadow {
-		t.Error("expected demotion")
+	// ENABLED demotes when the rolling window is confidently worse, and
+	// stays on noise.
+	bad := samples(200, 40, 700, 100)
+	if got, why := NextState(policy.Enabled, 0.15, ComputeStats(bad, 0, 4), ComputeStats(bad, th.Window, 4), th); got != policy.Shadow || !strings.Contains(why, "demoted") {
+		t.Errorf("expected demotion, got %v (%s)", got, why)
+	}
+	noisy := samples(200, 2, 700, 100)
+	if got, _ := NextState(policy.Enabled, 0.15, ComputeStats(noisy, 0, 4), ComputeStats(noisy, th.Window, 4), th); got != policy.Enabled {
+		t.Error("demoted on noise")
+	}
+}
+
+func shadowRoute(t *testing.T) *server.Registry {
+	t.Helper()
+	reg := server.NewRegistry()
+	p := policy.Defaults()
+	p.TenantID, p.RouteID, p.Version, p.Codec, p.State = "t", "r", "v1", "tabular", policy.Shadow
+	if err := reg.Put(p, nil, false); err != nil {
+		t.Fatal(err)
+	}
+	return reg
+}
+
+// TestPromoterLooks checks that decisions are taken only at scheduled
+// looks: this route first satisfies the promotion bound at 277 samples but
+// is promoted at the next look, 280.
+func TestPromoterLooks(t *testing.T) {
+	reg := shadowRoute(t)
+	store, _ := NewMemoryStore("")
+	prom := &Promoter{Registry: reg, Store: store, T: Thresholds{NMin: 20, LookEvery: 10, Z: 2.5, Epsilon: 0.02, Alpha: 0.05, Window: 1000}}
+	var tr *Transition
+	for i, s := range samples(400, 2, 700, 100) {
+		s.TenantID, s.RouteID, s.Time = "t", "r", time.Unix(int64(i+1), 0)
+		store.Add(s)
+		if tr = prom.Evaluate("t", "r"); tr != nil {
+			break
+		}
+	}
+	if tr == nil || tr.To != policy.Enabled || tr.Stats.N != 280 {
+		t.Fatalf("transition %+v", tr)
+	}
+	if prom.T.lookIndex(19) != 0 || prom.T.lookIndex(20) != 1 || prom.T.lookIndex(29) != 1 || prom.T.lookIndex(30) != 2 {
+		t.Fatal("look schedule")
+	}
+}
+
+// TestPromoterEvidenceSinceTransition checks that a route needs fresh
+// evidence after a transition, also across a restart.
+func TestPromoterEvidenceSinceTransition(t *testing.T) {
+	reg := shadowRoute(t)
+	store, _ := NewMemoryStore("")
+	th := Thresholds{NMin: 20, LookEvery: 10, Z: 0.3, Epsilon: 0.02, Alpha: 0.05, Window: 1000}
+	prom := &Promoter{Registry: reg, Store: store, T: th}
+	add := func(from, n int) {
+		for i, s := range samples(n, 0, 700, 100) {
+			s.TenantID, s.RouteID, s.Time = "t", "r", time.Unix(int64(from+i), 0)
+			store.Add(s)
+		}
+	}
+	add(1, 30) // good evidence, then a demotion at t=100 (e.g. the production circuit breaker)
+	reg.SetState("t", "r", policy.Enabled)
+	demoted := Transition{Time: time.Unix(100, 0), TenantID: "t", RouteID: "r", PolicyVersion: "v1", From: policy.Enabled, To: policy.Shadow}
+	reg.SetState("t", "r", policy.Shadow)
+	prom.Resume([]Transition{demoted})
+	add(101, 10)
+	if tr := prom.Evaluate("t", "r"); tr != nil {
+		t.Fatalf("re-promoted on samples from before the demotion: %+v", tr)
+	}
+	// Without Resume (a restart that forgot the transition) the old
+	// samples would count.
+	fresh := &Promoter{Registry: reg, Store: store, T: th}
+	if tr := fresh.Evaluate("t", "r"); tr == nil || tr.To != policy.Enabled {
+		t.Fatal("control: old samples should promote without Resume")
+	}
+	reg.SetState("t", "r", policy.Shadow)
+	add(111, 10)
+	if tr := prom.Evaluate("t", "r"); tr == nil || tr.To != policy.Enabled || tr.Stats.N != 20 {
+		t.Fatalf("expected promotion on 20 fresh samples, got %+v", tr)
 	}
 }
 
@@ -164,12 +291,13 @@ func TestLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	store, _ := NewMemoryStore("")
-	th := Thresholds{NMin: 12, NControlMin: 4, Epsilon: 0.02, Alpha: 0.05, Window: 12, ProdMin: 10}
+	// A small Z keeps the lifecycle short; error rates are covered by
+	// TestPromotionErrorRates.
+	th := Thresholds{NMin: 12, LookEvery: 4, Z: 0.2, Epsilon: 0.02, Alpha: 0.05, Window: 12, MaxSamples: 1000, ProdMin: 10}
 	var transitions []Transition
 	prom := &Promoter{Registry: reg, Store: store, T: th, OnTransition: func(tr Transition) { transitions = append(transitions, tr) }}
-	n := 0
-	ev := NewEvaluator(Config{Store: store, Promoter: prom, RPS: 1000, Burst: 1000, ControlFraction: 0.25,
-		Rand: func() float64 { n++; return float64(n%4) / 4 }}) // deterministic: samples always (rate 1), every 4th is a control pair
+	ev := NewEvaluator(Config{Store: store, Promoter: prom, RPS: 1000, Burst: 1000,
+		Rand: func() float64 { return 0 }}) // deterministic: sample every request
 	key := []byte("k")
 	gw := httptest.NewServer(server.New(server.Config{Registry: reg, AnthropicBase: ups.URL,
 		IdentityMode: server.IdentityJWT, IdentityKey: key, Observers: []server.Observer{prom, ev}}))
@@ -193,7 +321,7 @@ func TestLifecycle(t *testing.T) {
 	}
 	state := func() policy.PromotionState { return reg.Lookup("t1", "r").Policy.State }
 
-	// 1. SHADOW: production stays JSON; pairs accumulate; route promotes.
+	// 1. SHADOW: production stays JSON; samples accumulate; route promotes.
 	for i := 0; i < 40 && state() == policy.Shadow; i++ {
 		if r := send(); r.Header.Get("X-Trimproof-Representation") != "json" {
 			t.Fatalf("SHADOW served %q", r.Header.Get("X-Trimproof-Representation"))
@@ -203,9 +331,13 @@ func TestLifecycle(t *testing.T) {
 	if state() != policy.Enabled {
 		t.Fatalf("not promoted; pairs=%d transitions=%+v", len(store.Pairs("t1", "r")), transitions)
 	}
-	st := ComputeStats(store.Pairs("t1", "r"), 0)
-	if st.NControl == 0 || math.Abs(st.MeasuredSavings-0.3) > 1e-9 {
+	st := ComputeStats(store.Pairs("t1", "r"), 0, p.OutputPriceRatio)
+	if st.N != 12 || math.Abs(st.InputSavings-0.3) > 1e-9 || math.Abs(st.MeasuredSavings-(1-720.0/1020)) > 1e-9 {
 		t.Fatalf("stats %+v", st)
+	}
+	// Each sample ran three arms; exactly one of them was encoded.
+	if prod := int64(up.calls.Load()) - 3*int64(st.N); prod != int64(st.N) || up.encodedCalls.Load() != int64(st.N) {
+		t.Fatalf("upstream calls %d (encoded %d) for %d samples", up.calls.Load(), up.encodedCalls.Load(), st.N)
 	}
 
 	// 2. ENABLED: production is encoded.
@@ -296,11 +428,76 @@ func TestReplayTransitions(t *testing.T) {
 	if err := os.WriteFile(path, []byte(buf.String()), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	n, err := ReplayTransitions(path, reg)
-	if err != nil || n != 1 {
-		t.Fatalf("restored %d, err %v", n, err)
+	applied, err := ReplayTransitions(path, reg)
+	if err != nil || len(applied) != 1 || applied[0].RouteID != "a" {
+		t.Fatalf("restored %+v, err %v", applied, err)
 	}
 	if reg.Lookup("t", "a").Policy.State != policy.Enabled || reg.Lookup("t", "b").Policy.State != policy.Shadow || reg.Lookup("t", "c").Policy.State != policy.Manual {
 		t.Fatal("wrong states after replay")
+	}
+}
+
+// TestPromotionErrorRates simulates routes under DefaultThresholds and
+// checks the promotion rule's error rates. Each sampled question has a
+// stability q (75% of questions q=1, 25% q=0.663, giving the 0.86 noise
+// floor seen in the end-to-end run). Every arm gives the modal answer with
+// probability q (the codec arm q·(1−δ')), and only modal answers agree.
+// δ is the codec's true agreement drop.
+func TestPromotionErrorRates(t *testing.T) {
+	th := DefaultThresholds()
+	const routes = 400
+	rng := rand.New(rand.NewPCG(1, 2))
+	run := func(delta float64) (promoted, rejected int, medianN int) {
+		dPrime := delta / 0.86 // E[q²] = 0.86
+		var ns []int
+		for range routes {
+			var acc accumulator
+			for n := 1; n <= th.MaxSamples; n++ {
+				q := 1.0
+				if rng.Float64() < 0.25 {
+					q = 0.663
+				}
+				a, c := rng.Float64() < q, rng.Float64() < q
+				b := rng.Float64() < q*(1-dPrime)
+				acc.add(sample(a && b, c && b, a && c, 1000, 700, 100, 100))
+				if th.lookIndex(n) == th.lookIndex(n-1) {
+					continue
+				}
+				st := acc.stats(4)
+				next, why := NextState(policy.Shadow, 0.15, st, st, th)
+				switch {
+				case next == policy.Enabled:
+					promoted++
+					ns = append(ns, n)
+				case strings.HasPrefix(why, "rejected"):
+					rejected++
+				}
+				if next != policy.Shadow {
+					break
+				}
+			}
+		}
+		if len(ns) > 0 {
+			slices.Sort(ns)
+			medianN = ns[len(ns)/2]
+		}
+		return
+	}
+	for _, c := range []struct {
+		delta                float64
+		minPromoted, maxProm float64
+		minRejected          float64
+	}{
+		{0, 0.90, 1, 0},
+		{th.Epsilon, 0, 0.08, 0},
+		{0.05, 0, 0, 0.95},
+		{0.10, 0, 0, 0.99},
+	} {
+		p, r, med := run(c.delta)
+		fp, fr := float64(p)/routes, float64(r)/routes
+		t.Logf("true drop %.2f: promoted %.3f (median %d samples), rejected %.3f", c.delta, fp, med, fr)
+		if fp < c.minPromoted || fp > c.maxProm || fr < c.minRejected {
+			t.Errorf("drop %.2f: promoted %.3f rejected %.3f outside [%v, %v], ≥%v", c.delta, fp, fr, c.minPromoted, c.maxProm, c.minRejected)
+		}
 	}
 }
