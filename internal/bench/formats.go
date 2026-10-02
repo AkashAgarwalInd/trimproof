@@ -59,6 +59,14 @@ func Render(format string, d *Dataset) (string, string, error) {
 			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
 		}
 		return string(enc), toonx.Codec{}.PrimerWith(shortPrimer, [][]byte{enc}), nil
+	case "toonx1":
+		// toonx without the version 2 forms: version 1's bytes and primer.
+		c := toonx.Codec{NoFactor: true}
+		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})
+		if err != nil {
+			return "", "", fmt.Errorf("%s/%s: %w", d.Name, format, err)
+		}
+		return string(enc), c.PrimerFor([][]byte{enc}), nil
 	case "toon", "toonx", "tabular":
 		c, _ := codec.Get(format)
 		enc, err := c.Encode(canon, codec.Options{Mode: codec.Strict})

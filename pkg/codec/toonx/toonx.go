@@ -48,7 +48,11 @@ const (
 )
 
 // Codec is the toonx codec. The zero value is ready to use.
-type Codec struct{}
+type Codec struct {
+	// NoFactor turns off the "all rows:" and "starts with:" lines, which
+	// gives version 1's output. The benchmark uses it to compare versions.
+	NoFactor bool
+}
 
 func init() { codec.Register(Codec{}) }
 
@@ -127,7 +131,7 @@ func (c Codec) Encode(canonicalJSON []byte, opts codec.Options) ([]byte, error) 
 
 // EncodeValue implements codec.ValueEncoder.
 func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte, error) {
-	e := &encoder{}
+	e := &encoder{noFactor: c.NoFactor}
 	switch t := v.(type) {
 	case map[string]any:
 		e.object(0, t)
@@ -142,7 +146,10 @@ func (c Codec) EncodeValue(v any, canonicalJSON []byte, _ codec.Options) ([]byte
 	return enc, nil
 }
 
-type encoder struct{ buf bytes.Buffer }
+type encoder struct {
+	buf      bytes.Buffer
+	noFactor bool
+}
 
 func (e *encoder) line(depth int, parts ...string) {
 	for range depth {
@@ -187,7 +194,7 @@ func (e *encoder) array(depth int, key string, a []any) {
 		e.line(depth, key, "[", n, "]: ", strings.Join(cells, ","))
 		return
 	}
-	if t, ok := newTable(a); ok {
+	if t, ok := newTable(a, !e.noFactor); ok {
 		e.line(depth, key, "[", n, "]{", t.header(), "}:")
 		for _, l := range t.extra() {
 			e.line(depth+1, l)
@@ -230,9 +237,9 @@ type assign struct {
 }
 
 // newTable lays a out as a table, flattened or not, with constant fields and
-// URL prefixes factored out or not, whichever is shortest. ok is false when
+// URL prefixes factored out or not (only if factorOK), whichever is shortest. ok is false when
 // a holds anything but non-empty objects.
-func newTable(a []any) (*table, bool) {
+func newTable(a []any, factorOK bool) (*table, bool) {
 	rows := make([]map[string]any, len(a))
 	for i, x := range a {
 		m, ok := x.(map[string]any)
@@ -243,7 +250,7 @@ func newTable(a []any) (*table, bool) {
 	}
 	var best *table
 	for _, flatten := range []bool{false, true} {
-		for _, factor := range []bool{false, true} {
+		for _, factor := range []bool{false, factorOK} {
 			if t := layout(rows, flatten, factor); best == nil || t.size() < best.size() {
 				best = t
 			}

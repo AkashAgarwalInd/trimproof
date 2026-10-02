@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
-**Amended four times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call) and [Amendment 4](#amendment-4-toonx-2-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
+**Amended five times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result) and [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
 
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
@@ -456,3 +456,34 @@ go run ./cmd/bench run -targets nim:openai/gpt-oss-20b,nim:nvidia/nemotron-3-sup
 ```
 
 The full-run commands are unchanged except for these call caps: payload Q&A `-max-calls 417` per model, and free-form answers `-max-calls 324` with judge `-max-calls 108`.
+
+## Amendment 5: pilot 2 failed its rule; diagnostic (before any result)
+
+**Date:** 2026-10-02, after pilot 2 and before the diagnostic below.
+
+**Pilot 2 outcome** ([pilot2.jsonl](verify-2026-10/pilot2.jsonl)): JSON 17/18 correct, toonx 2 15/18. That is 2 fewer, against an allowed 1.
+- Both misses are nemotron-3-super on toonx, on `gitlab-projects-q3` (count) and `github-vscode-releases-q3` (largest value). Each reasoned for all 4,096 output tokens and gave no answer.
+- Both count against both forms, so **under Amendment 4's rule both forms are removed.**
+- Every lookup that needed a form was answered correctly by every model (12 of 12).
+- Pilot 1 had the same failure with toonx 1, which has neither form: nemotron, `tvmaze-shows-q4` (largest value), 4,096 tokens, no answer.
+
+The rule cannot tell "the forms hurt" from "nemotron runs out of output tokens on toonx". This diagnostic tests which, and how its outcome will be read is fixed here.
+
+**Diagnostic:**
+- **Model:** nemotron-3-super only.
+- **Questions:** the three that failed: `payload-gitlab-projects-q3` and `payload-github-vscode-releases-q3` (seed 2004), and `payload-tvmaze-shows-q4` (seed 2001).
+- **Arms:** `toonx1` is toonx with the version 2 forms turned off; its bytes and primer equal toonx 1's on all 62 payloads. Each call runs 3 times.
+
+| limit | arms | calls |
+|---|---|---:|
+| 4,096 output tokens | `json-compact`, `toonx1`, `toonx` | 27 |
+| 16,384 output tokens | `toonx1`, `toonx` | 18 |
+| **total** | | **45** |
+
+**Reading, fixed now** (9 calls per arm and limit):
+- **The forms are the cause** if, at 4,096, `toonx` fails at least 3 more times than `toonx1`. Then Amendment 4's rule stands and both forms are removed.
+- **Otherwise the forms are not the cause.** toonx 2 is kept, and the write-up says that pilot 2's rule fired, and why it was set aside, linking this amendment.
+- **The output limit is the cause** if, at 16,384, `toonx1` and `toonx` each answer correctly at least 8 of 9 times. Then the full run uses max_tokens 16,384 for every model and arm, so no arm is cut off; output tokens are still counted in full.
+- **Otherwise** max_tokens stays 4,096, and toonx's extra output on nemotron is reported as a finding.
+
+Records go to `verify-2026-10/diag/`, one file per repeat and limit.
