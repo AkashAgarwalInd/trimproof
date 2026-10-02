@@ -129,3 +129,22 @@ Pre-registered in [Amendment 6](../VERIFY-PLAN.md#amendment-6-split-wide-tables-
 - Reasoning capture before Amendment 6: 10 calls, in [reasoning/](reasoning/).
 
 **Correction:** Amendment 6 lists `payload-github-search-repos-q2` among "4 aggregations on wide tables". Under seed 2004 that ID is a sparse lookup, as its records show. So pilot 3 had 5 lookups and 5 aggregations (3 counts, 2 largest-value), not 6 lookups from pilot 2 plus 4 aggregations. The question IDs, and so the calls, are as registered.
+
+## Outlier check on toonx 3, 2026-10-02 ([reasoning-toonx3/](reasoning-toonx3/))
+
+These are 7 free NIM calls that re-send, on toonx 3, the pilot 3 questions whose output grew most against JSON, with the reasoning text kept. They are not results.
+
+| model | question | pilot 3 output | re-sent output | re-sent answer |
+|---|---|---:|---:|---|
+| nemotron | react-contributors q2 | 1,612 | 581 | correct |
+| nemotron | tvmaze-shows q1 | 1,500 | 2,591 | correct |
+| nemotron | search-repos q2 | 777 | 692 | correct |
+| nemotron | gitlab q3 | 1,435 | 481 | correct |
+| gpt-oss | dockerhub q4 | 243 | 104 | correct |
+| gpt-oss | rust-issues q1 | 386 | 98 | correct |
+| gpt-oss | tvmaze-shows q1 | 245 | 209 | wrong: `shows/266`, without the "starts with" prefix |
+
+**What the reasoning shows:**
+- **Run-to-run variation is large.** The same call at temperature 0 used between 0.3× and 1.7× the output tokens. One call per question cannot show a per-question effect.
+- **Joins across parts:** every lookup outlier needs one. The row is found by a field in one part (`id`), and its row number is then used to read another part. Nemotron writes out every row of the first part to find the id: 2,591 tokens on tvmaze.
+- **"starts with" is still misread.** gpt-oss read `shows/266` and did not put `https://api.tvmaze.com/` in front, in pilot 3 and again here.
