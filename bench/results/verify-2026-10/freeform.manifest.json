@@ -1,0 +1,691 @@
+{
+  "codec": "toonx2",
+  "seed": 3000,
+  "rule": "largest array of objects cut to its first 20 rows, halved until \u003c= 16000 o200k tokens (min 5 rows); kept only if the default gates encode it; up to 4 questions per payload",
+  "items": [
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "node-tags",
+      "url": "https://api.github.com/repos/nodejs/node/tags?per_page=100",
+      "sha256": "005650a760c8156ef688b85776917c8fefdf1fd85eee7b293c364758242a2bd0",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 8004,
+      "questions": [
+        {
+          "id": "freeform-github-node-tags-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "search-repos",
+      "url": "https://api.github.com/search/repositories?q=llm+gateway\u0026per_page=30",
+      "sha256": "18312034bd5f7d2e06a1d2b42b014c23abb36aedc8a7f093da88788069cbb00c",
+      "table_path": "items",
+      "table_rows": 30,
+      "rows_kept": 10,
+      "json_bytes": 55354,
+      "questions": [
+        {
+          "id": "freeform-github-search-repos-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the \"items\" list stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "jsonplaceholder",
+      "name": "users",
+      "url": "https://jsonplaceholder.typicode.com/users",
+      "sha256": "bfba663e2221e5ce0544da02447e8be5e7316e33ae0d5f47e72bdcf270d50ec3",
+      "table_path": "",
+      "table_rows": 10,
+      "rows_kept": 10,
+      "json_bytes": 4094,
+      "questions": [
+        {
+          "id": "freeform-jsonplaceholder-users-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the result whose \"id\" is 2 in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "nyc-opendata",
+      "name": "collisions",
+      "url": "https://data.cityofnewyork.us/resource/h9gi-nx95.json?$limit=100",
+      "sha256": "539d780168312608283642f8201288b8aaf8e16e1f92956b2c0d8257f2a3aa7a",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 13074,
+      "questions": [
+        {
+          "id": "freeform-nyc-opendata-collisions-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the result whose \"collision_id\" is 4566131 and 4623865. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "linux-commits",
+      "url": "https://api.github.com/repos/torvalds/linux/commits?per_page=30",
+      "sha256": "0be0ddd90c51400e698e82a636a4680d81aa19635560ea9725a4af55a15e9b75",
+      "table_path": "",
+      "table_rows": 30,
+      "rows_kept": 10,
+      "json_bytes": 45267,
+      "questions": [
+        {
+          "id": "freeform-github-linux-commits-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "coingecko",
+      "name": "markets",
+      "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd\u0026per_page=50\u0026page=1",
+      "sha256": "67b28b91798114280e4049d5b928471ae871908723eee7f311c37197bb10bb99",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 15652,
+      "questions": [
+        {
+          "id": "freeform-coingecko-markets-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the result stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "coingecko",
+      "name": "exchanges",
+      "url": "https://api.coingecko.com/api/v3/exchanges?per_page=50",
+      "sha256": "7eca120e58d8bb92a8085b4d9c30bf653ac57f934e5752de92fd5ca4f9cd6702",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 19291,
+      "questions": [
+        {
+          "id": "freeform-coingecko-exchanges-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the result whose \"id\" is bybit_spot in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "gitlab",
+      "name": "projects",
+      "url": "https://gitlab.com/api/v4/projects?per_page=30\u0026order_by=last_activity_at",
+      "sha256": "ee806df7057eaf74a6d6e452d9826c223e7f23bbfdf45a3d4a491834b3f9ed3a",
+      "table_path": "",
+      "table_rows": 30,
+      "rows_kept": 20,
+      "json_bytes": 19275,
+      "questions": [
+        {
+          "id": "freeform-gitlab-projects-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the result whose \"id\" is 65132781 and 86962411. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "citibike",
+      "name": "stations",
+      "url": "https://gbfs.citibikenyc.com/gbfs/en/station_information.json",
+      "sha256": "b174809acb8de88583ce3078370c6343e8e9c03c6a227cc9158e7e0d6546ce2c",
+      "table_path": "data.stations",
+      "table_rows": 2520,
+      "rows_kept": 20,
+      "json_bytes": 10226,
+      "questions": [
+        {
+          "id": "freeform-citibike-stations-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "federalregister",
+      "name": "documents",
+      "url": "https://www.federalregister.gov/api/v1/documents.json?per_page=50",
+      "sha256": "81449b4c1e25492a49d4a42af06d231bd994453f92882abf4916fa0d78dc507c",
+      "table_path": "results",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 28792,
+      "questions": [
+        {
+          "id": "freeform-federalregister-documents-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the \"results\" list stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "chicago-data",
+      "name": "crimes",
+      "url": "https://data.cityofchicago.org/resource/ijzp-q8t2.json?$limit=100",
+      "sha256": "e39a62a60d9eecd8654ab14be987890c302ca6c51538160049266eecfa6e83f6",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 12127,
+      "questions": [
+        {
+          "id": "freeform-chicago-data-crimes-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the result whose \"id\" is 14338187 in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "dockerhub",
+      "name": "library-repos",
+      "url": "https://hub.docker.com/v2/repositories/library/?page_size=50",
+      "sha256": "2c543b1258716855dc4b3e095cc04234cda25b85af96699fcd54593d1b78a44f",
+      "table_path": "results",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 14530,
+      "questions": [
+        {
+          "id": "freeform-dockerhub-library-repos-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the \"results\" list whose \"name\" is debian and buildpack-deps. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "pokeapi",
+      "name": "pokemon-list",
+      "url": "https://pokeapi.co/api/v2/pokemon?limit=100",
+      "sha256": "928696b94d0737dcaca45571d7e0e3685b8f83017b113d8e9bd7f84691065407",
+      "table_path": "results",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 1418,
+      "questions": [
+        {
+          "id": "freeform-pokeapi-pokemon-list-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "google-repos",
+      "url": "https://api.github.com/orgs/google/repos?per_page=50",
+      "sha256": "ade14001c521cd23a9085d4877a07139fd81a7f214f5e2859aa5c67081fe6704",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 10,
+      "json_bytes": 54914,
+      "questions": [
+        {
+          "id": "freeform-github-google-repos-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the result stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "go-labels",
+      "url": "https://api.github.com/repos/golang/go/labels?per_page=100",
+      "sha256": "1c69e7c44423ee8bddae56e01d765606fe1fdf8ef0b8024dfb0f42711d3b74a0",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 5217,
+      "questions": [
+        {
+          "id": "freeform-github-go-labels-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the result whose \"id\" is 943041965 in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "vscode-releases",
+      "url": "https://api.github.com/repos/microsoft/vscode/releases?per_page=20",
+      "sha256": "0475dae8e245b55104c8a7d3d3e9265e1412335a4ee5aea900fff6696bf2d765",
+      "table_path": "",
+      "table_rows": 20,
+      "rows_kept": 20,
+      "json_bytes": 39413,
+      "questions": [
+        {
+          "id": "freeform-github-vscode-releases-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the result whose \"id\" is 384947215 and 350789479. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "stackexchange",
+      "name": "so-questions",
+      "url": "https://api.stackexchange.com/2.3/questions?order=desc\u0026sort=activity\u0026site=stackoverflow\u0026pagesize=50",
+      "sha256": "662c4e8747ad6574eae38e72806b6c9359d4f77056e12541ecdcf10557e7a046",
+      "table_path": "items",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 15510,
+      "questions": [
+        {
+          "id": "freeform-stackexchange-so-questions-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "openbrewerydb",
+      "name": "breweries",
+      "url": "https://api.openbrewerydb.org/v1/breweries?per_page=50",
+      "sha256": "f4ed3b55dbf02ab3e5d54317a614784899ad0b7a9bcc724db809f899eed1a09e",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 8213,
+      "questions": [
+        {
+          "id": "freeform-openbrewerydb-breweries-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the result stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "usgs",
+      "name": "quakes-week-m2.5",
+      "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson",
+      "sha256": "2a0bb0984e6358571d417ccc2c84dc9dc7ce4636bc9d4ed6c9bb1e4a756dfdbf",
+      "table_path": "features",
+      "table_rows": 326,
+      "rows_kept": 20,
+      "json_bytes": 14426,
+      "questions": [
+        {
+          "id": "freeform-usgs-quakes-week-m2.5-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the \"features\" list whose \"id\" is nc75442791 in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "rickandmorty",
+      "name": "characters",
+      "url": "https://rickandmortyapi.com/api/character",
+      "sha256": "ed2d6856a6f06d59b8386b017fe88c5bec5be49f7398febe298b56bf45cddf61",
+      "table_path": "results",
+      "table_rows": 20,
+      "rows_kept": 20,
+      "json_bytes": 19496,
+      "questions": [
+        {
+          "id": "freeform-rickandmorty-characters-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the \"results\" list whose \"id\" is 11 and 15. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "rust-closed-issues",
+      "url": "https://api.github.com/repos/rust-lang/rust/issues?state=closed\u0026per_page=50",
+      "sha256": "76314e29769367caa91a3c4adba6109c56b7a07a49bbdf469058999f9864c267",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 5,
+      "json_bytes": 45163,
+      "questions": [
+        {
+          "id": "freeform-github-rust-closed-issues-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "tvmaze",
+      "name": "shows",
+      "url": "https://api.tvmaze.com/shows?page=1",
+      "sha256": "f003dc350dde7a2028e825339bcd2c004d19f2930ac4c71277e45888b0e22ca2",
+      "table_path": "",
+      "table_rows": 245,
+      "rows_kept": 20,
+      "json_bytes": 27852,
+      "questions": [
+        {
+          "id": "freeform-tvmaze-shows-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the result stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "react-contributors",
+      "url": "https://api.github.com/repos/facebook/react/contributors?per_page=100",
+      "sha256": "89a6efcacfd9758cb77c78c9281466a945d90ea90b968584ed4507bbb4ef0f9a",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 18833,
+      "questions": [
+        {
+          "id": "freeform-github-react-contributors-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the result whose \"id\" is 3624098 in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "crossref",
+      "name": "works-llm",
+      "url": "https://api.crossref.org/works?query=large+language+models\u0026rows=30",
+      "sha256": "4e2cfcf7ddf13bbd83f68dcc60963a09342e680b6ba67ea104d35c49b417ca96",
+      "table_path": "message.items",
+      "table_rows": 30,
+      "rows_kept": 10,
+      "json_bytes": 20016,
+      "questions": [
+        {
+          "id": "freeform-crossref-works-llm-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the \"message.items\" list whose \"DOI\" is 10.5220/0014649700004058 and 10.1007/979-8-8688-0540-0_1. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "nyc-opendata",
+      "name": "311-requests",
+      "url": "https://data.cityofnewyork.us/resource/erm2-nwe9.json?$limit=100",
+      "sha256": "9b0c2adbc1cb61ef750ca4bb35cc6b451f45084e27b2544c6f62eaa363a9aa52",
+      "table_path": "",
+      "table_rows": 100,
+      "rows_kept": 20,
+      "json_bytes": 23001,
+      "questions": [
+        {
+          "id": "freeform-nyc-opendata-311-requests-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "npm",
+      "name": "search-react",
+      "url": "https://registry.npmjs.org/-/v1/search?text=react\u0026size=50",
+      "sha256": "729e8bafbc084fba80eb05e7562f0b00e92a80bba9ae2d6b258976a8912488fb",
+      "table_path": "objects",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 21464,
+      "questions": [
+        {
+          "id": "freeform-npm-search-react-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the \"objects\" list stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "hn-algolia",
+      "name": "latest-stories",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story\u0026hitsPerPage=50",
+      "sha256": "8c77e1e8ae734b6359594d0418d2316b0a1818c0b1ba4be20ef09dbfe665543f",
+      "table_path": "hits",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 18790,
+      "questions": [
+        {
+          "id": "freeform-hn-algolia-latest-stories-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the \"hits\" list whose \"story_id\" is 49932840 in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "wikipedia",
+      "name": "recent-changes",
+      "url": "https://en.wikipedia.org/w/api.php?action=query\u0026list=recentchanges\u0026rclimit=50\u0026format=json",
+      "sha256": "472709baae02cd057dd2ba6cd6afcba0a4a85d263fe513bb5731eaee9928ffb7",
+      "table_path": "query.recentchanges",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 3788,
+      "questions": [
+        {
+          "id": "freeform-wikipedia-recent-changes-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the \"query.recentchanges\" list whose \"rcid\" is 2075315147 and 2075315132. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "crates",
+      "name": "top-downloads",
+      "url": "https://crates.io/api/v1/crates?page=1\u0026per_page=50\u0026sort=downloads",
+      "sha256": "4376b60aa36ce325a0484f2a33d2d53ae7380c99ad1f90c6054180c41ffd9a53",
+      "table_path": "crates",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 18904,
+      "questions": [
+        {
+          "id": "freeform-crates-top-downloads-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "github",
+      "name": "go-issues",
+      "url": "https://api.github.com/repos/golang/go/issues?per_page=50",
+      "sha256": "3dd704914a582e1b45d487467df34518dcc962587e7187932dcdb7795a599a0b",
+      "table_path": "",
+      "table_rows": 50,
+      "rows_kept": 5,
+      "json_bytes": 25723,
+      "questions": [
+        {
+          "id": "freeform-github-go-issues-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the result stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "tvmaze",
+      "name": "schedule-us",
+      "url": "https://api.tvmaze.com/schedule?country=US\u0026date=2026-09-30",
+      "sha256": "7fcf37854c8f76792bbb0a18912471cc31436e3c01b939e685ce14e9ced1244e",
+      "table_path": "",
+      "table_rows": 144,
+      "rows_kept": 20,
+      "json_bytes": 39220,
+      "questions": [
+        {
+          "id": "freeform-tvmaze-schedule-us-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the result whose \"id\" is 3770313 in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "itunes",
+      "name": "search-jazz",
+      "url": "https://itunes.apple.com/search?term=jazz\u0026limit=50",
+      "sha256": "af1989690ee11bba9dec205bd115bff76c042fd505d56cdca371b820b53eb015",
+      "table_path": "results",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 42727,
+      "questions": [
+        {
+          "id": "freeform-itunes-search-jazz-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the \"results\" list whose \"artistName\" is Ralph Nelson and Top Chef. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "github",
+      "name": "k8s-issue-comments",
+      "url": "https://api.github.com/repos/kubernetes/kubernetes/issues/comments?per_page=30",
+      "sha256": "4e1a80a556ad502c821daf14ce61f6a7f0365a2baf9bde5762bf5d66b932c3c8",
+      "table_path": "",
+      "table_rows": 30,
+      "rows_kept": 20,
+      "json_bytes": 35789,
+      "questions": [
+        {
+          "id": "freeform-github-k8s-issue-comments-summary",
+          "kind": "freeform-summary",
+          "text": "Summarize this data for a colleague in 3 to 5 bullet points. Name specific items and include concrete values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "held-out",
+      "api": "github",
+      "name": "torvalds-events",
+      "url": "https://api.github.com/users/torvalds/events/public?per_page=30",
+      "sha256": "6bcf3a1f0acdce5eb7d330dc26b433b176550394034d9b21f1defbd819c009a9",
+      "table_path": "",
+      "table_rows": 30,
+      "rows_kept": 20,
+      "json_bytes": 21662,
+      "questions": [
+        {
+          "id": "freeform-github-torvalds-events-highlights",
+          "kind": "freeform-highlights",
+          "text": "Which 3 items in the result stand out most? For each, explain in one or two sentences why, quoting its values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "openlibrary",
+      "name": "search",
+      "url": "https://openlibrary.org/search.json?q=distributed+systems\u0026limit=50",
+      "sha256": "dfbd6271824555bd3917ba3043ef0946db782dafeee523a624e8ee0b5a9f010c",
+      "table_path": "docs",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 7889,
+      "questions": [
+        {
+          "id": "freeform-openlibrary-search-describe",
+          "kind": "freeform-describe",
+          "text": "Describe the item in the \"docs\" list whose \"key\" is /works/OL3287606W in a short paragraph, covering its most important fields and their values.",
+          "answers": null
+        }
+      ]
+    },
+    {
+      "set": "tuning",
+      "api": "npm",
+      "name": "search-cli",
+      "url": "https://registry.npmjs.org/-/v1/search?text=keywords:cli\u0026size=50",
+      "sha256": "4ddfa69c35116608fd8c328e02a1a0568901c9796b048f3372c185a7e7a4486a",
+      "table_path": "objects",
+      "table_rows": 50,
+      "rows_kept": 20,
+      "json_bytes": 19537,
+      "questions": [
+        {
+          "id": "freeform-npm-search-cli-compare",
+          "kind": "freeform-compare",
+          "text": "Compare the items in the \"objects\" list whose \"package.name\" is yargs and supports-color. List the fields where they differ, with both values.",
+          "answers": null
+        }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
-**Amended seven times,** also on 2026-10-02 and before any result: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result), [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result), [Amendment 6](#amendment-6-split-wide-tables-before-any-result) and [Amendment 7](#amendment-7-row-key-and-marked-prefixes-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
+**Amended eight times,** on 2026-10-02 and 2026-10-03, each before any result it governs: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result), [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result), [Amendment 6](#amendment-6-split-wide-tables-before-any-result), [Amendment 7](#amendment-7-row-key-and-marked-prefixes-before-any-result) and [Amendment 8](#amendment-8-the-full-run-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
 
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
@@ -636,3 +636,113 @@ The coverage reports are regenerated for toonx 4:
 **Free-form outcome** ([FREEFORM.md](verify-2026-10/FREEFORM.md)):
 - **The rule's test:** over all models, toonx − json in the share of answers with a judged error is +5.8pp [−3.8, +15.4]. The upper bound is above the 15pp margin, so **"no large drop" may not be claimed.**
 - **glm on its own:** +24.2pp [+6.1, +42.4].
+
+## Amendment 8: the full run (before any result)
+
+**Date:** 2026-10-03, after the free-form check and before any full-run call. **This is the last amendment before publication.** From here on, only harness bug fixes are allowed. Any change to a codec, primer, format or question set goes into a later release, with a run of its own.
+
+**Why.** Pilots 1–4 each changed the codec on about 20 answers per arm, and the same questions gave nemotron a 36% cost saving in pilot 3 and 22% in pilot 4. Differences that size cannot choose between versions. The full run measures toonx 3 as it is.
+
+### Frozen
+- **Codec:** toonx 3, as of this amendment's commit.
+- **Output limit:** `-max-tokens 16384` and a 12-minute call timeout ([Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result)).
+- **Payload Q&A:** the 139 questions in `data/payload-qa/manifest.json`, read from the manifest.
+
+### Models
+- `openai/gpt-oss-20b`, `nvidia/nemotron-3-super-120b-a12b` and `z-ai/glm-5.3-flash`. The Mistral and Google slots have no model ([PILOT.md](verify-2026-10/PILOT.md#smoke-checks-5-calls-per-candidate)).
+- **A non-reasoning slot (new).** All three models reason before answering, which is where extra output costs most. Candidates get the registered 5-call smoke check, in this order:
+  1. `nvidia/llama-3.1-nemotron-70b-instruct`;
+  2. `meta/llama-3.2-90b-vision-instruct`.
+
+  The first that passes joins every stage below. If neither passes, the run has 3 models and the write-up says so.
+
+### Arms
+- **`toonx-p2` is dropped,** and the primer follow-up (Step 3) is not run. The captured reasoning shows the models read the format correctly; the cost is in finding a column, which a primer does not change.
+- Everything else is as registered: `json-compact`, `json-compact-2` and `toonx` on every set; `gateway` on gpt-oss; `tabular` on nemotron.
+
+### Stages, run in this order
+Each stage is complete on its own and is reported on its own.
+
+| stage | questions × arms | calls, 3 models | calls added by a 4th model |
+|---|---|---:|---:|
+| 1. payload Q&A (real API responses) | 139 × `json-compact`, `json-compact-2`, `toonx` | 1,251 | 417 |
+| 2. synthetic, seeds 1000–1004 | 230 × the same 3 | 2,070 | 690 |
+| 3. gateway path, gpt-oss | 120 × `json-compact`, `gateway` | 240 | – |
+| 4. WikiTableQuestions | 100 × the same 3 | 900 | 300 |
+| 5. `tabular`, nemotron | 230 × 1 | 230 | – |
+| **total** | | **4,691** | **1,407** |
+
+Smoke checks add at most 10 calls. **Stopping:** if the run has not finished 3 days after it starts, the unfinished stages are reported as not run, with the calls they did make.
+
+### Precision, stated before the data
+- Phase 0's accuracy intervals were about ±6–8pp at 46 questions. At 230 questions that becomes about ±3–4pp, and about ±4–5pp at 100–139.
+- A "non-inferior within 3pp" verdict therefore needs a point estimate near +1pp or better. **"Inconclusive at this sample size" is a likely verdict on some models,** and is reported as such.
+
+### New analyses (no calls)
+**1. Promotion replay.** This is the gateway's own promotion test, run on the full run's records as if they were a route's shadow traffic.
+- **Traffic:** per model, every question of stages 1, 2 and 4 that `json-compact` (A), `toonx` (B) and `json-compact-2` (C) all answered.
+  - The three sets are pooled, as one route's traffic would be; on its own, no set reaches the first look at 200 samples except synthetic.
+  - Questions arrive in a fixed shuffled order (seed 1).
+- **Each question is one three-arm sample.**
+  - Agreement is the gateway's comparator (`eval.DefaultComparator`) on the replies.
+  - Tier 1 is "scored correct", so the McNemar check applies.
+  - Usage is the provider-reported tokens.
+- **Settings:** the gateway defaults (`eval.DefaultThresholds`: first look at 200 samples, then every 100, z = 2.5, ε = 0.02), `min_net_savings` 0.15, output priced at 4×.
+- **Reported:** every look until the state changes, with its reason, whatever it is.
+- **Known behaviour, reported as is:**
+  - a significant Tier 1 regression holds a route in SHADOW instead of switching it OFF;
+  - a route that never reaches a decision stays in SHADOW.
+
+**2. Multi-turn projection,** in `verify-report`.
+- **What it is:** net saving at output ×4 when the same tool result is sent on each of T = 1, 3 and 10 turns and the output difference is paid once. A second version bills every resend after the first at 0.1× input, as with prompt caching.
+- **Labelled "computed, not measured":** no multi-turn conversation is run. It is never quoted without that label.
+
+Net savings at k = 1 are reported beside k = 4, as registered.
+
+### What the write-up may say, fixed now
+- **Per model:**
+  - input saving and net saving at ×4, each with its interval;
+  - the accuracy verdict with the noise floor beside it;
+  - the promotion replay's decision.
+- **Pooled claims:** only as "on k of N models".
+- **The headline is the replay's outcome, worded to match it:**
+  - **Some models promoted, others not:** "trimproof's promotion test would have turned toonx on for [models] and kept JSON for [models]."
+  - **None promoted:** "it would not have turned toonx on for any model tested," with each reason.
+  - **All promoted:** say so, still with each model's interval.
+- **Disclosed whatever the outcome:**
+  - pilot 2's rule firing, and why it was set aside;
+  - the free-form result ("no large drop" not supported; glm +24.2pp);
+  - nemotron's extra output;
+  - the 8 Q&A payloads below toonx 3's savings gate;
+  - the empty model slots;
+  - that no Claude or OpenAI-hosted model was tested.
+
+### Commands
+`MODELS` is the 3 models, plus the non-reasoning model if one passes its smoke check. `-max-calls` is the stage's call count for that many models.
+
+```sh
+go run ./cmd/bench run -targets nim:CANDIDATE -seed 1000 -n 5 -formats json-compact -max-calls 5 \
+  -out bench/results/verify-2026-10/smoke.jsonl
+# 1
+go run ./cmd/bench run -targets MODELS -source payloads -seed 1000 -formats json-compact,json-compact-2,toonx \
+  -max-tokens 16384 -max-calls 1668 -rpm 30 -out bench/results/verify-2026-10/payloads.jsonl
+# 2
+go run ./cmd/bench run -targets MODELS -seed 1000 -seeds 5 -formats json-compact,json-compact-2,toonx \
+  -max-tokens 16384 -max-calls 2760 -rpm 30 -out bench/results/verify-2026-10/synthetic.jsonl
+# 3: the gateway as in Commands, on the route {"tenant_id":"*","route_id":"verify","version":"verify.2","codec":"toonx","state":"ENABLED","shadow_sample_rate":0,"audit_sample_rate":0}
+go run ./cmd/bench run -targets nim:openai/gpt-oss-20b -seed 1000 -seeds 5 -n 120 -formats json-compact,gateway \
+  -via-gateway http://127.0.0.1:8080/openai/v1 -route verify -max-tokens 16384 -max-calls 240 -rpm 30 \
+  -out bench/results/verify-2026-10/gateway.jsonl
+# 4
+go run ./cmd/bench run -targets MODELS -source wtq -n 100 -seed 1000 -formats json-compact,json-compact-2,toonx \
+  -max-tokens 16384 -max-calls 1200 -rpm 30 -out bench/results/verify-2026-10/wtq.jsonl
+# 5
+go run ./cmd/bench run -targets nim:nvidia/nemotron-3-super-120b-a12b -seed 1000 -seeds 5 -formats tabular \
+  -max-tokens 16384 -max-calls 230 -rpm 30 -out bench/results/verify-2026-10/synthetic.jsonl
+
+# reports
+go run ./cmd/bench verify-report -in bench/results/verify-2026-10/payloads.jsonl   # and each other stage
+go run ./cmd/bench promotion-replay -in bench/results/verify-2026-10/payloads.jsonl,bench/results/verify-2026-10/synthetic.jsonl,bench/results/verify-2026-10/wtq.jsonl
+```
+
+`tabular` goes to the synthetic file, as originally registered, so its baseline is stage 2's `json-compact`. The replay uses only the three arms it names.

@@ -187,6 +187,17 @@ func main() {
 			log.Fatal(err)
 		}
 		bench.LiveReport(os.Stdout, recs, bench.GoCriteria{MinReduction: *minRed, Alpha: *alpha})
+	case "promotion-replay":
+		// -in may list several runs: a route's traffic is all of them.
+		var recs []bench.Record
+		for _, path := range split(*in) {
+			rs, err := bench.ReadRecords(path)
+			if err != nil {
+				log.Fatal(err)
+			}
+			recs = append(recs, rs...)
+		}
+		bench.PromotionReplay(os.Stdout, recs, bench.DefaultReplay())
 	case "verify-report", "datapoints":
 		recs, err := bench.ReadRecords(*in)
 		if err != nil {

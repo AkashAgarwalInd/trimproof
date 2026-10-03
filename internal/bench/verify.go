@@ -294,6 +294,8 @@ func VerifyReport(w io.Writer, recs []Record, cfg VerifyConfig) {
 	fmt.Fprintln(w, "Input and output columns are the change against `json-compact` (negative input = saving). Net saving is the reduction in input + k·output tokens; k is the output/input price ratio.")
 	fmt.Fprintln(w)
 
+	multiTurn(w, groups, cfg)
+
 	fmt.Fprintln(w, "### Input savings by data set")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "| model | format | data set | rows | n | input tokens |")
@@ -335,6 +337,51 @@ func VerifyReport(w io.Writer, recs []Record, cfg VerifyConfig) {
 		}
 	}
 	fmt.Fprintln(w)
+}
+
+// multiTurn projects the net saving at k=4 when an agent resends the tool
+// result on each of T turns while the output difference occurs once. The
+// cached variant bills each resend at 0.1× input, as with prompt caching.
+// It is computed from single-turn records, not measured.
+func multiTurn(w io.Writer, groups []*group, cfg VerifyConfig) {
+	const k = 4
+	// Columns: turns T and the price of each resend relative to input.
+	cols := []struct{ t, c float64 }{{1, 1}, {3, 1}, {10, 1}, {3, 0.1}, {10, 0.1}}
+	fmt.Fprintln(w, "### Multi-turn projection (computed, not measured)")
+	fmt.Fprintln(w)
+	head, sep := "| model | format | n |", "|---|---|---:|"
+	for _, col := range cols {
+		label := fmt.Sprintf("%g turns", col.t)
+		if col.t == 1 {
+			label = "1 turn"
+		} else if col.c != 1 {
+			label += fmt.Sprintf(", resends at %g×", col.c)
+		}
+		head += " " + label + " |"
+		sep += "---|"
+	}
+	fmt.Fprintln(w, head)
+	fmt.Fprintln(w, sep)
+	for _, g := range groups {
+		for _, fm := range []string{"toonx", "gateway"} {
+			ps := g.pairs("json-compact", fm)
+			if len(ps) == 0 {
+				continue
+			}
+			var metrics []func(sums) float64
+			for _, col := range cols {
+				m := 1 + col.c*(col.t-1)
+				metrics = append(metrics, func(s sums) float64 { return 1 - (m*s.inB+k*s.outB)/(m*s.inA+k*s.outA) })
+			}
+			row := fmt.Sprintf("| %s | %s | %d |", g.name, fm, len(ps))
+			for _, iv := range bootstrap(ps, cfg, metrics) {
+				row += " " + iv.pct() + " |"
+			}
+			fmt.Fprintln(w, row)
+		}
+	}
+	fmt.Fprintln(w)
+	fmt.Fprintf(w, "Net saving with output ×%d when the same tool result is sent on each of T turns and the output difference is paid once. At 0.1×, every resend after the first is billed as cached input. These are projections from single-turn calls; no multi-turn conversation was run.\n\n", k)
 }
 
 // primerVariant compares the toonx-p2 arm with toonx directly and applies
