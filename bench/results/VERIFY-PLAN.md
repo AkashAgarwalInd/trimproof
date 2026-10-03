@@ -632,3 +632,7 @@ The coverage reports are regenerated for toonx 4:
 - **The codec has a single form, toonx 3.** The switches that gave versions 1, 2 and 4 are removed, and so are the bench formats `toonx1`, `toonx2`, `toonx3`, `toonx4`, `toonx-split` and `toonx-narrow`.
 - **Earlier records** (diag/, pilots 3 and 4, SPLIT-TOKENS.md, TOONX4-TOKENS.md) reproduce from commit `9dcf89c`.
 - **The payload Q&A set is now read from its registered manifest** instead of being re-chosen by toonx 2's gates. The datasets are byte for byte the same.
+
+**Free-form outcome** ([FREEFORM.md](verify-2026-10/FREEFORM.md)):
+- **The rule's test:** over all models, toonx − json in the share of answers with a judged error is +5.8pp [−3.8, +15.4]. The upper bound is above the 15pp margin, so **"no large drop" may not be claimed.**
+- **glm on its own:** +24.2pp [+6.1, +42.4].
