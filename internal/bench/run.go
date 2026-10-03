@@ -69,8 +69,8 @@ type RunConfig struct {
 	Datasets    []*Dataset
 	Formats     []string
 	Out         string // JSONL path; existing successful records are skipped
-	Concurrency int
-	RPM         int // requests per minute across all targets
+	Concurrency int    // in-flight calls per target
+	RPM         int    // requests per minute across all targets
 	MaxTokens   int
 	// MaxCalls caps the calls one invocation may plan; a run that would
 	// exceed it does not start. Empty replies are retried up to twice more.
@@ -137,7 +137,6 @@ func Run(ctx context.Context, cfg RunConfig) error {
 	interval := time.Minute / time.Duration(max(1, cfg.RPM))
 	tick := time.NewTicker(interval)
 	defer tick.Stop()
-	sem := make(chan struct{}, max(1, cfg.Concurrency))
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	w := bufio.NewWriter(f)
@@ -158,82 +157,107 @@ func Run(ctx context.Context, cfg RunConfig) error {
 		return text, primer, err
 	}
 
-	for _, j := range jobs {
-		select {
-		case <-ctx.Done():
-			wg.Wait()
-			return ctx.Err()
-		case <-tick.C:
+	call := func(j job) {
+		rec := Record{Provider: j.t.Provider, Model: j.t.Model, Dataset: j.d.Name, Rows: j.d.Rows, Seed: j.d.Seed,
+			QuestionID: j.q.ID, Kind: j.q.Kind, Question: j.q.Text, Format: j.format, Answer: j.q.Answer}
+		if len(j.q.Answers) > 0 {
+			rec.Answer = strings.Join(j.q.Answers, " | ")
 		}
-		sem <- struct{}{}
-		wg.Add(1)
-		go func(j job) {
-			defer wg.Done()
-			defer func() { <-sem }()
-			rec := Record{Provider: j.t.Provider, Model: j.t.Model, Dataset: j.d.Name, Rows: j.d.Rows, Seed: j.d.Seed,
-				QuestionID: j.q.ID, Kind: j.q.Kind, Question: j.q.Text, Format: j.format, Answer: j.q.Answer}
-			if len(j.q.Answers) > 0 {
-				rec.Answer = strings.Join(j.q.Answers, " | ")
+		client := j.t.Client
+		if j.format == "gateway" {
+			client = cfg.Gateway
+		}
+		text, primer, err := render(j.d, j.format)
+		rec.Started = time.Now().UTC().Format(time.RFC3339)
+		var thinking string
+		if err == nil {
+			var res *Result
+			// Some serving stacks intermittently return empty content;
+			// retry so a transport artifact is not scored as a format effect.
+			for attempt := 0; attempt < 3; attempt++ {
+				cctx, cancel := context.WithTimeout(ctx, CallTimeout)
+				res, err = client.Do(cctx, Call{
+					Model: j.t.Model, System: systemFor(j.q), Primer: primer, Question: j.q.Text,
+					Tool: j.d.Tool, ToolArgs: j.d.ToolArgs, ToolResult: text, MaxTokens: cfg.MaxTokens,
+				})
+				cancel()
+				if err != nil || strings.TrimSpace(Clean(res.Text)) != "" {
+					break
+				}
 			}
-			client := j.t.Client
-			if j.format == "gateway" {
-				client = cfg.Gateway
-			}
-			text, primer, err := render(j.d, j.format)
-			rec.Started = time.Now().UTC().Format(time.RFC3339)
-			var thinking string
 			if err == nil {
-				var res *Result
-				// Some serving stacks intermittently return empty content;
-				// retry so a transport artifact is not scored as a format effect.
-				for attempt := 0; attempt < 3; attempt++ {
-					cctx, cancel := context.WithTimeout(ctx, CallTimeout)
-					res, err = client.Do(cctx, Call{
-						Model: j.t.Model, System: systemFor(j.q), Primer: primer, Question: j.q.Text,
-						Tool: j.d.Tool, ToolArgs: j.d.ToolArgs, ToolResult: text, MaxTokens: cfg.MaxTokens,
-					})
-					cancel()
-					if err != nil || strings.TrimSpace(Clean(res.Text)) != "" {
-						break
-					}
-				}
-				if err == nil {
-					rec.Empty = strings.TrimSpace(Clean(res.Text)) == ""
-					rec.Reply, rec.InputTokens, rec.OutputTokens = res.Text, res.InputTokens, res.OutputTokens
-					rec.ReasoningTokens, rec.ReasoningEstimated = res.ReasoningTokens, res.ReasoningEstimated
-					rec.LatencyMS = res.Latency.Milliseconds()
-					rec.Representation = res.Representation
-					rec.FinishReason, thinking = res.FinishReason, res.Reasoning
-					if !j.q.FreeForm {
-						rec.Correct = Correct(j.q, res.Text)
-					}
+				rec.Empty = strings.TrimSpace(Clean(res.Text)) == ""
+				rec.Reply, rec.InputTokens, rec.OutputTokens = res.Text, res.InputTokens, res.OutputTokens
+				rec.ReasoningTokens, rec.ReasoningEstimated = res.ReasoningTokens, res.ReasoningEstimated
+				rec.LatencyMS = res.Latency.Milliseconds()
+				rec.Representation = res.Representation
+				rec.FinishReason, thinking = res.FinishReason, res.Reasoning
+				if !j.q.FreeForm {
+					rec.Correct = Correct(j.q, res.Text)
 				}
 			}
-			if err != nil {
-				rec.Error = err.Error()
-			}
-			line, _ := json.Marshal(rec)
-			mu.Lock()
-			defer mu.Unlock()
-			w.Write(append(line, '\n'))
-			w.Flush()
-			if thinking != "" {
-				rl, _ := json.Marshal(ReasoningRecord{Provider: rec.Provider, Model: rec.Model, QuestionID: rec.QuestionID,
-					Format: rec.Format, Started: rec.Started, Reasoning: thinking})
-				rf.Write(append(rl, '\n'))
-			}
-			completed++
-			if err != nil {
-				failed++
-				log.Printf("bench: %s %s %s: %v", j.t.Model, j.q.ID, j.format, err)
-			}
-			if completed%25 == 0 || completed == len(jobs) {
-				log.Printf("bench: %d/%d done (%d errors)", completed, len(jobs), failed)
-			}
-		}(j)
+		}
+		if err != nil {
+			rec.Error = err.Error()
+		}
+		line, _ := json.Marshal(rec)
+		mu.Lock()
+		defer mu.Unlock()
+		w.Write(append(line, '\n'))
+		w.Flush()
+		if thinking != "" {
+			rl, _ := json.Marshal(ReasoningRecord{Provider: rec.Provider, Model: rec.Model, QuestionID: rec.QuestionID,
+				Format: rec.Format, Started: rec.Started, Reasoning: thinking})
+			rf.Write(append(rl, '\n'))
+		}
+		completed++
+		if err != nil {
+			failed++
+			log.Printf("bench: %s %s %s: %v", j.t.Model, j.q.ID, j.format, err)
+		}
+		if completed%25 == 0 || completed == len(jobs) {
+			log.Printf("bench: %d/%d done (%d errors)", completed, len(jobs), failed)
+		}
 	}
+
+	// Each target gets its own pool of in-flight calls, so a model that
+	// queues for minutes at the provider does not hold up a fast one. The
+	// rate limit stays shared.
+	var order []string
+	byTarget := map[string][]job{}
+	for _, j := range jobs {
+		k := j.t.Provider + "/" + j.t.Model
+		if _, ok := byTarget[k]; !ok {
+			order = append(order, k)
+		}
+		byTarget[k] = append(byTarget[k], j)
+	}
+	var dispatch sync.WaitGroup
+	for _, k := range order {
+		dispatch.Add(1)
+		go func(js []job) {
+			defer dispatch.Done()
+			sem := make(chan struct{}, max(1, cfg.Concurrency))
+			for _, j := range js {
+				sem <- struct{}{}
+				select {
+				case <-ctx.Done():
+					<-sem
+					return
+				case <-tick.C:
+				}
+				wg.Add(1)
+				go func(j job) {
+					defer wg.Done()
+					defer func() { <-sem }()
+					call(j)
+				}(j)
+			}
+		}(byTarget[k])
+	}
+	dispatch.Wait()
 	wg.Wait()
-	return nil
+	return ctx.Err()
 }
 
 // ReasoningRecord is one call's reasoning text, in the sidecar file next to

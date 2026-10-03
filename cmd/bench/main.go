@@ -65,7 +65,7 @@ func main() {
 	targets := fs.String("targets", "", "comma-separated provider:model (provider = openai|anthropic)")
 	out := fs.String("out", "bench/results/results.jsonl", "results JSONL (run)")
 	in := fs.String("in", "bench/results/results.jsonl", "results JSONL (report)")
-	conc := fs.Int("concurrency", 6, "max in-flight requests")
+	conc := fs.Int("concurrency", 6, "max in-flight requests per model")
 	rpm := fs.Int("rpm", 30, "max requests per minute")
 	maxTok := fs.Int("max-tokens", 4096, "max output tokens (reasoning models need headroom)")
 	minRed := fs.Float64("min-reduction", 0.20, "go criterion: minimum input-token reduction")

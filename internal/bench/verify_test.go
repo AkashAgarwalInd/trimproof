@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestGenerateSeeds(t *testing.T) {
@@ -222,5 +223,54 @@ func TestRunKeepsReasoning(t *testing.T) {
 	if err != nil || len(lines) != 2 || json.Unmarshal([]byte(lines[0]), &rr) != nil ||
 		rr.Reasoning != "count rows: 7" || rr.QuestionID != recs[0].QuestionID || rr.Started != recs[0].Started {
 		t.Fatalf("sidecar %q, %v", b, err)
+	}
+}
+
+// stuckClient holds every call until release is closed.
+type stuckClient struct{ release chan struct{} }
+
+func (s stuckClient) Do(ctx context.Context, c Call) (*Result, error) {
+	select {
+	case <-s.release:
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+	return &Result{Text: "7", InputTokens: 10, OutputTokens: 5}, nil
+}
+
+// A model whose calls hang does not hold up another model's calls.
+func TestRunPoolsPerModel(t *testing.T) {
+	ds := LimitQuestions(Generate([]string{"orders"}, []int{30}, 1000), 4)
+	out := filepath.Join(t.TempDir(), "r.jsonl")
+	stuck := stuckClient{make(chan struct{})}
+	errc := make(chan error, 1)
+	go func() {
+		errc <- Run(context.Background(), RunConfig{Targets: []Target{
+			{Provider: "nim", Model: "slow", Client: stuck},
+			{Provider: "nim", Model: "fast", Client: thinkingClient{}},
+		}, Datasets: ds, Formats: []string{"json-compact"}, Out: out, MaxCalls: 8, RPM: 6000, Concurrency: 1})
+	}()
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		recs, _ := ReadRecords(out)
+		if len(recs) == 4 {
+			for _, r := range recs {
+				if r.Model != "fast" {
+					t.Fatalf("record from %s while it was stuck", r.Model)
+				}
+			}
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("fast model finished %d of 4 calls while the slow one was stuck", len(recs))
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	close(stuck.release)
+	if err := <-errc; err != nil {
+		t.Fatal(err)
+	}
+	if recs, _ := ReadRecords(out); len(recs) != 8 {
+		t.Fatalf("%d records, want 8", len(recs))
 	}
 }

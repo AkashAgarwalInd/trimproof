@@ -763,6 +763,12 @@ go run ./cmd/bench promotion-replay -in bench/results/verify-2026-10/payloads.js
 
   Records made before that have neither. These fields are for diagnosis only; no registered metric uses them.
 
+**Per-model call pools (operational, 2026-10-03, from stage 2 on):**
+- **Why:** in stage 1's last batch, gpt-oss answered in a median of 3 s, yet its 99 calls were spread over 2 hours. Slow calls from glm (median 146 s) and llama (up to 11 minutes) filled the shared pool of 12, and every other call waited behind them.
+- **Change:** the harness now gives each model its own pool of in-flight calls. `-rpm 30` stays shared across all models.
+- **Setting:** from stage 2 on, every stage runs with `-concurrency 6` per model, so at most 24 calls are in flight.
+- Which calls are made, and how they are scored, does not change.
+
 `tabular` goes to the synthetic file, as originally registered, so its baseline is stage 2's `json-compact`. The replay uses only the three arms it names.
 
 ## Amendment 9: a model retired mid-run (before any result on its replacement)
