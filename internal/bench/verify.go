@@ -123,14 +123,19 @@ func (cfg VerifyConfig) verdict(d interval) string {
 
 // group is every record of one provider/model, keyed by question and format.
 type group struct {
-	name   string
-	byQ    map[string]map[string]Record
-	qs     []string // question IDs in first-seen order
-	fails  map[string]int
-	calls  map[string]int
-	empty  map[string]int
-	coded  map[string]int // gateway arm: replies the gateway served encoded
-	format []string
+	name string
+	byQ  map[string]map[string]Record
+	qs   []string // question IDs in first-seen order
+	// calls counts the questions each format was sent; fails, those with no
+	// successful record after every retry; attempts, every record.
+	fails    map[string]int
+	calls    map[string]int
+	attempts map[string]int
+	retired  map[string]int // records from a model the provider retired (HTTP 410)
+	tried    map[string]map[string]bool
+	empty    map[string]int
+	coded    map[string]int // gateway arm: replies the gateway served encoded
+	format   []string
 }
 
 func groupRecords(recs []Record) []*group {
@@ -141,16 +146,26 @@ func groupRecords(recs []Record) []*group {
 		g := idx[name]
 		if g == nil {
 			g = &group{name: name, byQ: map[string]map[string]Record{}, fails: map[string]int{},
-				calls: map[string]int{}, empty: map[string]int{}, coded: map[string]int{}}
+				calls: map[string]int{}, attempts: map[string]int{}, retired: map[string]int{},
+				tried: map[string]map[string]bool{}, empty: map[string]int{}, coded: map[string]int{}}
 			idx[name] = g
 			out = append(out, g)
 		}
 		if !slices.Contains(g.format, r.Format) {
 			g.format = append(g.format, r.Format)
 		}
-		g.calls[r.Format]++
+		// A retired model is not a failed call; its records are counted
+		// apart and excluded (VERIFY-PLAN.md, Amendment 9).
+		if strings.HasPrefix(r.Error, "HTTP 410") {
+			g.retired[r.Format]++
+			continue
+		}
+		g.attempts[r.Format]++
+		if g.tried[r.Format] == nil {
+			g.tried[r.Format] = map[string]bool{}
+		}
+		g.tried[r.Format][r.QuestionID] = true
 		if r.Error != "" {
-			g.fails[r.Format]++
 			continue
 		}
 		if r.Empty {
@@ -166,6 +181,18 @@ func groupRecords(recs []Record) []*group {
 		// A resumed run may hold a failed and a later successful record;
 		// keep the successful one.
 		g.byQ[r.QuestionID][r.Format] = r
+	}
+	// A failed call is one that never succeeded: a failure a resumed run
+	// re-sent successfully is not excluded.
+	for _, g := range out {
+		for fm, qs := range g.tried {
+			g.calls[fm] = len(qs)
+			for q := range qs {
+				if _, ok := g.byQ[q][fm]; !ok {
+					g.fails[fm]++
+				}
+			}
+		}
 	}
 	slices.SortFunc(out, func(a, b *group) int { return strings.Compare(a.name, b.name) })
 	return out
@@ -325,15 +352,15 @@ func VerifyReport(w io.Writer, recs []Record, cfg VerifyConfig) {
 
 	fmt.Fprintln(w, "### Calls")
 	fmt.Fprintln(w)
-	fmt.Fprintln(w, "| model | format | calls | failed (excluded) | empty replies (scored incorrect) | served encoded by the gateway |")
-	fmt.Fprintln(w, "|---|---|---:|---:|---:|---:|")
+	fmt.Fprintln(w, "| model | format | calls | attempts | failed after retries (excluded) | model retired (excluded) | empty replies (scored incorrect) | served encoded by the gateway |")
+	fmt.Fprintln(w, "|---|---|---:|---:|---:|---:|---:|---:|")
 	for _, g := range groups {
 		for _, fm := range g.format {
 			coded := "–"
 			if fm == "gateway" {
 				coded = fmt.Sprint(g.coded[fm])
 			}
-			fmt.Fprintf(w, "| %s | %s | %d | %d | %d | %s |\n", g.name, fm, g.calls[fm], g.fails[fm], g.empty[fm], coded)
+			fmt.Fprintf(w, "| %s | %s | %d | %d | %d | %d | %d | %s |\n", g.name, fm, g.calls[fm], g.attempts[fm], g.fails[fm], g.retired[fm], g.empty[fm], coded)
 		}
 	}
 	fmt.Fprintln(w)

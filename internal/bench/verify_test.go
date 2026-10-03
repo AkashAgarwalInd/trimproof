@@ -101,7 +101,8 @@ func TestVerifyReport(t *testing.T) {
 		// k=4: 1 − (750+440)/(1000+400) = 15%; at k=1: 1 − 860/1100.
 		"| nim:m | toon | 100 | -25.0% [-25.0, -25.0] | +10.0% [+10.0, +10.0] | +12.5% | +0.0% | +15.0% [+15.0, +15.0] | +21.8% [+21.8, +21.8] | ×1.00 |",
 		"| nim:m | toon | orders | 30 | 100 | -25.0% [-25.0, -25.0] |",
-		"| nim:m | toon | 101 | 1 | 0 | – |",
+		// q0's failed toon call succeeded when re-sent, so it is not excluded.
+		"| nim:m | toon | 100 | 101 | 0 | 0 | 0 | – |",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("report lacks %q\n%s", want, out)
@@ -112,6 +113,29 @@ func TestVerifyReport(t *testing.T) {
 	VerifyReport(&again, fixture(), DefaultVerify())
 	if again.String() != out {
 		t.Fatal("report is not deterministic")
+	}
+}
+
+// A call counts as failed only if it never succeeded, and a retired
+// model's records are counted apart, outside the failure rate.
+func TestVerifyReportFailures(t *testing.T) {
+	recs := fixture()
+	for i := 0; i < 15; i++ {
+		recs = append(recs, Record{Provider: "nim", Model: "m", QuestionID: fmt.Sprintf("r%d", i), Format: "toon",
+			Error: "HTTP 410: {\"title\":\"Gone\"}"})
+	}
+	recs = append(recs, Record{Provider: "nim", Model: "m", QuestionID: "q100", Format: "toon", Error: "timeout"},
+		Record{Provider: "nim", Model: "m", QuestionID: "q100", Format: "toon", Error: "timeout"})
+	var buf bytes.Buffer
+	VerifyReport(&buf, recs, DefaultVerify())
+	out := buf.String()
+	for _, want := range []string{
+		"| nim:m | toon | 101 | 103 | 1 | 15 | 0 | – |",
+		"| nim:m | toon | 100 | 100.0% | 99.0% | -1.0pp [-3.0, +0.0] | 1.0% | inconclusive |",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("report lacks %q\n%s", want, out)
+		}
 	}
 }
 
