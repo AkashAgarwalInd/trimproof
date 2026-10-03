@@ -660,6 +660,11 @@ The coverage reports are regenerated for toonx 4:
 - **`toonx-p2` is dropped,** and the primer follow-up (Step 3) is not run. The captured reasoning shows the models read the format correctly; the cost is in finding a column, which a primer does not change.
 - Everything else is as registered: `json-compact`, `json-compact-2` and `toonx` on every set; `gateway` on gpt-oss; `tabular` on nemotron.
 
+**Smoke outcome (2026-10-03, [smoke.jsonl](verify-2026-10/smoke.jsonl)):**
+- `nvidia/llama-3.1-nemotron-70b-instruct`: 5 of 5 HTTP 404, not available to this account.
+- `meta/llama-3.2-90b-vision-instruct`: passed, with no errors or empty replies and 3 of 5 correct. **It is the fourth model in every stage.**
+- Its calls took 26–362 s for 2–5 output tokens, mostly queueing at NIM.
+
 ### Stages, run in this order
 Each stage is complete on its own and is reported on its own.
 
@@ -745,5 +750,7 @@ go run ./cmd/bench run -targets nim:nvidia/nemotron-3-super-120b-a12b -seed 1000
 go run ./cmd/bench verify-report -in bench/results/verify-2026-10/payloads.jsonl   # and each other stage
 go run ./cmd/bench promotion-replay -in bench/results/verify-2026-10/payloads.jsonl,bench/results/verify-2026-10/synthetic.jsonl,bench/results/verify-2026-10/wtq.jsonl
 ```
+
+**Run settings (operational, not a measurement change):** every stage runs with `-concurrency 12` instead of the default 6, under the registered `-rpm 30`. The harness shares one pool of in-flight calls across models, and the fourth model's queueing would otherwise hold most of it. After each stage, the same command is run once more, which retries failed calls once, as the exclusion rule says.
 
 `tabular` goes to the synthetic file, as originally registered, so its baseline is stage 2's `json-compact`. The replay uses only the three arms it names.
