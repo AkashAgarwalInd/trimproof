@@ -44,6 +44,10 @@ type Result struct {
 	// returned reasoning text and ReasoningEstimated is set.
 	ReasoningTokens    int
 	ReasoningEstimated bool
+	// Reasoning is the reasoning text the provider returned, if any.
+	Reasoning string
+	// FinishReason is the provider's stop reason ("stop", "length", …).
+	FinishReason string
 }
 
 var o200k tokens.BPE
@@ -106,6 +110,7 @@ func (o *OpenAI) Do(ctx context.Context, c Call) (*Result, error) {
 				Content          string `json:"content"`
 				ReasoningContent string `json:"reasoning_content"`
 			} `json:"message"`
+			FinishReason string `json:"finish_reason"`
 		} `json:"choices"`
 		Usage struct {
 			PromptTokens            int `json:"prompt_tokens"`
@@ -133,7 +138,8 @@ func (o *OpenAI) Do(ctx context.Context, c Call) (*Result, error) {
 		think += t // models that reason inline in <think> tags
 	}
 	r := &Result{Text: m.Content, InputTokens: resp.Usage.PromptTokens, OutputTokens: resp.Usage.CompletionTokens,
-		Latency: time.Since(start), Representation: respHdr.Get("X-Trimproof-Representation")}
+		Latency: time.Since(start), Representation: respHdr.Get("X-Trimproof-Representation"),
+		Reasoning: think, FinishReason: resp.Choices[0].FinishReason}
 	r.ReasoningTokens, r.ReasoningEstimated = reasoning(resp.Usage.CompletionTokensDetails.ReasoningTokens, think)
 	return r, nil
 }
@@ -172,7 +178,8 @@ func (a *Anthropic) Do(ctx context.Context, c Call) (*Result, error) {
 			Type string `json:"type"`
 			Text string `json:"text"`
 		} `json:"content"`
-		Usage struct {
+		StopReason string `json:"stop_reason"`
+		Usage      struct {
 			InputTokens  int `json:"input_tokens"`
 			OutputTokens int `json:"output_tokens"`
 		} `json:"usage"`
@@ -188,7 +195,8 @@ func (a *Anthropic) Do(ctx context.Context, c Call) (*Result, error) {
 			text += b.Text
 		}
 	}
-	return &Result{Text: text, InputTokens: resp.Usage.InputTokens, OutputTokens: resp.Usage.OutputTokens, Latency: time.Since(start)}, nil
+	return &Result{Text: text, InputTokens: resp.Usage.InputTokens, OutputTokens: resp.Usage.OutputTokens, Latency: time.Since(start),
+		FinishReason: resp.StopReason}, nil
 }
 
 type statusError struct {

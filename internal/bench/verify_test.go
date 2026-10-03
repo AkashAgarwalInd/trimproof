@@ -196,3 +196,31 @@ func TestPrimerVariant(t *testing.T) {
 		}
 	}
 }
+
+type thinkingClient struct{}
+
+func (thinkingClient) Do(_ context.Context, c Call) (*Result, error) {
+	return &Result{Text: "7", InputTokens: 10, OutputTokens: 5, Reasoning: "count rows: 7", FinishReason: "stop"}, nil
+}
+
+// Every record carries its start time and stop reason, and the reasoning
+// text goes to the sidecar file with the record's key.
+func TestRunKeepsReasoning(t *testing.T) {
+	ds := LimitQuestions(Generate([]string{"orders"}, []int{30}, 1000), 2)
+	out := filepath.Join(t.TempDir(), "r.jsonl")
+	if err := Run(context.Background(), RunConfig{Targets: []Target{{Provider: "nim", Model: "m", Client: thinkingClient{}}},
+		Datasets: ds, Formats: []string{"json-compact"}, Out: out, MaxCalls: 2, RPM: 6000, Concurrency: 1}); err != nil {
+		t.Fatal(err)
+	}
+	recs, err := ReadRecords(out)
+	if err != nil || len(recs) != 2 || recs[0].FinishReason != "stop" || recs[0].Started == "" {
+		t.Fatalf("records %+v, %v", recs, err)
+	}
+	b, err := os.ReadFile(ReasoningPath(out))
+	lines := strings.Split(strings.TrimSpace(string(b)), "\n")
+	var rr ReasoningRecord
+	if err != nil || len(lines) != 2 || json.Unmarshal([]byte(lines[0]), &rr) != nil ||
+		rr.Reasoning != "count rows: 7" || rr.QuestionID != recs[0].QuestionID || rr.Started != recs[0].Started {
+		t.Fatalf("sidecar %q, %v", b, err)
+	}
+}

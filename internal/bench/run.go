@@ -35,6 +35,10 @@ type Record struct {
 	ReasoningTokens    int   `json:"reasoning_tokens,omitempty"`
 	ReasoningEstimated bool  `json:"reasoning_estimated,omitempty"`
 	LatencyMS          int64 `json:"latency_ms"`
+	// Started is when the call was sent (RFC 3339, UTC); FinishReason is the
+	// provider's stop reason. Records made before they were added lack both.
+	Started      string `json:"started,omitempty"`
+	FinishReason string `json:"finish_reason,omitempty"`
 	// Representation is the gateway's X-Trimproof-Representation header
 	// (gateway arm only).
 	Representation string `json:"representation,omitempty"`
@@ -91,6 +95,13 @@ func Run(ctx context.Context, cfg RunConfig) error {
 		return err
 	}
 	defer f.Close()
+	// Reasoning text goes to a sidecar file, keyed like the record, so the
+	// main records stay small enough to read.
+	rf, err := os.OpenFile(ReasoningPath(cfg.Out), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer rf.Close()
 
 	type job struct {
 		t      Target
@@ -169,6 +180,8 @@ func Run(ctx context.Context, cfg RunConfig) error {
 				client = cfg.Gateway
 			}
 			text, primer, err := render(j.d, j.format)
+			rec.Started = time.Now().UTC().Format(time.RFC3339)
+			var thinking string
 			if err == nil {
 				var res *Result
 				// Some serving stacks intermittently return empty content;
@@ -190,6 +203,7 @@ func Run(ctx context.Context, cfg RunConfig) error {
 					rec.ReasoningTokens, rec.ReasoningEstimated = res.ReasoningTokens, res.ReasoningEstimated
 					rec.LatencyMS = res.Latency.Milliseconds()
 					rec.Representation = res.Representation
+					rec.FinishReason, thinking = res.FinishReason, res.Reasoning
 					if !j.q.FreeForm {
 						rec.Correct = Correct(j.q, res.Text)
 					}
@@ -203,6 +217,11 @@ func Run(ctx context.Context, cfg RunConfig) error {
 			defer mu.Unlock()
 			w.Write(append(line, '\n'))
 			w.Flush()
+			if thinking != "" {
+				rl, _ := json.Marshal(ReasoningRecord{Provider: rec.Provider, Model: rec.Model, QuestionID: rec.QuestionID,
+					Format: rec.Format, Started: rec.Started, Reasoning: thinking})
+				rf.Write(append(rl, '\n'))
+			}
 			completed++
 			if err != nil {
 				failed++
@@ -216,6 +235,20 @@ func Run(ctx context.Context, cfg RunConfig) error {
 	wg.Wait()
 	return nil
 }
+
+// ReasoningRecord is one call's reasoning text, in the sidecar file next to
+// a run's records.
+type ReasoningRecord struct {
+	Provider   string `json:"provider"`
+	Model      string `json:"model"`
+	QuestionID string `json:"question_id"`
+	Format     string `json:"format"`
+	Started    string `json:"started"`
+	Reasoning  string `json:"reasoning"`
+}
+
+// ReasoningPath is the sidecar file for a run's records at out.
+func ReasoningPath(out string) string { return strings.TrimSuffix(out, ".jsonl") + ".reasoning.jsonl" }
 
 // ReadRecords loads a JSONL results file.
 func ReadRecords(path string) ([]Record, error) {

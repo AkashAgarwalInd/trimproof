@@ -753,4 +753,14 @@ go run ./cmd/bench promotion-replay -in bench/results/verify-2026-10/payloads.js
 
 **Run settings (operational, not a measurement change):** every stage runs with `-concurrency 12` instead of the default 6, under the registered `-rpm 30`. The harness shares one pool of in-flight calls across models, and the fourth model's queueing would otherwise hold most of it. After each stage, the same command is run once more, which retries failed calls once, as the exclusion rule says.
 
+**Batches and extra records (operational, 2026-10-03):**
+- **Batches:** each stage runs in growing batches of its registered questions (`-n` 10, 30, 70, then all). A health check after every batch looks for failed calls, empty or truncated replies and missing usage. Calls already on disk are not sent again.
+- **WikiTableQuestions** is batched by question ID instead, because its `-n` also chooses the sample.
+- **Extra records:** from payload Q&A batch 2 on, each record also holds:
+  - the call's start time;
+  - the provider's finish reason;
+  - the reasoning text, in a sidecar file `<stage>.reasoning.jsonl`.
+
+  Records made before that have neither. These fields are for diagnosis only; no registered metric uses them.
+
 `tabular` goes to the synthetic file, as originally registered, so its baseline is stage 2's `json-compact`. The replay uses only the three arms it names.
