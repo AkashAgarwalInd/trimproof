@@ -2,7 +2,7 @@
 
 **Written:** 2026-10-02, before any verification call was made. The commit that adds this file predates every result it describes.
 
-**Amended eight times,** on 2026-10-02 and 2026-10-03, each before any result it governs: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result), [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result), [Amendment 6](#amendment-6-split-wide-tables-before-any-result), [Amendment 7](#amendment-7-row-key-and-marked-prefixes-before-any-result) and [Amendment 8](#amendment-8-the-full-run-before-any-result). Where they differ, the later text applies. The original text below is unchanged.
+**Amended nine times,** on 2026-10-02 and 2026-10-03, each before any result it governs: see [Amendment 1](#amendment-1-before-any-result), [Amendment 2](#amendment-2-pilot-before-any-result), [Amendment 3](#amendment-3-free-form-check-before-any-free-form-call), [Amendment 4](#amendment-4-toonx-2-before-any-result), [Amendment 5](#amendment-5-pilot-2-failed-its-rule-diagnostic-before-any-result), [Amendment 6](#amendment-6-split-wide-tables-before-any-result), [Amendment 7](#amendment-7-row-key-and-marked-prefixes-before-any-result), [Amendment 8](#amendment-8-the-full-run-before-any-result) and [Amendment 9](#amendment-9-a-model-retired-mid-run-before-any-result-on-its-replacement). Where they differ, the later text applies. The original text below is unchanged.
 
 Phase 0 ([REPORT.md](REPORT.md)) measured 46 questions per model on two models. That is enough to show input savings, but too few to support accuracy claims: its intervals were about ±6–8pp. This run fixes the claims, metrics and decision rules in advance. The published write-up may then state only what these rules allow.
 
@@ -724,7 +724,7 @@ Net savings at k = 1 are reported beside k = 4, as registered.
   - that no Claude or OpenAI-hosted model was tested.
 
 ### Commands
-`MODELS` is the 3 models, plus the non-reasoning model if one passes its smoke check. `-max-calls` is the stage's call count for that many models.
+`MODELS` is the 3 models, plus the non-reasoning model if one passes its smoke check (nemotron-3-super is replaced by nemotron-3-ultra from [Amendment 9](#amendment-9-a-model-retired-mid-run-before-any-result-on-its-replacement) on). `-max-calls` is the stage's call count for that many models.
 
 ```sh
 go run ./cmd/bench run -targets nim:CANDIDATE -seed 1000 -n 5 -formats json-compact -max-calls 5 \
@@ -764,3 +764,32 @@ go run ./cmd/bench promotion-replay -in bench/results/verify-2026-10/payloads.js
   Records made before that have neither. These fields are for diagnosis only; no registered metric uses them.
 
 `tabular` goes to the synthetic file, as originally registered, so its baseline is stage 2's `json-compact`. The replay uses only the three arms it names.
+
+## Amendment 9: a model retired mid-run (before any result on its replacement)
+
+**Date:** 2026-10-03, during stage 1. This amendment is forced by the provider. It changes no codec, primer, format, question or rule.
+
+### What happened
+- NVIDIA retired `nvidia/nemotron-3-super-120b-a12b` from NIM at 2026-10-03T09:00:00Z. Every call from then on returned HTTP 410: "The model 'nvidia/nemotron-3-super-120b-a12b' has reached its end of life on 2026-10-03T09:00:00Z and is no longer available."
+- Its last successful call started at 08:59:55Z. By then it had **76 payload questions complete on all three arms**, and no calls in any other stage.
+
+### nemotron-3-super: kept, reported as partial
+- Its records stay in `payloads.jsonl`, the 410 records included.
+- The 410 calls are a retired model, not model failures. They are excluded and counted on their own line, outside the failed-call rate.
+- Its 76 questions are reported per model, with intervals, labelled **"partial: retired mid-run"**.
+- It is not one of the N models in "on k of N models". Its promotion replay is shown, but 76 samples are below the first look at 200, so it can only read "collecting".
+
+### Replacement: nemotron-3-ultra
+- **`nvidia/nemotron-3-ultra-550b-a55b` takes its place in every stage it was in:** stages 1, 2 and 4, and stage 5 (`tabular`).
+- **Why this model:** it is the reasoning model of the same family (Nemotron 3) that NIM still served on 2026-10-03. It was chosen before any toonx call on it.
+- **Smoke check** (5 calls, `json-compact`, [smoke-ultra.jsonl](verify-2026-10/smoke-ultra.jsonl)): no errors or empty replies, 5 of 5 correct, 6–13 s per call, every reply ended with `stop`.
+- **The README's earlier `tabular` figure** (−8.7pp) was measured on nemotron-3-super. Stage 5 now measures nemotron-3-ultra, and the write-up says which model each figure comes from.
+
+### Calls
+- nemotron-3-ultra adds the calls nemotron-3-super would have made: 417 (stage 1), 690 (stage 2), 300 (stage 4) and 230 (stage 5).
+- nemotron-3-super's made calls are 228 successful ones plus its 410 records.
+- `-max-calls` stays a cap per invocation, so every command keeps its registered cap.
+
+### If another model is retired
+Its finished questions are kept and reported as partial, in the same way. **There is no further replacement.** The run then has fewer models, and the write-up says so.
+
