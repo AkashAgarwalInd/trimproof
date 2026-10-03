@@ -46,7 +46,7 @@ func TestReplayDecisions(t *testing.T) {
 	}{
 		{"same", 250, 0, false, policy.Enabled, 1, 200},  // identical answers, 32% cheaper at k=4
 		{"differs", 400, 5, true, policy.Off, 1, 200},    // 20% of codec answers differ, all correct
-		{"wrong", 400, 5, false, policy.Shadow, 3, 400},  // 20% wrong: held for the Tier 1 regression
+		{"wrong", 400, 5, false, policy.Off, 1, 200},     // 20% wrong
 		{"few", 150, 0, false, policy.Shadow, 1, 150},    // no look before 200 samples
 		{"close", 450, 25, false, policy.Shadow, 3, 400}, // 4% wrong: held
 	} {

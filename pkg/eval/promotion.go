@@ -181,11 +181,13 @@ func NextState(cur policy.PromotionState, minNetSavings float64, all, recent Sta
 		switch {
 		case all.N < t.NMin:
 			return cur, fmt.Sprintf("collecting: %d/%d samples", all.N, t.NMin)
-		case all.McNemarP <= t.Alpha && all.B > all.C:
-			return cur, fmt.Sprintf("Tier 1 regression (McNemar p=%.4f, b=%d, c=%d)", all.McNemarP, all.B, all.C)
+		// A confidently worse route goes OFF even when Tier 1 also
+		// regressed, so it stops paying for shadow samples.
 		case hi < -t.Epsilon:
 			return policy.Off, fmt.Sprintf("rejected: n=%d, agreement %.3f vs noise floor %.3f (upper bound %+.3f < −ε)",
 				all.N, all.AgreeTreatment, all.AgreeControl, hi)
+		case all.McNemarP <= t.Alpha && all.B > all.C:
+			return cur, fmt.Sprintf("Tier 1 regression (McNemar p=%.4f, b=%d, c=%d)", all.McNemarP, all.B, all.C)
 		case lo > -t.Epsilon && all.MeasuredSavings >= minNetSavings:
 			return policy.Enabled, fmt.Sprintf("promoted: n=%d, agreement %.3f vs noise floor %.3f (lower bound %+.3f > −ε), %s, McNemar p=%.3f",
 				all.N, all.AgreeTreatment, all.AgreeControl, lo, savings(all), all.McNemarP)

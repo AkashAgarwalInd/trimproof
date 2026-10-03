@@ -690,8 +690,9 @@ Smoke checks add at most 10 calls. **Stopping:** if the run has not finished 3 d
 - **Settings:** the gateway defaults (`eval.DefaultThresholds`: first look at 200 samples, then every 100, z = 2.5, ε = 0.02), `min_net_savings` 0.15, output priced at 4×.
 - **Reported:** every look until the state changes, with its reason, whatever it is.
 - **Known behaviour, reported as is:**
-  - a significant Tier 1 regression holds a route in SHADOW instead of switching it OFF;
+  - a significant Tier 1 regression on its own holds a route in SHADOW; it is not promoted;
   - a route that never reaches a decision stays in SHADOW.
+- **Fixed before any call (2026-10-03):** a route that was confidently worse *and* had a Tier 1 regression was held in SHADOW, where it kept sampling, instead of being switched OFF. The OFF check now comes first. This affects the gateway itself too, not only the replay.
 
 **2. Multi-turn projection,** in `verify-report`.
 - **What it is:** net saving at output ×4 when the same tool result is sent on each of T = 1, 3 and 10 turns and the output difference is paid once. A second version bills every resend after the first at 0.1× input, as with prompt caching.

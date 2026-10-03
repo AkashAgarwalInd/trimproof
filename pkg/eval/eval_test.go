@@ -134,6 +134,8 @@ func TestNextState(t *testing.T) {
 		// output pricing the codec costs more than JSON.
 		{"output eats savings", samples(200, 0, 700, 250), policy.Shadow, "measured savings"},
 		{"tier1 regression", withTier1(samples(200, 0, 700, 100), repeat([2]bool{true, false}, 12)), policy.Shadow, "McNemar"},
+		// Confidently worse and a Tier 1 regression: rejected, not held.
+		{"worse with tier1 regression", withTier1(samples(200, 40, 700, 100), repeat([2]bool{true, false}, 40)), policy.Off, "rejected"},
 	}
 	for _, c := range cases {
 		got, why := NextState(policy.Shadow, 0.15, ComputeStats(c.all, 0, 4), ComputeStats(c.all, th.Window, 4), th)
