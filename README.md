@@ -4,18 +4,23 @@
 
 **The measured, lossless context optimizer for LLM traffic.**
 
-trimproof is a Go gateway for the Anthropic Messages and OpenAI-compatible Chat Completions APIs. It re-encodes tabular tool results (DB rows, logs, search hits) into token-efficient formats such as [TOON](https://github.com/toon-format/toon) or a strict tabular codec. It switches a route over only after **shadow evaluation on that route's own traffic** shows answers stay as good as with JSON, compared against the model's own noise floor.
+trimproof is a Go gateway for the Anthropic Messages and OpenAI-compatible Chat Completions APIs. It re-encodes tabular tool results (DB rows, logs, search hits) into token-efficient formats: [TOON](https://github.com/toon-format/toon), `toonx` (a TOON variant that also factors out constant fields and splits wide tables) or a strict tabular codec. It switches a route over only after **shadow evaluation on that route's own traffic** shows answers stay as good as with JSON, compared against the model's own noise floor.
 
 > Format effects vary a lot by model and task. Published agentic benchmarks report anywhere from −36pp to +13pp accuracy for TOON. So trimproof never ships an optimization it has not measured on your traffic.
 
-**What we measured** on two open models (gpt-oss-20b and nemotron-3-super on NVIDIA NIM), summarized in the [write-up](docs/writeup.md):
-- TOON cut provider-billed input tokens by **23–26%** against compact JSON, with no accuracy change detected.
-- The models wrote **13–36% more output**, so net savings with output priced at 4× input were only **4–11%**.
-- A strict tabular format was neutral on one model and lost **8.7pp** on the other.
+**What we measured** in a pre-registered run on four open models on NVIDIA NIM (gpt-oss-20b, nemotron-3-ultra, glm-5.3-flash and llama-3.2-90b-vision), summarized in the [write-up](docs/writeup.md):
+- **The right answer differed by model.** Replaying every answer through trimproof's own promotion test turned `toonx` on for **none** of them:
+  - llama and gpt-oss were switched **OFF**: their answers agreed with JSON less often than JSON agreed with itself, confidently by more than the 2pp margin;
+  - glm stayed in **SHADOW** after 469 samples, with its bounds straddling the 2pp margin;
+  - nemotron-3-ultra stayed in **SHADOW**, and its 7% net saving is below the 15% minimum anyway.
+- **Input:** `toonx` used **20–31%** fewer input tokens than compact JSON on every model and data set.
+- **Output:** the reasoning models often wrote more on `toonx` (nemotron-3-ultra +69% on synthetic tables). With output priced at 4× input, the net saving ranged from **−4.5% to +30.6%**.
+- **Accuracy:** glm and nemotron-3-ultra were non-inferior within 3pp on real API payloads and synthetic tables. gpt-oss lost 7.8pp on synthetic tables, and llama lost 12–14pp on both.
+- No Claude or OpenAI-hosted model was tested.
 
 Whether a format pays off depends on the model, the data and the task, so trimproof measures each route instead of assuming.
 
-Full results: [`bench/results/REPORT.md`](bench/results/REPORT.md).
+Full results: [`VERIFY.md`](bench/results/verify-2026-10/VERIFY.md), with every call's record beside it. Pre-registration and amendments: [`VERIFY-PLAN.md`](bench/results/VERIFY-PLAN.md). The earlier two-model study: [`REPORT.md`](bench/results/REPORT.md).
 
 ## How it works
 

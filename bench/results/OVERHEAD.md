@@ -51,6 +51,8 @@ At 100 KB, a tool result is about 30k tokens, and model calls take seconds. A ~1
 
 Fewer input tokens do not make calls faster end to end. In Phase 0 on NVIDIA NIM, TOON calls had a median latency about 10% higher than JSON calls. The models wrote more output tokens (gpt-oss +13%, nemotron +36%), and decoding dominates latency. NIM's queueing makes these latency figures noisy, but the extra output is real.
 
+The [October verification run](verify-2026-10/VERIFY.md) on four models shows the same dependence on output. The median latency ratio of `toonx` to JSON ran from ×0.74 to ×1.28, depending on the model and the data set. The slowest cells were the ones where a reasoning model wrote more: nemotron-3-ultra was ×1.28 on synthetic tables, where its output rose 69%.
+
 Shadow samples therefore record each arm's latency and output tokens, and promotion weights output tokens by cost (see [PROMOTION.md](PROMOTION.md)).
 
 The original target of p99 < 5 ms at 100 KB is not met.

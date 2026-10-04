@@ -1,146 +1,106 @@
-# TOON cut our input tokens by a quarter. We still wouldn't switch it on blindly.
+# toonx cut tool-result input by 20–31%. trimproof's own test still didn't turn it on for any model we tested.
 
-**Date:** 2026-10-02
+## The short version
+- **Input:** on real public-API responses, toonx used 25–30% fewer input tokens than compact JSON, and 20–31% across every model and data set we tried.
+- **Output:** the reasoning models often wrote more on toonx: up to +69% on synthetic tables (nemotron-3-ultra). With output priced at 4× input, the net saving ran from **−4.5% to +30.6%**, depending on the model and the data.
+- **Accuracy:** it depended on the model. glm and nemotron-3-ultra were non-inferior within 3pp on two of three sets. gpt-oss was worse than JSON on synthetic tables (−7.8pp), and llama on both real payloads (−13.7pp) and synthetic tables (−12.2pp).
+- **The decision:** we replayed every answer through trimproof's promotion test, the one a route runs in SHADOW mode. **It would not have turned toonx on for any model tested:**
+  - llama and gpt-oss: switched **OFF**, confidently worse than the JSON-vs-JSON noise floor;
+  - glm: still collecting after 469 samples, with the bounds straddling the margin;
+  - nemotron-3-ultra: still collecting, and its 7% net saving is below the 15% minimum anyway.
 
-Compact formats like [TOON](https://github.com/toon-format/toon) promise to cut the tokens an LLM spends reading tabular data: tool results, database rows, log lines, search hits. trimproof is a gateway that applies them. Before building it, we measured what such formats actually do to real model calls. This is what we found, and how it shaped the gateway.
-
-**Summary:**
-- **The input savings are real.** TOON cut provider-billed input tokens by 23–26% against compact JSON, and the offline token estimates matched the bills.
-- **No accuracy change was detected**, but 46 questions per model can't rule out a 2–5pp effect. Sending the *same* JSON twice already flips 2–6.5% of answers.
-- **The same format behaved differently on different models.** A strict tabular format was neutral on one model and lost 8.7pp on another.
-- **The models wrote more.** Output tokens rose 13–36% with TOON. Priced at 4× input, that turns a 23–26% input saving into a 4–11% net saving.
-
-So whether a format pays off depends on the model, the data and the task. trimproof therefore doesn't decide it once, globally. It measures each route on that route's own traffic, against that model's own noise floor, and counts output tokens too. The data and the code to reproduce everything here are in this repository.
+That is the point of the project. A format that cuts input by a quarter can still cost accuracy on one model and money on another. Measure each route before switching.
 
 ## What was tested
+- **Models:** four open models on NVIDIA NIM's free tier:
+  - gpt-oss-20b;
+  - nemotron-3-ultra;
+  - glm-5.3-flash;
+  - llama-3.2-90b-vision (the one non-reasoning model).
+- **What wasn't:**
+  - nemotron-3-super was retired by NVIDIA mid-run; its 76 questions are reported as partial.
+  - The Mistral and Google slots had no available model.
+  - No Claude or OpenAI-hosted model was tested.
+- **Data:**
+  - 139 questions over 36 real public-API responses;
+  - 230 synthetic questions;
+  - 100 WikiTableQuestions items (42 for llama, stopped early).
+- **Arms:**
+  - compact JSON;
+  - the same JSON again, as the noise floor;
+  - toonx, at 16,384 output tokens.
+- **Pre-registered:** every rule was registered before its data. The 9 amendments and 1 deviation are public in [VERIFY-PLAN.md](https://github.com/AkashAgarwalInd/trimproof/blob/master/bench/results/VERIFY-PLAN.md). Every call is published: about 6,300 records, with the reasoning text where the model returned it.
 
-- **Data:** four synthetic, seeded datasets at 30 and 120 rows:
-  - orders;
-  - logs;
-  - search results with long text snippets;
-  - a wide employee table.
-- **Questions:** 46 exact-answer questions per format, of four kinds: lookup, count, argmax and sum. Each was asked as a user question with the data in a tool result.
-- **Formats:**
-  - compact JSON (the baseline);
-  - TOON;
-  - a strict lossless tabular codec;
-  - CSV, as a lower bound only, since it can't preserve JSON types;
-  - compact JSON a second time, to measure the noise floor.
-- **Models:** `openai/gpt-oss-20b` and `nvidia/nemotron-3-super-120b-a12b` on NVIDIA NIM. `moonshotai/kimi-k3` was dropped mid-run because of rate limits and empty replies; its partial data is kept but not used.
-- **Costs counted:** input tokens are the provider's own `usage` figures, and every format pays for its explanatory primer.
+## 1. Input savings are real
 
-Full tables: [`bench/results/phase0-2026-10-02.md`](../bench/results/phase0-2026-10-02.md). Verdict and caveats: [`bench/results/REPORT.md`](../bench/results/REPORT.md).
-
-## 1. The input savings are real, and depend on the data's shape
-
-| model | TOON input tokens vs compact JSON |
-|---|---:|
-| gpt-oss-20b | **−26.1%** |
-| nemotron-3-super | **−23.4%** |
-
-The provider-reported savings matched the offline o200k counts (−26.1%), so a gateway can trust its own estimate when deciding whether encoding is worth it.
-
-The shape of the data matters more than the model:
-
-| dataset | TOON vs compact JSON |
-|---|---:|
-| employees (wide, uniform) | −36 to −41% |
-| orders, logs | −20 to −26% |
-| search (long free-text snippets) | −12 to −15% |
-
-Against *pretty-printed* JSON, the savings are about −49%, nearly double. Check the baseline before comparing headline numbers: much of that difference is whitespace, which plain compact JSON already removes.
-
-## 2. "No accuracy change" needs a noise floor to mean anything
-
-On TOON, both models answered exactly as well as on JSON:
-- gpt-oss: 1 question right only with JSON, and 1 right only with TOON;
-- nemotron: 2 and 2.
-
-That does not prove the formats are equivalent. The control arm sent the identical JSON request twice, and the answers already differed:
-
-| model | answers that flip on an identical resend |
-|---|---:|
-| gpt-oss-20b | 6.5% |
-| nemotron-3-super | 2.2% |
-
-With noise of that size and 46 questions, a real 2–5pp drop is invisible. Detecting it takes hundreds of paired samples per route.
-
-## 3. Same format, different model, different answer
-
-| model | strict tabular codec | Δ accuracy |
-|---|---:|---:|
-| gpt-oss-20b | −26.5% tokens | +2.2pp |
-| nemotron-3-super | −23.3% tokens | **−8.7pp** (5 vs 1 discordant) |
-
-The nemotron drop is not statistically significant at this sample size (p=0.22), but it is four times that model's noise floor. The same format was neutral on gpt-oss.
-
-There is no model-independent answer to "is this format safe?". The answer has to be measured where the format is used.
-
-## 4. The models wrote more
-
-This was the result we didn't expect. With TOON input, both reasoning models produced more output:
-
-| model | input saved | output tokens | net saving with output priced 4× input |
+| model | payload Q&A | synthetic | WikiTableQuestions |
 |---|---:|---:|---:|
-| gpt-oss-20b | 26% | +13% | **11%** |
-| nemotron-3-super | 23% | +36% | **4%** |
+| glm-5.3-flash | −26.5% [−29.1, −23.9] | −23.4% [−24.2, −22.5] | −30.4% [−34.7, −26.0] |
+| llama-3.2-90b-vision | −30.4% [−32.9, −28.0] | −29.8% [−30.8, −28.8] | −30.9% [−35.9, −25.6] |
+| gpt-oss-20b | −27.2% [−29.9, −24.7] | −23.3% [−24.2, −22.4] | −28.4% [−32.4, −24.1] |
+| nemotron-3-ultra | −25.0% [−27.5, −22.6] | −20.4% [−21.0, −19.9] | −30.2% [−34.3, −26.0] |
 
-The median TOON call on NIM was also about 10% slower, because decoding dominates latency. NIM's queueing makes latency noisy, but the extra output is real.
+Input tokens against compact JSON, with 95% bootstrap intervals.
 
-Any tool that reports only input-token savings overstates what you save, sometimes by most of it.
+## 2. Output decides the money
 
-## What trimproof does about it
+| model | payload Q&A | synthetic | WikiTableQuestions |
+|---|---:|---:|---:|
+| glm-5.3-flash | +27.1% | +17.3% | +25.6% |
+| llama-3.2-90b-vision | +30.3% | +29.7% | +30.6% (partial) |
+| gpt-oss-20b | +28.1% | +15.4% | −1.9% |
+| nemotron-3-ultra | +25.3% | −4.2% | −4.5% |
 
-trimproof sits between your application and the Anthropic or OpenAI-compatible API. It re-encodes eligible data blocks, and it switches a route over only after measuring that route.
+Net saving with output at 4× input.
+- **On real API responses, every model saved 25–30%.**
+- **On synthetic and WikiTableQuestions, two reasoning models wrote enough extra output to lose money.** nemotron-3-ultra's output rose 69% on synthetic tables.
+- **The pattern in the reasoning traces:** on wide tables, models find a value by counting columns, and that counting is where much of the extra output goes.
 
-- **Lossless by construction.** Every codec must satisfy `Decode(Encode(x)) == canonical(x)` byte for byte, which fuzz tests enforce. Requests that don't qualify are forwarded byte-identical.
-- **Three arms per sample.** In `SHADOW`, a sample of requests is replayed in the background three ways: as JSON, in the codec, and as JSON again. The second JSON arm is that request's own noise floor, which also cancels out how hard each question is.
-- **A real statistical test.** Decisions are made only at scheduled looks, using a paired non-inferiority test (ε = 2pp). Re-checking a point estimate after every sample turned out to promote a route that is 5pp worse 55% of the time.
+## 3. Accuracy, next to the noise floor
 
-  Simulated on the Phase 0 answers ([details](../bench/results/PROMOTION.md)):
+| model | payload Q&A | synthetic | WikiTableQuestions |
+|---|---|---|---|
+| glm-5.3-flash | non-inferior (−0.7pp) | non-inferior (+0.0pp) | inconclusive (−3.0pp) |
+| nemotron-3-ultra | non-inferior (+0.0pp) | non-inferior (−0.4pp) | inconclusive (−8.0pp) |
+| gpt-oss-20b | inconclusive (+2.2pp) | **worse** (−7.8pp) | inconclusive (−3.0pp) |
+| llama-3.2-90b-vision | **worse** (−13.7pp) | **worse** (−12.2pp) | inconclusive (partial) |
 
-  | route | outcome |
-  |---|---|
-  | fine | promoted 98% of the time, median ~3,300 evaluation calls |
-  | exactly 2pp worse | wrongly promoted 6% of the time |
-  | 5pp worse | never promoted, and switched off after ~2,700 calls |
-  | 10pp worse | switched off after ~600 calls |
+Non-inferiority margin: 3pp. The JSON-vs-JSON noise floor for each cell is in [VERIFY.md](https://github.com/AkashAgarwalInd/trimproof/blob/master/bench/results/verify-2026-10/VERIFY.md).
+- **gpt-oss's losses are concentrated on the 120-row tables.**
+- **llama's are on both real payloads and synthetic tables,** while its two JSON runs scored identically.
 
-- **Savings are cost-weighted.** Output tokens count at the route's `output_price_ratio` (default 4). A route is promoted only if its *net* savings reach the route's minimum (default 15%). On the Phase 0 numbers, neither model would be promoted. That is the intended outcome.
-- **It keeps watching.** Enabled routes keep being sampled, and they are demoted on regression. With an optional Tier 1 validator (JSON Schema, exact-decimal business rules, authorization checks on tool calls), a circuit breaker also falls back to JSON when production failures rise.
+## 4. Open-ended answers: not shown to be safe
+- **All models:** a blind judge graded 104 free-form answers. toonx answers were judged wrong +5.8pp more often [−3.8, +15.4]. The 15pp bound was not met, so "no large drop" is not claimed.
+- **glm:** its error share rose by +24.2pp [+6.1, +42.4], from wrong-row attribution, miscounts and dropped prefixes. So even the model with the best structured-answer results is not cleared for open-ended use.
 
-The cost to production requests is small:
+## 5. The promotion replay
 
-| payload | gateway time (p50) |
-|---|---:|
-| 10 KB | 1.4 ms |
-| 100 KB | 13 ms |
+| model | samples | decided at | codec agreement | noise floor | net saved | state |
+|---|---:|---:|---:|---:|---:|---|
+| llama-3.2-90b-vision | 410 | 200 | 0.623 | 0.965 | 29.1% | **OFF** |
+| gpt-oss-20b | 469 | 400 | 0.856 | 0.922 | 17.8% | **OFF** |
+| glm-5.3-flash | 469 | – | 0.965 | 0.988 | 21.8% | SHADOW |
+| nemotron-3-ultra | 469 | – | 0.958 | 0.983 | 7.1% | SHADOW |
 
-Most of that time is spent counting tokens exactly. The gateway uses its own o200k counter, about 17× faster than tiktoken-go, and CI checks it against tiktoken-go for identical counts. See [`OVERHEAD.md`](../bench/results/OVERHEAD.md).
+- **How it was run:** with the gateway's own defaults (first look at 200 samples, then every 100, z = 2.5, margin 0.02, minimum net saving 15%), on every question all three arms answered, pooled per model.
+- **What it shows:**
+  - The test switched off the two models where toonx hurt.
+  - It held glm, whose cost case is strong but whose agreement isn't yet proven within the margin.
+  - It held nemotron-3-ultra, whose saving is too small to be worth it.
 
-## An end-to-end run
+## 6. Multi-turn agents (computed, not measured)
+- **The effect:** agents resend tool results on later turns, so the input saving repeats while the output difference is paid once.
+- **Example:** in the projection, nemotron-3-super's payload net saving (partial, 76 questions) rises from +14.1% at 1 turn to +24.8% at 10.
+- **With prompt caching,** resends are cheap and the advantage shrinks.
+- No multi-turn run was made.
 
-One route was put in `SHADOW` on gpt-oss-20b and driven with 400 requests ([details](../bench/results/SHADOW-E2E.md)):
-- **Measured input savings:** 26.7%, from provider usage, matching the benchmark.
-- **The earlier promotion rule held the route** on a 3.3pp point-estimate gap: 0.831 codec agreement against a 0.864 noise floor. That gap was smaller than its own uncertainty (about ±4pp).
-- **The rule was replaced** with the three-arm test above, which would keep collecting rather than decide on that evidence.
-
-## What this does not show yet
-
-- **No Claude or GPT-4-class models** were run, only open models hosted on NVIDIA NIM. The gateway supports Anthropic, and it calibrates its token estimates for Claude with `count_tokens`. A Claude benchmark run is the most important missing result.
-- **Synthetic data and short answers.** Real tool results and longer answers may behave differently; that is exactly why the gateway measures each route.
-- **Small samples.** At 46 questions per model, the accuracy results are consistent with "no change", not proof of it.
-- **The rule's error rates are simulated,** from bootstrapped benchmark answers. A production-length shadow run has not yet reached a promotion decision.
-
-trimproof is pre-alpha.
+## What went wrong along the way
+- **Pilot 2's rule fired.** A diagnostic showed the cause was the output limit, not the format.
+- **Four codec versions were piloted.** The last change was chosen on small samples, so the full run measured toonx 3 frozen.
+- **8 of the 36 payloads** would have been sent as JSON by the gateway under toonx 3's gates.
+- **NVIDIA retired nemotron-3-super mid-run,** and nemotron-3-ultra replaced it. The −8.7pp `tabular` figure in the old README came from nemotron-3-super. On nemotron-3-ultra, `tabular` was non-inferior but cost 9.8% more.
+- **We stopped llama's WikiTableQuestions stage early,** by choice, at 42 of 100 questions, after the machine running it slept overnight and after interim results had been seen. Its verdict was already settled on 368 other questions.
+- **2 calls failed after the registered retry**, and were excluded.
 
 ## Reproduce it
-
-```sh
-go run ./cmd/bench tokens                                       # offline token table, no API key
-go run ./cmd/bench report -in bench/results/phase0-2026-10-02.jsonl
-go run ./cmd/bench run -targets openai:MODEL,anthropic:MODEL    # live, resumable
-go test ./pkg/eval -run ErrorRates -v                           # promotion rule error rates
-```
-
-Results from other models are welcome; open an issue with your `bench report` output.
+Commands are in [VERIFY-PLAN.md](https://github.com/AkashAgarwalInd/trimproof/blob/master/bench/results/VERIFY-PLAN.md#amendment-8-the-full-run-before-any-result). Every table here is generated by `bench verify-report` and `bench promotion-replay` from the committed records.
