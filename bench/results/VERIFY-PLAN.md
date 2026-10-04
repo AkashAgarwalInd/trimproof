@@ -799,3 +799,12 @@ go run ./cmd/bench promotion-replay -in bench/results/verify-2026-10/payloads.js
 ### If another model is retired
 Its finished questions are kept and reported as partial, in the same way. **There is no further replacement.** The run then has fewer models, and the write-up says so.
 
+
+## Deviation: llama's WikiTableQuestions stage stopped early (2026-10-04, before the final report)
+
+This is not an amendment: it was decided after most of the data was in, and is reported as a deviation.
+
+- **What happened.** llama-3.2-90b's calls queued at NIM for minutes each, so its synthetic and WikiTableQuestions calls ran in their own process and files. These were merged into `synthetic.jsonl` and `wtq.jsonl` before any report. During its WTQ stage, the machine running the harness slept from 02:56 to 08:31 (IST), and the run stalled.
+- **Decision.** Rather than restart it for about 2 more hours, it was stopped by choice, with **44 of its 100 questions sent and 42 answered on all three arms.** Its one registered retry was not run, so 1 call stays failed.
+- **What was known at the time.** Interim results for every model and stage had been seen. On payloads and synthetic, llama's toonx accuracy was about 12–15pp below JSON over 368 questions, and the promotion replay on those two sets alone had switched it OFF at its first look.
+- **How it is reported.** llama's WTQ is reported as "partial: stopped early, 42 of 100 questions". Its 42 questions stay in the pooled promotion replay. All other models completed every stage.
